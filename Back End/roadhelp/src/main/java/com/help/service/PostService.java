@@ -1,16 +1,22 @@
 package com.help.service;
 
-import com.help.model.Post;
+import com.help.repository.PostCommentLogRepository;
+import com.help.repository.PostCommentRepository;
+import com.help.repository.PostLogRepository;
 import com.help.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class PostService {
     @Autowired
-    private PostRepository postRepository;
-    public List<Post> getAllPosts(){
-        return postRepository.findAll();
-    }
+    PostRepository postRepository;
+    @Autowired
+    PostLogRepository postLogRepository;
+    @Autowired
+    PostCommentRepository postCommentRepository;
+    @Autowired
+    PostCommentLogRepository postCommentLogRepository;
+
+
 }

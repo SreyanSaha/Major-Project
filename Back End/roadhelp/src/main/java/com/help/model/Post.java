@@ -3,9 +3,9 @@ package com.help.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "Post")
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,41 +13,17 @@ public class Post {
     @Column(nullable = false)
     private int userId;
     @Column(nullable = false)
-    private String postTitle;
+    private String authorProfileName, authorProfileImagePath;
     @Column(nullable = false)
-    private String postDescription;
+    private LocalDateTime postUploadDateTime = LocalDateTime.now();
     @Column(nullable = false)
-    private String authorName;
-    @Column
-    private String authorProfileImgPath;
-    @Column
-    private int upVoteCount;
-    @Column
-    private int downVoteCount;
-    @Column
-    private int commentCount;
-    @Column
-    private String imagePath1;
-    @Column
-    private String imagePath2;
-    @Column
-    private String imagePath3;
-    @Column
-    private String imagePath4;
-    @Column
-    private String imagePath5;
-    @Column
-    private String imageAfterWorkPath1;
-    @Column
-    private String imageAfterWorkPath2;
-    @Column
-    private String imageAfterWorkPath3;
-    @Column
-    private String imageAfterWorkPath4;
-    @Column
-    private String imageAfterWorkPath5;
+    private String postTitle, postDescription;
+    private int upVoteCount = 0, downVoteCount = 0, commentCount = 0;
     @Column(nullable = false)
-    private LocalDateTime postUploadDateTime;
+    private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;
+    private String afterWorkImagePath1, afterWorkImagePath2, afterWorkImagePath3, afterWorkImagePath4, afterWorkImagePath5;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<PostComment> postCommentList;
 
     public Post() {}
 
@@ -67,6 +43,30 @@ public class Post {
         this.userId = userId;
     }
 
+    public String getAuthorProfileName() {
+        return authorProfileName;
+    }
+
+    public void setAuthorProfileName(String authorProfileName) {
+        this.authorProfileName = authorProfileName;
+    }
+
+    public String getAuthorProfileImagePath() {
+        return authorProfileImagePath;
+    }
+
+    public void setAuthorProfileImagePath(String authorProfileImagePath) {
+        this.authorProfileImagePath = authorProfileImagePath;
+    }
+
+    public LocalDateTime getPostUploadDateTime() {
+        return postUploadDateTime;
+    }
+
+    public void setPostUploadDateTime(LocalDateTime postUploadDateTime) {
+        this.postUploadDateTime = postUploadDateTime;
+    }
+
     public String getPostTitle() {
         return postTitle;
     }
@@ -81,22 +81,6 @@ public class Post {
 
     public void setPostDescription(String postDescription) {
         this.postDescription = postDescription;
-    }
-
-    public String getAuthorName() {
-        return authorName;
-    }
-
-    public void setAuthorName(String authorName) {
-        this.authorName = authorName;
-    }
-
-    public String getAuthorProfileImgPath() {
-        return authorProfileImgPath;
-    }
-
-    public void setAuthorProfileImgPath(String authorProfileImgPath) {
-        this.authorProfileImgPath = authorProfileImgPath;
     }
 
     public int getUpVoteCount() {
@@ -163,51 +147,51 @@ public class Post {
         this.imagePath5 = imagePath5;
     }
 
-    public String getImageAfterWorkPath1() {
-        return imageAfterWorkPath1;
+    public String getAfterWorkImagePath1() {
+        return afterWorkImagePath1;
     }
 
-    public void setImageAfterWorkPath1(String imageAfterWorkPath1) {
-        this.imageAfterWorkPath1 = imageAfterWorkPath1;
+    public void setAfterWorkImagePath1(String afterWorkImagePath1) {
+        this.afterWorkImagePath1 = afterWorkImagePath1;
     }
 
-    public String getImageAfterWorkPath2() {
-        return imageAfterWorkPath2;
+    public String getAfterWorkImagePath2() {
+        return afterWorkImagePath2;
     }
 
-    public void setImageAfterWorkPath2(String imageAfterWorkPath2) {
-        this.imageAfterWorkPath2 = imageAfterWorkPath2;
+    public void setAfterWorkImagePath2(String afterWorkImagePath2) {
+        this.afterWorkImagePath2 = afterWorkImagePath2;
     }
 
-    public String getImageAfterWorkPath3() {
-        return imageAfterWorkPath3;
+    public String getAfterWorkImagePath3() {
+        return afterWorkImagePath3;
     }
 
-    public void setImageAfterWorkPath3(String imageAfterWorkPath3) {
-        this.imageAfterWorkPath3 = imageAfterWorkPath3;
+    public void setAfterWorkImagePath3(String afterWorkImagePath3) {
+        this.afterWorkImagePath3 = afterWorkImagePath3;
     }
 
-    public String getImageAfterWorkPath4() {
-        return imageAfterWorkPath4;
+    public String getAfterWorkImagePath4() {
+        return afterWorkImagePath4;
     }
 
-    public void setImageAfterWorkPath4(String imageAfterWorkPath4) {
-        this.imageAfterWorkPath4 = imageAfterWorkPath4;
+    public void setAfterWorkImagePath4(String afterWorkImagePath4) {
+        this.afterWorkImagePath4 = afterWorkImagePath4;
     }
 
-    public String getImageAfterWorkPath5() {
-        return imageAfterWorkPath5;
+    public String getAfterWorkImagePath5() {
+        return afterWorkImagePath5;
     }
 
-    public void setImageAfterWorkPath5(String imageAfterWorkPath5) {
-        this.imageAfterWorkPath5 = imageAfterWorkPath5;
+    public void setAfterWorkImagePath5(String afterWorkImagePath5) {
+        this.afterWorkImagePath5 = afterWorkImagePath5;
     }
 
-    public LocalDateTime getPostUploadDateTime() {
-        return postUploadDateTime;
+    public List<PostComment> getPostCommentList() {
+        return postCommentList;
     }
 
-    public void setPostUploadDateTime(LocalDateTime postUploadDateTime) {
-        this.postUploadDateTime = postUploadDateTime;
+    public void setPostCommentList(List<PostComment> postCommentList) {
+        this.postCommentList = postCommentList;
     }
 }
