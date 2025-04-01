@@ -34,7 +34,7 @@ public class Post {
     private String country;
     @Column(nullable = false)
     private String zipCode;
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PostComment> postCommentList;
     @ManyToOne
     @JoinColumn(name = "user_id")

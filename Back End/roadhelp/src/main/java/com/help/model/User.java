@@ -43,7 +43,7 @@ public class User {
     private String country;
     @Column(nullable = false)
     private String zipCode;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Post> postList;
 
     public User() {}
