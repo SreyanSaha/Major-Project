@@ -9,33 +9,33 @@ import jakarta.persistence.Id;
 public class PostCommentLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int postCommentLogId;
-    private int userId, postCommentId;
+    private long postCommentLogId;
+    private long userId, postCommentId;
     private short log = -1;//1 -> like, 0 -> disLike
 
     public PostCommentLog() {}
 
-    public int getPostCommentLogId() {
+    public long getPostCommentLogId() {
         return postCommentLogId;
     }
 
-    public void setPostCommentLogId(int postCommentLogId) {
+    public void setPostCommentLogId(long postCommentLogId) {
         this.postCommentLogId = postCommentLogId;
     }
 
-    public int getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 
-    public int getPostCommentId() {
+    public long getPostCommentId() {
         return postCommentId;
     }
 
-    public void setPostCommentId(int postCommentId) {
+    public void setPostCommentId(long postCommentId) {
         this.postCommentId = postCommentId;
     }
 

@@ -9,33 +9,33 @@ import jakarta.persistence.Id;
 public class PostLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int postLogId;
-    private int userId, postId;
+    private long postLogId;
+    private long userId, postId;
     private short log = -1;//1 -> like, 0 -> disLike
 
     public PostLog() {}
 
-    public int getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 
-    public int getPostLogId() {
+    public long getPostLogId() {
         return postLogId;
     }
 
-    public void setPostLogId(int postLogId) {
+    public void setPostLogId(long postLogId) {
         this.postLogId = postLogId;
     }
 
-    public int getPostId() {
+    public long getPostId() {
         return postId;
     }
 
-    public void setPostId(int postId) {
+    public void setPostId(long postId) {
         this.postId = postId;
     }
 
