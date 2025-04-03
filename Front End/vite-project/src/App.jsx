@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import './App.css'
+import AdminAuth from './adminSection/adminLoginSignup'
 
 function App() {
-  
   return (
-    <></>
+    <>
+    <AdminAuth/>
+    </>
   )
 }
 
