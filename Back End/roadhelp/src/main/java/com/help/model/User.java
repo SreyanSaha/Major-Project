@@ -213,7 +213,7 @@ public class User {
     }
 
     public void setContributionPoints(Long contributionPoints) {
-        this.contributionPoints += contributionPoints;
+        this.contributionPoints = contributionPoints;
     }
 
     public Long getValidRepostPoints() {
@@ -221,7 +221,7 @@ public class User {
     }
 
     public void setValidRepostPoints(Long validRepostPoints) {
-        this.validRepostPoints += validRepostPoints;
+        this.validRepostPoints = validRepostPoints;
     }
 
     public List<Post> getPostList() {
