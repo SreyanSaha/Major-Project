@@ -91,18 +91,18 @@ const AdminSignup=()=>{
     buttonHover: {
       background: "linear-gradient(45deg, #ff9900, #ff3300)",
     },
-    loginText: {
+    Text: {
         marginTop: "20px",
         color: "#ffff",
         cursor: "pointer",
-        fontSize: "14px",
-        textDecoration: "underline",
+        fontSize: "20px",
+        textDecoration: "false",
         transition: "0.3s",
     },
     loginTextHover: {
         color: "#ff9900",
     },
-    loginButton: {
+    Button: {
         padding: "5px",
         background: "linear-gradient(45deg, #ffcc00, #ff6600)",
         color: "#111",
@@ -112,6 +112,7 @@ const AdminSignup=()=>{
         fontSize: "16px",
         fontWeight: "bold",
         transition: "0.3s",
+        marginLeft: "10px",
     },
     wrapper: {
       display: "flex",
@@ -272,10 +273,8 @@ const AdminSignup=()=>{
           <button
             type="submit"
             style={styles.button}
-            onMouseOver={(e) => Object.assign(e.target.style, styles.buttonHover)}
-            onMouseOut={(e) => Object.assign(e.target.style, styles.button)}
           >Signup</button>
-            <p style={styles.loginText}>Already have an account? <button className="login-link" onClick={() => setlogin(true)} style={styles.loginButton}>Login here</button></p>
+            <p style={styles.Text} onClick={() => setlogin(true)}>Already have an account?...click here.</p>
         </form>
       </div>
     </div>
@@ -318,13 +317,10 @@ const AdminSignup=()=>{
           </button>
         </form>
         <p
-          style={styles.signupText}
-          onMouseOver={(e) => Object.assign(e.target.style, styles.signupTextHover)}
-          onMouseOut={(e) => Object.assign(e.target.style, styles.signupText)}
+          style={styles.Text}
           onClick={() => setlogin(false)}
         >
-        Don't have an account?
-        <button className="login-link" onClick={() => setlogin(false)} style={styles.loginButton}>Signup here</button>
+        Don't have an account?...click here.
         </p>
       </div>
     </div>
