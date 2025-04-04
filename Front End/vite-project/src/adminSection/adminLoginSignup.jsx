@@ -39,7 +39,7 @@ const AdminSignup=()=>{
       color: "#fff",
     },
     card: {
-      width: "500px",
+      width: "700px",
       padding: "30px",
       background: "rgba(255, 255, 255, 0.1)",
       backdropFilter: "blur(15px)",
@@ -113,11 +113,54 @@ const AdminSignup=()=>{
         fontWeight: "bold",
         transition: "0.3s",
     },
+    wrapper: {
+      display: "flex",
+      width: "500px", 
+      borderRadius: "15px",
+      boxShadow: "0 10px 25px rgba(255, 255, 255, 0.08)",
+      overflow: "hidden",
+      background: "rgba(255, 255, 255, 0.1)",
+      height: "35vh",
+      marginRight: "15px",
+    },
+    sidebar: {
+      flex: 1,
+      padding: "30px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      background: "rgba(255, 255, 255, 0.1)",
+      backdropFilter: "blur(15px)",
+      borderRight: "1px solid rgba(255, 255, 255, 0.2)",
+    },
+    list: {
+      listStyle: "none",
+      padding: "0",
+    },
+    listItem: {
+      marginBottom: "10px",
+      fontSize: "16px",
+      color: "#ffcc00",
+    },
   };
 
   return(
     !login?(
     <div style={styles.container}>
+    <div style={styles.wrapper}>
+    <div style={styles.sidebar}>
+      <h2 style={styles.title}>Admin Responsibilities</h2>
+      <ul style={styles.list}>
+        <li style={styles.listItem}>Manage user accounts and permissions</li>
+        <li style={styles.listItem}>Approve or reject vendor products</li>
+        <li style={styles.listItem}>Monitor and resolve reported issues</li>
+        <li style={styles.listItem}>Ensure platform security and data integrity</li>
+        <li style={styles.listItem}>Oversee content moderation and compliance</li>
+      </ul>
+    </div>
+    </div>
+
+    
       <div style={styles.card}>
         <h2 style={styles.title}>Admin Signup</h2>
         <form style={styles.form}>
@@ -153,6 +196,16 @@ const AdminSignup=()=>{
           />
 
           <input
+            type="text"
+            placeholder="Aadhaar Card Number"
+            value={aadhaar}
+            onChange={(e) => setAadhaar(e.target.value)}
+            style={styles.input}
+            onFocus={(e) => Object.assign(e.target.style, styles.inputFocus)}
+            onBlur={(e) => Object.assign(e.target.style, styles.input)}
+          />
+
+          <input
             type="password"
             placeholder="Password"
             value={password}
@@ -163,10 +216,10 @@ const AdminSignup=()=>{
           />
 
           <input
-            type="text"
-            placeholder="Aadhaar Card Number"
-            value={aadhaar}
-            onChange={(e) => setAadhaar(e.target.value)}
+            type="password"
+            placeholder="Confirm Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             style={styles.input}
             onFocus={(e) => Object.assign(e.target.style, styles.inputFocus)}
             onBlur={(e) => Object.assign(e.target.style, styles.input)}
@@ -227,7 +280,20 @@ const AdminSignup=()=>{
       </div>
     </div>
     ):(
-    <div style={styles.container}>
+      <div style={styles.container}>
+    <div style={styles.wrapper}>
+    <div style={styles.sidebar}>
+      <h2 style={styles.title}>Admin Responsibilities</h2>
+      <ul style={styles.list}>
+          <li style={styles.listItem}>Log in securely with verified credentials</li>
+          <li style={styles.listItem}>Access the admin dashboard and tools</li>
+          <li style={styles.listItem}>Track system alerts and notifications</li>
+          <li style={styles.listItem}>Review pending approvals and reports</li>
+          <li style={styles.listItem}>Maintain platform performance and quality</li>
+      </ul>
+    </div>
+    </div>
+
       <div style={styles.card}>
         <h2 style={styles.title}>Admin Login</h2>
         <form style={styles.form}>
