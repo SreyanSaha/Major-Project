@@ -20,7 +20,7 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 hours expiry
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 5)) // 5 hours expiry
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -48,7 +48,7 @@ public class JwtService {
 
 Uses the username to generate a token.
 
-Adds an expiration time (10 hours in this case).
+Adds an expiration time (5 hours in this case).
 
 Signs the token using the HS256 algorithm and a secret key.
 

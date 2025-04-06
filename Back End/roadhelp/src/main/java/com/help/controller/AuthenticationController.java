@@ -10,6 +10,7 @@ import com.help.model.User;
 import com.help.service.AdminService;
 import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,17 +20,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
+    private final AuthService authService;
+    private final UserService userService;
+    private final AdminService adminService;
+
     @Autowired
-    private AuthService authService;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private AdminService adminService;
+    public AuthenticationController(AuthService authService, UserService userService, AdminService adminService) {
+        this.authService = authService;
+        this.userService = userService;
+        this.adminService = adminService;
+    }
 
     @PostMapping("/user/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterWrapper wrapper) {
-        if(authService.register(wrapper.getRegisterRequest())) userService.saveUser(wrapper.getUser());
-        return ResponseEntity.ok("User registered successfully!");
+        if(authService.register(wrapper.getRegisterRequest())) {
+            userService.saveUser(wrapper.getUser());
+            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully!");
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not registered");
     }
 
     @PostMapping("/user/login")
@@ -39,8 +47,11 @@ public class AuthenticationController {
 
     @PostMapping("/admin/register")
     public ResponseEntity<?> registerAdmin(@RequestBody RegisterWrapper wrapper) {
-        if(authService.register(wrapper.getRegisterRequest())) adminService.saveAdmin(wrapper.getAdmin());
-        return ResponseEntity.ok("Admin registered successfully!");
+        if(authService.register(wrapper.getRegisterRequest())) {
+            adminService.saveAdmin(wrapper.getAdmin());
+            return ResponseEntity.status(HttpStatus.CREATED).body("Admin registered successfully!");
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Admin not registered");
     }
 
     @PostMapping("/admin/login")

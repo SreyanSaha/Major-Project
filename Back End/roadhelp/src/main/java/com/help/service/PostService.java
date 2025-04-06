@@ -43,7 +43,6 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow();
         if (existingLogOpt.isPresent()) {
             PostLog existingLog = existingLogOpt.get();
-
             if (existingLog.getLog() == 1) {
                 // Already upVoted, remove upvote (toggle off)
                 post.setUpVoteCount(post.getUpVoteCount() - 1);
@@ -71,10 +70,8 @@ public class PostService {
     public void downVotePost(int postId, int userId) {
         Optional<PostLog> existingLogOpt = postLogRepository.findByUserIdAndPostId(userId, postId);
         Post post = postRepository.findById(postId).orElseThrow();
-
         if (existingLogOpt.isPresent()) {
             PostLog existingLog = existingLogOpt.get();
-
             if (existingLog.getLog() == 0) {
                 // Already downVoted, remove downVote (toggle off)
                 post.setDownVoteCount(post.getDownVoteCount() - 1);
@@ -153,8 +150,6 @@ public class PostService {
                 existingLog.get().setLog((short)0);
                 comment.setDisLikeCount(comment.getDisLikeCount()+1);
             }
-
-
             postCommentLogRepository.save(existingLog.get());
             postCommentRepository.save(comment);
         }

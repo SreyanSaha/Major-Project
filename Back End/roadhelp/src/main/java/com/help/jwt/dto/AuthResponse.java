@@ -2,10 +2,18 @@
 
 public class AuthResponse {
      private String token;
-	 public AuthResponse(String token) {
+	 private String username;
+	 public AuthResponse(String token, String username) {
 		this.token = token;
+		this.username = username;
+	 }
+	public String getUsername() {
+		return username;
 	}
-	 public String getToken() {
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getToken() {
 		return token;
 	}
 	 public void setToken(String token) {

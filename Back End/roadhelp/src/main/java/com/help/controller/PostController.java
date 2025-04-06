@@ -1,9 +1,15 @@
 package com.help.controller;
 
+import com.help.jwt.service.CustomUserDetailsService;
+import com.help.jwt.service.JwtService;
+import com.help.jwt.service.JwtUtil;
 import com.help.model.Post;
 import com.help.model.PostComment;
 import com.help.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -12,10 +18,16 @@ import java.util.List;
 public class PostController {
     @Autowired
     private PostService postService;
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
-    @PostMapping("/createPost")
-    public Post reportIssue(@RequestBody Post post) {
-        return postService.createPost(post);
+    @PostMapping("/createPost/{username}/{token}")
+    public ResponseEntity<?> reportIssue(@RequestBody Post post, @PathVariable String username, @PathVariable String token) {
+        if(jwtService.validateToken(token,customUserDetailsService.loadUserByUsername(username)))
+            return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(post));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
     }
 
     @GetMapping("/location/{postId}")
