@@ -20,13 +20,13 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
-    public void register(RegisterRequest request) {
+    public boolean register(RegisterRequest request) {
         UserAuthData userAuthData = new UserAuthData();
         userAuthData.setUsername(request.getUsername());
         userAuthData.setPassword(request.getPassword());
         userAuthData.setUserTypeRole(request.getUserTypeRole());
         userAuthDataService.saveUser(userAuthData);
-        String token = jwtService.generateToken(userAuthData.getUsername());
+        return true;
     }
 
     public AuthResponse authenticate(AuthRequest request) {
