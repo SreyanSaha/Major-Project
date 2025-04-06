@@ -2,11 +2,8 @@ package com.help.controller;
 
 import com.help.jwt.dto.AuthRequest;
 import com.help.jwt.dto.AuthResponse;
-import com.help.jwt.dto.RegisterRequest;
 import com.help.jwt.dto.RegisterWrapper;
 import com.help.jwt.service.AuthService;
-import com.help.model.Admin;
-import com.help.model.User;
 import com.help.service.AdminService;
 import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

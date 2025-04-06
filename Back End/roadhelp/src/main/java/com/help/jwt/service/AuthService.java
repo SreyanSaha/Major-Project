@@ -4,6 +4,8 @@ import com.help.jwt.dto.AuthResponse;
 import com.help.jwt.dto.AuthRequest;
 import com.help.jwt.dto.RegisterRequest;
 import com.help.model.UserAuthData;
+import com.help.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -13,11 +15,14 @@ public class AuthService {
     private final UserAuthDataService userAuthDataService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
 
-    public AuthService(UserAuthDataService userService, JwtService jwtService, AuthenticationManager authenticationManager) {
-        this.userAuthDataService = userService;
+    @Autowired
+    public AuthService(UserAuthDataService userAuthDataService, JwtService jwtService, AuthenticationManager authenticationManager, UserRepository userRepository) {
+        this.userAuthDataService = userAuthDataService;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
     }
 
     public boolean register(RegisterRequest request) {

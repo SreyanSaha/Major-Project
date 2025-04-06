@@ -41,8 +41,19 @@ public class User {
     private String zipCode;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Post> postList;
+    @OneToOne
+    @JoinColumn(name = "auth_id", referencedColumnName = "authId")
+    private UserAuthData authData;
 
     public User() {}
+
+    public UserAuthData getAuthData() {
+        return authData;
+    }
+
+    public void setAuthData(UserAuthData authData) {
+        this.authData = authData;
+    }
 
     @PrePersist
     protected void onCreate(){

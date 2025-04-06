@@ -13,4 +13,7 @@ public class UserService {
     public void saveUser(User user) {
         userRepository.save(user);
     }
+    public User getUserByAuthId(int authId){
+        return userRepository.getUserByAuthData_AuthId(authId);
+    }
 }

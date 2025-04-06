@@ -43,8 +43,19 @@ public class Admin {
     private String adminEmployeeId;//Company Name (Dropdown - Auto-fills based on Sector)
     @Column(nullable = false)
     private String adminCompanyName;
+    @OneToOne
+    @JoinColumn(name = "auth_id", referencedColumnName = "authId")
+    private UserAuthData authData;
 
     public Admin() {}
+
+    public UserAuthData getAuthData() {
+        return authData;
+    }
+
+    public void setAuthData(UserAuthData authData) {
+        this.authData = authData;
+    }
 
     @PrePersist
     protected void onCreate(){

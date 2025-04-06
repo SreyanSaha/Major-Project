@@ -15,14 +15,18 @@ import java.util.Optional;
 
 @Service
 public class PostService {
+    private final PostRepository postRepository;
+    private final PostLogRepository postLogRepository;
+    private final PostCommentRepository postCommentRepository;
+    private final PostCommentLogRepository postCommentLogRepository;
+
     @Autowired
-    PostRepository postRepository;
-    @Autowired
-    PostLogRepository postLogRepository;
-    @Autowired
-    PostCommentRepository postCommentRepository;
-    @Autowired
-    PostCommentLogRepository postCommentLogRepository;
+    public PostService(PostRepository postRepository, PostLogRepository postLogRepository, PostCommentRepository postCommentRepository, PostCommentLogRepository postCommentLogRepository) {
+        this.postRepository = postRepository;
+        this.postLogRepository = postLogRepository;
+        this.postCommentRepository = postCommentRepository;
+        this.postCommentLogRepository = postCommentLogRepository;
+    }
 
     public Post createPost(Post post) {
         return postRepository.save(post);

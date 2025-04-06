@@ -13,8 +13,28 @@ public class UserAuthData {
     private String password;
     @Column(nullable = false)
     private short userTypeRole;//1 -> Admin, 0-> User
+    @OneToOne(mappedBy = "authData", cascade = CascadeType.ALL)
+    private User user;
+    @OneToOne(mappedBy = "authData", cascade = CascadeType.ALL)
+    private Admin admin;
 
     public UserAuthData() {}
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Admin getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
+    }
 
     public int getAuthId() {
         return authId;

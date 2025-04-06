@@ -21,6 +21,10 @@ public class UserAuthDataService {
         userAuthData.setPassword(passwordEncoder.encode(userAuthData.getPassword()));
         userAuthDataRepository.save(userAuthData);
     }
+
+    public int getAuthId(String username){
+        return userAuthDataRepository.findByUsername(username).get().getAuthId();
+    }
 }
 
 /*  User Registration → Saves new users to the database after encrypting passwords.*/
