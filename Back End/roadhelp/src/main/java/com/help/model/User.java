@@ -8,10 +8,6 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userId;
-    @Column(nullable = false, unique = true)
-    private String userUsername;
-    @Column(nullable = false)
-    private String userPassword;
     @Column(nullable = false)
     private String userFirstName;
     @Column(nullable = false)
@@ -110,22 +106,6 @@ public class User {
 
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
-    }
-
-    public String getUserUsername() {
-        return userUsername;
-    }
-
-    public void setUserUsername(String userUsername) {
-        this.userUsername = userUsername;
-    }
-
-    public String getUserPassword() {
-        return userPassword;
-    }
-
-    public void setUserPassword(String userPassword) {
-        this.userPassword = userPassword;
     }
 
     public LocalDateTime getSignupDateTime() {

@@ -12,10 +12,6 @@ public class Admin {
     private LocalDateTime signupDateTime;
     private LocalDateTime timeOutEndTime;
     @Column(nullable = false)
-    private String adminUsername;
-    @Column(nullable = false)
-    private String adminPassword;
-    @Column(nullable = false)
     private String adminFirstName;
     @Column(nullable = false)
     private String userLastName;
@@ -94,22 +90,6 @@ public class Admin {
 
     public void setTimeOutEndTime(LocalDateTime timeOutEndTime) {
         this.timeOutEndTime = timeOutEndTime;
-    }
-
-    public String getAdminUsername() {
-        return adminUsername;
-    }
-
-    public void setAdminUsername(String adminUsername) {
-        this.adminUsername = adminUsername;
-    }
-
-    public String getAdminPassword() {
-        return adminPassword;
-    }
-
-    public void setAdminPassword(String adminPassword) {
-        this.adminPassword = adminPassword;
     }
 
     public String getAdminFirstName() {
