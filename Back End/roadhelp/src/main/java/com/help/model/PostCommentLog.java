@@ -1,41 +1,49 @@
 package com.help.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class PostCommentLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long postCommentLogId;
-    private long userId, postCommentId;
+    private int postCommentLogId;
+    private int userId, postCommentId;
     private short log = -1;//1 -> like, 0 -> disLike
 
     public PostCommentLog() {}
+
+    public PostCommentLog(int userId, int postCommentId, short log) {
+        this.userId = userId;
+        this.postCommentId = postCommentId;
+        this.log = log;
+    }
+
+    @PrePersist
+    public void onCreate(){
+        this.log=(short)-1;
+    }
 
     public long getPostCommentLogId() {
         return postCommentLogId;
     }
 
-    public void setPostCommentLogId(long postCommentLogId) {
+    public void setPostCommentLogId(int postCommentLogId) {
         this.postCommentLogId = postCommentLogId;
     }
 
-    public long getUserId() {
+    public int getUserId() {
         return userId;
     }
 
-    public void setUserId(long userId) {
+    public void setUserId(int userId) {
         this.userId = userId;
     }
 
-    public long getPostCommentId() {
+    public int getPostCommentId() {
         return postCommentId;
     }
 
-    public void setPostCommentId(long postCommentId) {
+    public void setPostCommentId(int postCommentId) {
         this.postCommentId = postCommentId;
     }
 
