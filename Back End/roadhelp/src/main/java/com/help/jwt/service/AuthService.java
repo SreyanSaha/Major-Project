@@ -4,10 +4,10 @@ import com.help.jwt.dto.AuthResponse;
 import com.help.jwt.dto.AuthRequest;
 import com.help.jwt.dto.RegisterRequest;
 import com.help.model.UserAuthData;
-import com.help.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,14 +15,12 @@ public class AuthService {
     private final UserAuthDataService userAuthDataService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
 
     @Autowired
-    public AuthService(UserAuthDataService userAuthDataService, JwtService jwtService, AuthenticationManager authenticationManager, UserRepository userRepository) {
+    public AuthService(UserAuthDataService userAuthDataService, JwtService jwtService, AuthenticationManager authenticationManager) {
         this.userAuthDataService = userAuthDataService;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
     }
 
     public boolean register(RegisterRequest request) {
@@ -35,9 +33,11 @@ public class AuthService {
     }
 
     public AuthResponse authenticate(AuthRequest request) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-        String token = jwtService.generateToken(request.getUsername());
-        return new AuthResponse(token,request.getUsername());
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        AuthResponse response=null;
+        if(authentication.isAuthenticated())
+            response=new AuthResponse(jwtService.generateToken(request.getUsername()),request.getUsername(),(short)userAuthDataService.getUserAuthDataTypeRole(request.getUsername()));
+        return response;
     }
 }
 

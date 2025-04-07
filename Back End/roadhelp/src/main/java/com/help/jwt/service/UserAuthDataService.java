@@ -25,6 +25,10 @@ public class UserAuthDataService {
     public int getAuthId(String username){
         return userAuthDataRepository.findByUsername(username).get().getAuthId();
     }
+
+    public int getUserAuthDataTypeRole(String username){
+        return userAuthDataRepository.findByUsername(username).get().getUserTypeRole();
+    }
 }
 
 /*  User Registration → Saves new users to the database after encrypting passwords.*/

@@ -1,12 +1,22 @@
  package com.help.jwt.dto;
 
-public class AuthResponse {
+ import java.util.Date;
+
+ public class AuthResponse {
      private String token;
 	 private String username;
-	 public AuthResponse(String token, String username) {
-		this.token = token;
-		this.username = username;
+	 private short userTypeRole;
+	 public AuthResponse(String token, String username, short userTypeRole) {
+		 this.token = token;
+		 this.username = username;
+		 this.userTypeRole = userTypeRole;
 	 }
+	 public short getUserTypeRole() {
+		return userTypeRole;
+	}
+	public void setUserTypeRole(short userTypeRole) {
+		this.userTypeRole = userTypeRole;
+	}
 	public String getUsername() {
 		return username;
 	}
@@ -16,7 +26,7 @@ public class AuthResponse {
 	public String getToken() {
 		return token;
 	}
-	 public void setToken(String token) {
+	public void setToken(String token) {
 		this.token = token;
 	}
  }
