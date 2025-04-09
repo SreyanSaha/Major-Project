@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const AdminSignup=()=>{
+const AdminSignup=(props)=>{
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -14,7 +14,7 @@ const AdminSignup=()=>{
     state: "",
     zip: "",
   });
-  const [login, setlogin] = useState(false);
+  const [login, setlogin] = useState(props.status);
   const handleLiveLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -35,16 +35,16 @@ const AdminSignup=()=>{
       justifyContent: "center",
       alignItems: "center",
       height: "100vh",
-      background: "linear-gradient(135deg, #0b0b0b, #1a1a1a)",
-      color: "#fff",
+      background: "linear-gradient(135deg, #e6f0ff, #cce0ff)", // Light blue gradient
+      color: "#001f3f", // Deep navy blue text
     },
     card: {
       width: "700px",
       padding: "30px",
-      background: "rgba(255, 255, 255, 0.1)",
-      backdropFilter: "blur(15px)",
+      background: "rgba(255, 255, 255, 0.8)", // Soft white glassy effect
+      backdropFilter: "blur(10px)",
       borderRadius: "15px",
-      boxShadow: "0 10px 25px rgba(255, 255, 255, 0.08)",
+      boxShadow: "0 10px 25px rgba(0, 0, 128, 0.1)",
       textAlign: "center",
     },
     title: {
@@ -52,6 +52,7 @@ const AdminSignup=()=>{
       fontWeight: "600",
       marginBottom: "20px",
       letterSpacing: "1px",
+      color: "#003366", // Medium-dark blue
     },
     form: {
       display: "flex",
@@ -65,22 +66,22 @@ const AdminSignup=()=>{
     input: {
       flex: 1,
       padding: "12px",
-      border: "1px solid rgba(255, 255, 255, 0.2)",
+      border: "1px solid rgba(0, 0, 128, 0.2)",
       borderRadius: "8px",
       fontSize: "15px",
-      backgroundColor: "rgba(255, 255, 255, 0.15)",
-      color: "#fff",
+      backgroundColor: "rgba(255, 255, 255, 0.5)",
+      color: "#003366",
       outline: "none",
       transition: "0.5s",
     },
     inputFocus: {
-      border: "1px solid #ffcc00",
-      boxShadow: "0 0 8px rgba(255, 204, 0, 0.5)",
+      border: "1px solid #3399ff",
+      boxShadow: "0 0 8px rgba(51, 153, 255, 0.5)",
     },
     button: {
       padding: "12px",
-      background: "linear-gradient(45deg, #ffcc00, #ff6600)",
-      color: "#111",
+      background: "linear-gradient(45deg, #3399ff, #0077cc)",
+      color: "#fff",
       border: "none",
       borderRadius: "8px",
       cursor: "pointer",
@@ -89,38 +90,38 @@ const AdminSignup=()=>{
       transition: "0.3s",
     },
     buttonHover: {
-      background: "linear-gradient(45deg, #ff9900, #ff3300)",
+      background: "linear-gradient(45deg, #0077cc, #005fa3)",
     },
     Text: {
-        marginTop: "20px",
-        color: "#ffff",
-        cursor: "pointer",
-        fontSize: "20px",
-        textDecoration: "false",
-        transition: "0.3s",
+      marginTop: "20px",
+      color: "#003366",
+      cursor: "pointer",
+      fontSize: "20px",
+      textDecoration: "none",
+      transition: "0.3s",
     },
     loginTextHover: {
-        color: "#ff9900",
+      color: "#3399ff",
     },
     Button: {
-        padding: "5px",
-        background: "linear-gradient(45deg, #ffcc00, #ff6600)",
-        color: "#111",
-        border: "none",
-        borderRadius: "8px",
-        cursor: "pointer",
-        fontSize: "16px",
-        fontWeight: "bold",
-        transition: "0.3s",
-        marginLeft: "10px",
+      padding: "5px",
+      background: "linear-gradient(45deg, #3399ff, #0077cc)",
+      color: "#fff",
+      border: "none",
+      borderRadius: "8px",
+      cursor: "pointer",
+      fontSize: "16px",
+      fontWeight: "bold",
+      transition: "0.3s",
+      marginLeft: "10px",
     },
     wrapper: {
       display: "flex",
-      width: "500px", 
+      width: "500px",
       borderRadius: "15px",
-      boxShadow: "0 10px 25px rgba(255, 255, 255, 0.08)",
+      boxShadow: "0 10px 25px rgba(0, 0, 128, 0.1)",
       overflow: "hidden",
-      background: "rgba(255, 255, 255, 0.1)",
+      background: "rgba(255, 255, 255, 0.8)",
       height: "35vh",
       marginRight: "15px",
     },
@@ -130,9 +131,9 @@ const AdminSignup=()=>{
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
-      background: "rgba(255, 255, 255, 0.1)",
-      backdropFilter: "blur(15px)",
-      borderRight: "1px solid rgba(255, 255, 255, 0.2)",
+      background: "rgba(255, 255, 255, 0.7)",
+      backdropFilter: "blur(10px)",
+      borderRight: "1px solid rgba(0, 0, 128, 0.2)",
     },
     list: {
       listStyle: "none",
@@ -141,9 +142,10 @@ const AdminSignup=()=>{
     listItem: {
       marginBottom: "10px",
       fontSize: "16px",
-      color: "#ffcc00",
+      color: "#005fa3",
     },
   };
+  
 
   return(
     !login?(
@@ -161,7 +163,6 @@ const AdminSignup=()=>{
     </div>
     </div>
 
-    
       <div style={styles.card}>
         <h2 style={styles.title}>Admin Signup</h2>
         <form style={styles.form}>
