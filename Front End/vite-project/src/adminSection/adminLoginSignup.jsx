@@ -145,7 +145,6 @@ const AdminSignup=(props)=>{
       color: "#005fa3",
     },
   };
-  
 
   return(
     !login?(
