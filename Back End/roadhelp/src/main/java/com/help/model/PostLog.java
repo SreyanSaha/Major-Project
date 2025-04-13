@@ -1,9 +1,6 @@
 package com.help.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class PostLog {
@@ -11,9 +8,14 @@ public class PostLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long postLogId;
     private long userId, postId;
-    private short log = -1;//1 -> like, 0 -> disLike
+    private short log;//1 -> like, 0 -> disLike
 
     public PostLog() {}
+
+    @PrePersist
+    protected void onCreate(){
+        this.log=(short)-1;
+    }
 
     public long getUserId() {
         return userId;

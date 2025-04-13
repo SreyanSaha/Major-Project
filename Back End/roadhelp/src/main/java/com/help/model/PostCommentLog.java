@@ -8,7 +8,7 @@ public class PostCommentLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int postCommentLogId;
     private int userId, postCommentId;
-    private short log = -1;//1 -> like, 0 -> disLike
+    private short log;//1 -> like, 0 -> disLike
 
     public PostCommentLog() {}
 

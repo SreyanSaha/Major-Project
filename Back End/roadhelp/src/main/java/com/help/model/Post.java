@@ -13,10 +13,10 @@ public class Post {
     @Column(nullable = false)
     private String authorProfileName, authorProfileImagePath;
     @Column(nullable = false)
-    private LocalDateTime postUploadDateTime = LocalDateTime.now();
+    private LocalDateTime postUploadDateTime;
     @Column(nullable = false)
     private String postTitle, postDescription;
-    private int upVoteCount = 0, downVoteCount = 0, commentCount = 0;
+    private int upVoteCount, downVoteCount, commentCount;
     @Column(nullable = false)
     private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;
     private String afterWorkImagePath1, afterWorkImagePath2, afterWorkImagePath3, afterWorkImagePath4, afterWorkImagePath5;
@@ -34,6 +34,7 @@ public class Post {
     private String country;
     @Column(nullable = false)
     private String zipCode;
+    private short postStatus;// -1 -> under review, 0 -> work in progress, 1 -> work done
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PostComment> postCommentList;
     @ManyToOne
@@ -41,6 +42,13 @@ public class Post {
     private User user;
 
     public Post() {}
+
+    @PrePersist
+    protected void onCreate(){
+        this.postUploadDateTime = LocalDateTime.now();
+        this.upVoteCount=this.commentCount=this.downVoteCount=0;
+        this.postStatus=(short)-1;
+    }
 
     public Double getLatitude() {
         return latitude;
@@ -264,5 +272,13 @@ public class Post {
 
     public void setPostCommentList(List<PostComment> postCommentList) {
         this.postCommentList = postCommentList;
+    }
+
+    public short getPostStatus() {
+        return postStatus;
+    }
+
+    public void setPostStatus(short postStatus) {
+        this.postStatus = postStatus;
     }
 }

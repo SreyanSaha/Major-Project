@@ -14,11 +14,11 @@ public class PostComment {
     private int userId;
     @Column(nullable = false)
     private String authorProfileName, authorProfileImagePath;
-    private LocalDateTime commentDateTime = LocalDateTime.now();
+    private LocalDateTime commentDateTime;
     @Column(nullable = false)
     private String commentDescription;
-    private int likeCount = 0, disLikeCount = 0;
-    private int replyCount = 0;
+    private int likeCount, disLikeCount;
+    private int replyCount;
     @ManyToOne
     @JoinColumn(name = "parent_comment_id")
     private PostComment parentComment;
@@ -29,6 +29,12 @@ public class PostComment {
     private List<PostComment> commentReplies;
 
     public PostComment() {}
+
+    @PrePersist
+    protected void onCreate(){
+        this.commentDateTime = LocalDateTime.now();
+        this.likeCount=this.replyCount=this.disLikeCount=0;
+    }
 
     public Post getPost() {
         return post;
