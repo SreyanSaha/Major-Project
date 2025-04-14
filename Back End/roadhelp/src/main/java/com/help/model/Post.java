@@ -1,7 +1,6 @@
 package com.help.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,7 +32,7 @@ public class Post {
     @Column(nullable = false)
     private String country;
     @Column(nullable = false)
-    private String zipCode;
+    private String postalCode;
     private short postStatus;// -1 -> under review, 0 -> work in progress, 1 -> work done
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PostComment> postCommentList;
@@ -98,12 +97,12 @@ public class Post {
         this.country = country;
     }
 
-    public String getZipCode() {
-        return zipCode;
+    public String getPostalCode() {
+        return postalCode;
     }
 
-    public void setZipCode(String zipCode) {
-        this.zipCode = zipCode;
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
     }
 
     public User getUser() {

@@ -14,7 +14,7 @@ public class Admin {
     @Column(nullable = false)
     private String adminFirstName;
     @Column(nullable = false)
-    private String userLastName;
+    private String adminLastName;
     @Column(nullable = false)
     private long aadharCardNumber;
     @Column(nullable = false)
@@ -111,12 +111,12 @@ public class Admin {
         this.adminFirstName = adminFirstName;
     }
 
-    public String getUserLastName() {
-        return userLastName;
+    public String getAdminLastName() {
+        return adminLastName;
     }
 
-    public void setUserLastName(String userLastName) {
-        this.userLastName = userLastName;
+    public void setAdminLastName(String adminLastName) {
+        this.adminLastName = adminLastName;
     }
 
     public long getAadharCardNumber() {

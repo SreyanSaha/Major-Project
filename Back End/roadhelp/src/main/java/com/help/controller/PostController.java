@@ -37,7 +37,7 @@ public class PostController {
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader,username))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         post.setUser(userService.getUserByAuthId(userAuthDataService.getAuthId(username)));
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(post));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(post,username));
     }
 
     @GetMapping("/nearby")

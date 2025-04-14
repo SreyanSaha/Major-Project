@@ -1,17 +1,14 @@
 package com.help.service;
 
-import com.help.model.Post;
-import com.help.model.PostComment;
-import com.help.model.PostCommentLog;
-import com.help.model.PostLog;
-import com.help.repository.PostCommentLogRepository;
-import com.help.repository.PostCommentRepository;
-import com.help.repository.PostLogRepository;
-import com.help.repository.PostRepository;
+import com.help.model.*;
+import com.help.repository.*;
 import com.help.validation.PostValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -21,18 +18,26 @@ public class PostService {
     private final PostCommentRepository postCommentRepository;
     private final PostCommentLogRepository postCommentLogRepository;
     private final PostValidation postValidation;
+    private final UserRepository userRepository;
 
     @Autowired
-    public PostService(PostRepository postRepository, PostLogRepository postLogRepository, PostCommentRepository postCommentRepository, PostCommentLogRepository postCommentLogRepository, PostValidation postValidation) {
+    public PostService(PostRepository postRepository, PostLogRepository postLogRepository, PostCommentRepository postCommentRepository, PostCommentLogRepository postCommentLogRepository, PostValidation postValidation, UserRepository userRepository) {
         this.postRepository = postRepository;
         this.postLogRepository = postLogRepository;
         this.postCommentRepository = postCommentRepository;
         this.postCommentLogRepository = postCommentLogRepository;
         this.postValidation = postValidation;
+        this.userRepository = userRepository;
     }
 
-    public Post createPost(Post post) {
-        return postRepository.save(post);
+    public Map<String, Object> createPost(Post post, String username) {
+        String msg=postValidation.isValidPostDetails(post);
+        if(!msg.equals("Validated"))return (Map<String, Object>) new HashMap<String, Object>().put("msg", msg);
+        User user=userRepository.findByUsername(username);
+        post.setAuthorProfileName(user.getUserFirstName()+" "+user.getUserLastName());
+        post.setAuthorProfileImagePath(user.getProfileImagePath());
+        user=null;
+        return (Map<String, Object>) new HashMap<String, Object>().put("post", postRepository.save(post));
     }
 
     public String getPostLocation(int postId) {
