@@ -5,7 +5,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class PostValidation {
     public String isValidPostDetails(Post post){
-        return null;
+        if(!isValidDigits(post.getZipCode(), 6))
+            return "Zip code is invalid";
+        return "validated";
     }
 
     private boolean isValidPhoneNumber(String phoneNumber){

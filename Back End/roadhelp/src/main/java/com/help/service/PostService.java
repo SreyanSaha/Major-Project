@@ -8,6 +8,7 @@ import com.help.repository.PostCommentLogRepository;
 import com.help.repository.PostCommentRepository;
 import com.help.repository.PostLogRepository;
 import com.help.repository.PostRepository;
+import com.help.validation.PostValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -19,13 +20,15 @@ public class PostService {
     private final PostLogRepository postLogRepository;
     private final PostCommentRepository postCommentRepository;
     private final PostCommentLogRepository postCommentLogRepository;
+    private final PostValidation postValidation;
 
     @Autowired
-    public PostService(PostRepository postRepository, PostLogRepository postLogRepository, PostCommentRepository postCommentRepository, PostCommentLogRepository postCommentLogRepository) {
+    public PostService(PostRepository postRepository, PostLogRepository postLogRepository, PostCommentRepository postCommentRepository, PostCommentLogRepository postCommentLogRepository, PostValidation postValidation) {
         this.postRepository = postRepository;
         this.postLogRepository = postLogRepository;
         this.postCommentRepository = postCommentRepository;
         this.postCommentLogRepository = postCommentLogRepository;
+        this.postValidation = postValidation;
     }
 
     public Post createPost(Post post) {
