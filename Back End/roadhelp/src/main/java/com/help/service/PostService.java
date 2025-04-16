@@ -168,6 +168,6 @@ public class PostService {
     }
 
     public void deletePost(int postId){
-
+        postRepository.deleteById(postId);
     }
 }

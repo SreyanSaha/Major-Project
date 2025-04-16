@@ -3,16 +3,15 @@ package com.help.controller;
 import com.help.jwt.service.CustomUserDetailsService;
 import com.help.jwt.service.JwtService;
 import com.help.jwt.service.UserAuthDataService;
+import com.help.model.EmergencyPost;
 import com.help.model.Post;
 import com.help.model.PostComment;
+import com.help.service.EmergencyPostService;
 import com.help.service.PostService;
 import com.help.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,18 +22,21 @@ public class PostController {
     private final CustomUserDetailsService customUserDetailsService;
     private final UserService userService;
     private final UserAuthDataService userAuthDataService;
+    private final EmergencyPostService emergencyPostService;
 
     @Autowired
-    public PostController(PostService postService, JwtService jwtService, CustomUserDetailsService customUserDetailsService, UserService userService, UserAuthDataService userAuthDataService) {
+    public PostController(PostService postService, JwtService jwtService, CustomUserDetailsService customUserDetailsService,
+                          UserService userService, UserAuthDataService userAuthDataService, EmergencyPostService emergencyPostService) {
         this.postService = postService;
         this.jwtService = jwtService;
         this.customUserDetailsService = customUserDetailsService;
         this.userService = userService;
         this.userAuthDataService = userAuthDataService;
+        this.emergencyPostService = emergencyPostService;
     }
-    @PostMapping("/createPost")
-    public ResponseEntity<?> reportIssue(@RequestBody Post post, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
-        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader,username))
+    @PostMapping("/create")
+    public ResponseEntity<?> createPost(@RequestBody Post post, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
+        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         post.setUser(userService.getUserByAuthId(userAuthDataService.getAuthId(username)));
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(post,username));
@@ -52,10 +54,10 @@ public class PostController {
     @PostMapping("/upVote/{postId}")
     public ResponseEntity<?> upVote(@PathVariable int postId, @RequestHeader("Authorization") String tokenHeader,
                                     @RequestHeader("Username") String username) {
-        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),username))
+        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         postService.upVotePost(postId, userService.getUserByAuthId(userAuthDataService.getAuthId(username)).getUserId());
-        return ResponseEntity.ok().body("upVoted");
+        return ResponseEntity.ok().body("Up Voted");
     }
 
     @PostMapping("/downVote/{postId}")
@@ -64,7 +66,7 @@ public class PostController {
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         postService.downVotePost(postId, userService.getUserByAuthId(userAuthDataService.getAuthId(username)).getUserId());
-        return ResponseEntity.ok().body("downVoted");
+        return ResponseEntity.ok().body("Down Voted");
     }
 
     @PostMapping("/comment/{postId}")
@@ -75,13 +77,13 @@ public class PostController {
         return ResponseEntity.ok().body(postService.addComment(postId, comment));
     }
 
-    @PostMapping("/comment/upvVote/{commentId}")
+    @PostMapping("/comment/upVote/{commentId}")
     public ResponseEntity<?> upVoteComment(@PathVariable int commentId, @RequestHeader("Authorization") String tokenHeader,
                                            @RequestHeader("Username") String username) {
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         postService.upVoteComment(commentId, userService.getUserByAuthId(userAuthDataService.getAuthId(username)).getUserId());
-        return ResponseEntity.ok().body("commentUpVoted");
+        return ResponseEntity.ok().body("Comment Up Voted");
     }
 
     @PostMapping("/comment/downVote/{commentId}")
@@ -90,7 +92,7 @@ public class PostController {
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         postService.downVoteComment(commentId, userService.getUserByAuthId(userAuthDataService.getAuthId(username)).getUserId());
-        return ResponseEntity.ok().body("commentUpVoted");
+        return ResponseEntity.ok().body("Comment Up Voted");
     }
 
     @DeleteMapping("/delete/{postId}")
@@ -99,6 +101,23 @@ public class PostController {
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         postService.deletePost(postId);
-        return ResponseEntity.ok().body("PostDeleted");
+        return ResponseEntity.ok().body("Post Deleted");
+    }
+
+    @PostMapping("emergency/create")
+    public ResponseEntity<?> createEmergencyPost(@RequestBody EmergencyPost emergencyPost, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
+        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
+        emergencyPost.setUser(userService.getUserByAuthId(userAuthDataService.getAuthId(username)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(emergencyPostService.createEmergencyPost(emergencyPost,username));
+    }
+
+    @DeleteMapping("emergency/delete/{postId}")
+    public ResponseEntity<?> deleteEmergencyPost(@PathVariable int postId, @RequestHeader("Authorization") String tokenHeader,
+                                                 @RequestHeader("Username") String username){
+        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
+        emergencyPostService.deletePost(postId);
+        return ResponseEntity.ok().body("Emergency Post Deleted");
     }
 }
