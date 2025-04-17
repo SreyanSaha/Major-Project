@@ -1,5 +1,6 @@
 package com.help.controller;
 
+import com.help.dto.PostStatusWrapper;
 import com.help.jwt.service.CustomUserDetailsService;
 import com.help.jwt.service.JwtService;
 import com.help.jwt.service.UserAuthDataService;
@@ -10,10 +11,7 @@ import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin")
@@ -44,4 +42,22 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         return ResponseEntity.ok().body(adminService.getAdminProfile(username));
     }
+
+    @PostMapping("/update/post/status")
+    public ResponseEntity<?> updatePostStatus(@RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username,
+                                              @RequestBody PostStatusWrapper postStatusWrapper){
+        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
+        return ResponseEntity.ok().body(adminService.updatePostStatus(postStatusWrapper));
+    }
+
+    @PostMapping("/delete/post/{postId}")
+    public ResponseEntity<?> deletePost(@RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username,
+                                        @PathVariable int postId){
+        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
+        return ResponseEntity.ok().body(adminService.deletePost(postId));
+    }
+
+
 }

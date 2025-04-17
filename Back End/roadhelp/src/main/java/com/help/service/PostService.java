@@ -5,7 +5,6 @@ import com.help.repository.*;
 import com.help.validation.PostValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +31,18 @@ public class PostService {
 
     public Map<String, Object> createPost(Post post, String username) {
         String msg=postValidation.isValidPostDetails(post);
-        if(!msg.equals("Validated"))return (Map<String, Object>) new HashMap<String, Object>().put("msg", msg);
+        if(!msg.equals("Validated")){
+            Map<String, Object> response=new HashMap<String, Object>();
+            response.put("msg", msg);
+            return response;
+        }
         User user=userRepository.findByUsername(username);
         post.setAuthorProfileName(user.getUserFirstName()+" "+user.getUserLastName());
         post.setAuthorProfileImagePath(user.getProfileImagePath());
         user=null;
-        return (Map<String, Object>) new HashMap<String, Object>().put("post", postRepository.save(post));
+        Map<String, Object> response=new HashMap<String, Object>();
+        response.put("post", postRepository.save(post));
+        return response;
     }
 
     public String getPostLocation(int postId) {

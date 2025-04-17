@@ -33,6 +33,7 @@ public class Post {
     private String country;
     @Column(nullable = false)
     private String postalCode;
+    private int postReports;
     private short postStatus;// -1 -> under review, 0 -> work in progress, 1 -> work done
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PostComment> postCommentList;
@@ -47,6 +48,7 @@ public class Post {
         this.postUploadDateTime = LocalDateTime.now();
         this.upVoteCount=this.commentCount=this.downVoteCount=0;
         this.postStatus=(short)-1;
+        this.postReports=0;
     }
 
     public Double getLatitude() {
@@ -279,5 +281,13 @@ public class Post {
 
     public void setPostStatus(short postStatus) {
         this.postStatus = postStatus;
+    }
+
+    public int getPostReports() {
+        return postReports;
+    }
+
+    public void setPostReports(int postReports) {
+        this.postReports = postReports;
     }
 }
