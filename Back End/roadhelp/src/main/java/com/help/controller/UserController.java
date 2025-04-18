@@ -24,42 +24,43 @@ public class UserController {
         this.customUserDetailsService = customUserDetailsService;
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<?> getUser(@PathVariable int userId, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         return ResponseEntity.ok().body(userService.getUserById(userId));
     }
 
-    @GetMapping("/user/{name}")
-    public ResponseEntity<?> getAllUserByName(@PathVariable String name, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
+    @GetMapping("/search/name")// /search/name?name=search_string
+    public ResponseEntity<?> getAllUserByName(@RequestParam("name") String name, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         return ResponseEntity.ok().body(userService.getUserByName(name));
     }
 
-    @GetMapping("/user/{fname}/{lname}")
-    public ResponseEntity<?> getAllUserByFirstAndLastName(@PathVariable String fname, @PathVariable String lname, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
+    @GetMapping("/search/fullname")// /search/fullname?fname=search_string&lname=search_string
+    public ResponseEntity<?> getAllUserByFirstAndLastName(@RequestParam("fname") String fname, @RequestParam("lname") String lname,
+                                                          @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         return ResponseEntity.ok().body(userService.getUserByFirstNameLastName(fname, lname));
     }
 
-    @PutMapping("/updateUser")
+    @PutMapping("/update/user")
     public ResponseEntity<?> updateUser(@RequestBody User user, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username) {
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         return ResponseEntity.ok().body(userService.updateUser(username, user));
     }
 
-    @GetMapping("/getUser")
+    @GetMapping("/profile")
     public ResponseEntity<?> getUserProfile(@RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username) {
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         return ResponseEntity.ok().body(userService.getUserByUsername(username));
     }
 
-    @DeleteMapping("/deleteUser")
+    @DeleteMapping("/delete/user")
     public ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username) {
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");

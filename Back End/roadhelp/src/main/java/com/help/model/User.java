@@ -43,6 +43,8 @@ public class User {
     private List<Post> postList;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<EmergencyPost> emergencyPostList;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PostComment> comments;
     @OneToOne
     @JoinColumn(name = "auth_id", referencedColumnName = "authId")
     private UserAuthData authData;
@@ -63,6 +65,22 @@ public class User {
         this.validRepostPoints=0l;
         this.userStatus=1;// 0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
         this.signupDateTime=LocalDateTime.now();
+    }
+
+    public List<EmergencyPost> getEmergencyPostList() {
+        return emergencyPostList;
+    }
+
+    public void setEmergencyPostList(List<EmergencyPost> emergencyPostList) {
+        this.emergencyPostList = emergencyPostList;
+    }
+
+    public List<PostComment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<PostComment> comments) {
+        this.comments = comments;
     }
 
     public Double getLatitude() {

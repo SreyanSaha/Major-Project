@@ -19,6 +19,10 @@ public class PostValidation {
         if(!isValidNumber(id))return "Invalid post id.";
         return "Validated";
     }
+    public String isValidTitle(String title){
+        if(!isValidAlphabetes(title))return "Invalid post title.";
+        return "Validated";
+    }
     private boolean isValidNumber(Integer number){
         return number!=null && String.valueOf(number).matches("^\\d+$");
     }

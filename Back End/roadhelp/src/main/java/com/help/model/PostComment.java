@@ -11,14 +11,15 @@ public class PostComment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int postCommentId;
     @Column(nullable = false)
-    private int userId;
-    @Column(nullable = false)
     private String authorProfileName, authorProfileImagePath;
     private LocalDateTime commentDateTime;
     @Column(nullable = false)
     private String commentDescription;
     private int likeCount, disLikeCount;
     private int replyCount;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
     @ManyToOne
     @JoinColumn(name = "parent_comment_id")
     private PostComment parentComment;
@@ -34,6 +35,14 @@ public class PostComment {
     protected void onCreate(){
         this.commentDateTime = LocalDateTime.now();
         this.likeCount=this.replyCount=this.disLikeCount=0;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Post getPost() {
@@ -66,14 +75,6 @@ public class PostComment {
 
     public void setPostCommentId(int postCommentId) {
         this.postCommentId = postCommentId;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
     }
 
     public String getAuthorProfileName() {

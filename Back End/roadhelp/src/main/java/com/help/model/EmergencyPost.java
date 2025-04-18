@@ -1,6 +1,8 @@
 package com.help.model;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 public class EmergencyPost {
     @Id
@@ -10,6 +12,8 @@ public class EmergencyPost {
     private String authorProfileName, authorProfileImagePath;
     private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;
     private String audioFilePath;
+    @Column(nullable = false)
+    private LocalDateTime emergencyPostUploadDateTime;
     @Column(nullable = false)
     private Double latitude;
     @Column(nullable = false)
@@ -33,7 +37,16 @@ public class EmergencyPost {
 
     @PrePersist
     protected void onCreate(){
+        this.emergencyPostUploadDateTime=LocalDateTime.now();
         this.emergencyPostStatus=(short)-1;
+    }
+
+    public LocalDateTime getEmergencyPostUploadDateTime() {
+        return emergencyPostUploadDateTime;
+    }
+
+    public void setEmergencyPostUploadDateTime(LocalDateTime emergencyPostUploadDateTime) {
+        this.emergencyPostUploadDateTime = emergencyPostUploadDateTime;
     }
 
     public int getEmergencyPostId() {

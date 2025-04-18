@@ -20,7 +20,8 @@ public class PostService {
     private final UserRepository userRepository;
 
     @Autowired
-    public PostService(PostRepository postRepository, PostLogRepository postLogRepository, PostCommentRepository postCommentRepository, PostCommentLogRepository postCommentLogRepository, PostValidation postValidation, UserRepository userRepository) {
+    public PostService(PostRepository postRepository, PostLogRepository postLogRepository, PostCommentRepository postCommentRepository,
+                       PostCommentLogRepository postCommentLogRepository, PostValidation postValidation, UserRepository userRepository) {
         this.postRepository = postRepository;
         this.postLogRepository = postLogRepository;
         this.postCommentRepository = postCommentRepository;
@@ -172,7 +173,19 @@ public class PostService {
         }
     }
 
-    public void deletePost(int postId){
+    public boolean deletePost(int postId, String username){
+        if(userRepository.findByUsername(username).getUserId()!=postRepository.findById(postId).get().getUser().getUserId())return false;
         postRepository.deleteById(postId);
+        return true;
+    }
+
+    public Post findPostByTitle(String searchTitle) {
+        return postRepository.findPostByPostTitle(searchTitle);
+    }
+
+    public boolean deleteComment(int commentId, String username) {
+        if(userRepository.findByUsername(username).getUserId()!=postCommentRepository.findById(commentId).get().getUser().getUserId())return false;
+        postCommentRepository.deleteById(commentId);
+        return true;
     }
 }

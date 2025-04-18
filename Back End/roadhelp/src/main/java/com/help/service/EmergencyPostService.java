@@ -6,6 +6,7 @@ import com.help.repository.EmergencyPostRepository;
 import com.help.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class EmergencyPostService {
@@ -24,7 +25,13 @@ public class EmergencyPostService {
         return emergencyPostRepository.save(emergencyPost);
     }
 
-    public void deletePost(int postId) {
+    public boolean deletePost(int postId, String username) {
+        if(emergencyPostRepository.findById(postId).get().getUser().getUserId()!=userRepository.findByUsername(username).getUserId())return false;
         emergencyPostRepository.deleteById(postId);
+        return true;
+    }
+
+    public List<EmergencyPost> getAllEmergencyPosts() {
+           return emergencyPostRepository.findAll();
     }
 }
