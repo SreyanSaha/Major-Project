@@ -12,6 +12,7 @@ public class EmergencyPost {
     private String authorProfileName, authorProfileImagePath;
     private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;
     private String audioFilePath;
+    private String emergencyPostTitle, emergencyPostDescription;
     @Column(nullable = false)
     private LocalDateTime emergencyPostUploadDateTime;
     @Column(nullable = false)
@@ -39,6 +40,22 @@ public class EmergencyPost {
     protected void onCreate(){
         this.emergencyPostUploadDateTime=LocalDateTime.now();
         this.emergencyPostStatus=(short)-1;
+    }
+
+    public String getEmergencyPostTitle() {
+        return emergencyPostTitle;
+    }
+
+    public void setEmergencyPostTitle(String emergencyPostTitle) {
+        this.emergencyPostTitle = emergencyPostTitle;
+    }
+
+    public String getEmergencyPostDescription() {
+        return emergencyPostDescription;
+    }
+
+    public void setEmergencyPostDescription(String emergencyPostDescription) {
+        this.emergencyPostDescription = emergencyPostDescription;
     }
 
     public LocalDateTime getEmergencyPostUploadDateTime() {

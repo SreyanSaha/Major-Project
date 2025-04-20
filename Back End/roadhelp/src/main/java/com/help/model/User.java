@@ -45,6 +45,8 @@ public class User {
     private List<EmergencyPost> emergencyPostList;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PostComment> comments;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Campaign> campaigns;
     @OneToOne
     @JoinColumn(name = "auth_id", referencedColumnName = "authId")
     private UserAuthData authData;

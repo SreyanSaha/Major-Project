@@ -33,6 +33,14 @@ public class EmergencyPostService {
     }
 
     public List<EmergencyPost> getAllEmergencyPosts() {
-           return emergencyPostRepository.findAll();
+           return emergencyPostRepository.findAllEmergencyPostForHome();
+    }
+
+    public List<EmergencyPost> searchEmergencyPost(String search) {
+        return emergencyPostRepository.searchAllEmergencyPost(search);
+    }
+
+    public List<EmergencyPost> getLimitedEmergencyPosts() {
+        return emergencyPostRepository.findLimitedEmergencyPost();
     }
 }

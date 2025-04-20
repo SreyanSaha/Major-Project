@@ -110,14 +110,14 @@ public class PostController {
         return ResponseEntity.ok().body(postService.deleteComment(commentId, jwtService.extractUsername(tokenHeader)));
     }
 
-    @PostMapping("emergency/post/create")
+    @PostMapping("create/emergency/post")
     public ResponseEntity<?> createEmergencyPost(@RequestBody EmergencyPost emergencyPost, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         return ResponseEntity.status(HttpStatus.CREATED).body(emergencyPostService.createEmergencyPost(emergencyPost, username));
     }
 
-    @DeleteMapping("emergency/post/delete/{postId}")
+    @DeleteMapping("delete/emergency/post/{postId}")
     public ResponseEntity<?> deleteEmergencyPost(@PathVariable int postId, @RequestHeader("Authorization") String tokenHeader,
                                                  @RequestHeader("Username") String username){
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
@@ -126,10 +126,18 @@ public class PostController {
     }
 
     @GetMapping("/search/post")
-    public ResponseEntity<?> searchPostByTitle(@RequestParam("search") String searchTitle, @RequestHeader("Authorization") String tokenHeader,
+    public ResponseEntity<?> searchPostByTitle(@RequestParam("search") String search, @RequestHeader("Authorization") String tokenHeader,
                                                @RequestHeader("Username") String username){
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
-        return ResponseEntity.ok().body(postService.findPostByTitle(searchTitle));
+        return ResponseEntity.ok().body(postService.findPostByTitle(search));
+    }
+
+    @GetMapping("/search/emergency/post")
+    public ResponseEntity<?> searchEmergencyPost(@RequestParam("search") String search, @RequestHeader("Authorization") String tokenHeader,
+                                               @RequestHeader("Username") String username){
+        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
+        return ResponseEntity.ok().body(emergencyPostService.searchEmergencyPost(search));
     }
 }

@@ -31,10 +31,27 @@ public class HomeController {
         this.postService = postService;
     }
 
-    @GetMapping("post/emergency/posts")
+    @GetMapping("posts")
+    public ResponseEntity<?> getAllPosts(){
+        return ResponseEntity.ok().body(postService.getLimitedPosts());
+    }
+
+    @GetMapping("emergency/posts")
+    public ResponseEntity<?> getAllEmergencyPosts(){
+        return ResponseEntity.ok().body(emergencyPostService.getLimitedEmergencyPosts());
+    }
+
+    @GetMapping("emergency/posts/all")
     public ResponseEntity<?> getAllEmergencyPosts(@RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
         return ResponseEntity.status(HttpStatus.CREATED).body(emergencyPostService.getAllEmergencyPosts());
+    }
+
+    @GetMapping("posts/all")
+    public ResponseEntity<?> getAllPosts(@RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
+        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.getAllPosts());
     }
 }

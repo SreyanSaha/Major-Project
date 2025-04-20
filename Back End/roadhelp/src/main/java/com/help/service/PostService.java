@@ -180,13 +180,21 @@ public class PostService {
         return true;
     }
 
-    public Post findPostByTitle(String searchTitle) {
-        return postRepository.findPostByPostTitle(searchTitle);
+    public Post findPostByTitle(String search) {
+        return postRepository.findPostByPostTitle(search);
     }
 
     public boolean deleteComment(int commentId, String username) {
         if(userRepository.findByUsername(username).getUserId()!=postCommentRepository.findById(commentId).get().getUser().getUserId())return false;
         postCommentRepository.deleteById(commentId);
         return true;
+    }
+
+    public List<Post> getLimitedPosts() {
+        return postRepository.findLimitedPosts();
+    }
+
+    public List<Post> getAllPosts() {
+       return postRepository.findAllPost();
     }
 }
