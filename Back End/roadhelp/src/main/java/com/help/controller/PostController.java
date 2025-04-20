@@ -38,7 +38,6 @@ public class PostController {
     public ResponseEntity<?> createPost(@RequestBody Post post, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
-        post.setUser(userService.getUserByAuthId(userAuthDataService.getAuthId(username)));
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(post,username));
     }
 
@@ -115,7 +114,6 @@ public class PostController {
     public ResponseEntity<?> createEmergencyPost(@RequestBody EmergencyPost emergencyPost, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
-        emergencyPost.setUser(userService.getUserByAuthId(userAuthDataService.getAuthId(username)));
         return ResponseEntity.status(HttpStatus.CREATED).body(emergencyPostService.createEmergencyPost(emergencyPost, username));
     }
 

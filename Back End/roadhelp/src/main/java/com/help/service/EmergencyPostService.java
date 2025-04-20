@@ -20,6 +20,7 @@ public class EmergencyPostService {
     }
     public EmergencyPost createEmergencyPost(EmergencyPost emergencyPost, String username) {
         User user=userRepository.findByUsername(username);
+        emergencyPost.setUser(user);
         emergencyPost.setAuthorProfileName(user.getUserFirstName()+" "+user.getUserLastName());
         emergencyPost.setAuthorProfileImagePath(user.getProfileImagePath());
         return emergencyPostRepository.save(emergencyPost);

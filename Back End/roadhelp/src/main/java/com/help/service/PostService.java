@@ -38,6 +38,7 @@ public class PostService {
             return response;
         }
         User user=userRepository.findByUsername(username);
+        post.setUser(user);
         post.setAuthorProfileName(user.getUserFirstName()+" "+user.getUserLastName());
         post.setAuthorProfileImagePath(user.getProfileImagePath());
         user=null;
