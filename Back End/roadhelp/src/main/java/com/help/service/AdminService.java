@@ -29,6 +29,7 @@ public class AdminService {
 
     public boolean sendRegistrationEmailOTP(String email) {
         if(!adminValidation.isValidEmail(email))return false;
+        
         return true;
     }
 
