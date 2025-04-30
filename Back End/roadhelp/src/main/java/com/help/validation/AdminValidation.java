@@ -22,23 +22,23 @@ public class AdminValidation {
         return "Validated.";
     }
 
-    private boolean isValidEmail(String email) {
+    public boolean isValidEmail(String email) {
         return email != null && EMAIL_PATTERN.matcher(email).matches();
     }
 
-    private boolean isValidPhone(String phone) {
+    public boolean isValidPhone(String phone) {
         return phone != null && PHONE_PATTERN.matcher(phone).matches();
     }
 
-    private boolean isValidName(String name) {
+    public boolean isValidName(String name) {
         return name != null && NAME_PATTERN.matcher(name).matches();
     }
 
-    private boolean isValidAadhar(String aadhar) {
+    public boolean isValidAadhar(String aadhar) {
         return aadhar != null && AADHAR_PATTERN.matcher(aadhar).matches();
     }
 
-    private boolean isValidZipCode(String zip) {
+    public boolean isValidZipCode(String zip) {
         return zip != null && ZIP_PATTERN.matcher(zip).matches();
     }
 }

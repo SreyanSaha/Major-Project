@@ -3,7 +3,6 @@ package com.help.service;
 import com.help.dto.PostStatusWrapper;
 import com.help.model.Admin;
 import com.help.model.Post;
-import com.help.model.UserAuthData;
 import com.help.repository.AdminRepository;
 import com.help.repository.PostRepository;
 import com.help.repository.UserAuthDataRepository;
@@ -26,6 +25,11 @@ public class AdminService {
         this.userAuthDataRepository = userAuthDataRepository;
         this.adminValidation = adminValidation;
         this.postRepository = postRepository;
+    }
+
+    public boolean sendRegistrationEmailOTP(String email) {
+        if(!adminValidation.isValidEmail(email))return false;
+        return true;
     }
 
     @Transactional

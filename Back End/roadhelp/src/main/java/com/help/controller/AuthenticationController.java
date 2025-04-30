@@ -42,6 +42,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(authService.authenticate(request));
     }
 
+    @PostMapping("/admin/email/otp")
+    public boolean getAdminEmailOTP(@RequestBody String email){
+        return adminService.sendRegistrationEmailOTP(email);
+    }
+
     @PostMapping("/admin/register")
     public ResponseEntity<?> registerAdmin(@RequestBody RegisterWrapper wrapper) {
         if(authService.register(wrapper.getRegisterRequest())) {
