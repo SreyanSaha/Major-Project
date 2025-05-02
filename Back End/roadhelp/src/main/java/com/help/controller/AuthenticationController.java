@@ -1,18 +1,17 @@
 package com.help.controller;
 
+import com.help.dto.OtpForVerification;
 import com.help.jwt.dto.AuthRequest;
 import com.help.jwt.dto.AuthResponse;
 import com.help.jwt.dto.RegisterWrapper;
 import com.help.jwt.service.AuthService;
+import com.help.model.OtpDetails;
 import com.help.service.AdminService;
 import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -26,6 +25,16 @@ public class AuthenticationController {
         this.authService = authService;
         this.userService = userService;
         this.adminService = adminService;
+    }
+
+    @PostMapping("/user/email/otp")
+    public boolean getUserEmailOTP(@RequestBody String email){
+        return true;
+    }
+
+    @PostMapping("/user/otp/verify")
+    public boolean verifyUserEmailOTP(@RequestBody OtpForVerification otpForVerification){
+        return false;
     }
 
     @PostMapping("/user/register")
@@ -45,6 +54,11 @@ public class AuthenticationController {
     @PostMapping("/admin/email/otp")
     public boolean getAdminEmailOTP(@RequestBody String email){
         return adminService.sendRegistrationEmailOTP(email);
+    }
+
+    @PostMapping("/admin/otp/verify")
+    public int verifyAdminEmailOTP(@RequestBody OtpForVerification otpForVerification){// -1 for Expired OTP, -2 for Invalid OTP, 0 for Valid OTP
+        return adminService.verifyRegistrationOTP(otpForVerification);
     }
 
     @PostMapping("/admin/register")

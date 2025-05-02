@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 @Component
 public class AdminValidation {
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^[6-9]\\d{9}$");
     private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z]{2,50}$");
     private static final Pattern AADHAR_PATTERN = Pattern.compile("^\\d{12}$");
