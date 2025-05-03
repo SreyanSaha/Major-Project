@@ -29,12 +29,12 @@ public class AuthenticationController {
 
     @PostMapping("/user/email/otp")
     public boolean getUserEmailOTP(@RequestBody String email){
-        return true;
+        return userService.sendRegistrationEmailOTP(email);
     }
 
     @PostMapping("/user/otp/verify")
-    public boolean verifyUserEmailOTP(@RequestBody OtpForVerification otpForVerification){
-        return false;
+    public int verifyUserEmailOTP(@RequestBody OtpForVerification otpForVerification){// -1 for Expired OTP, -2 for Invalid OTP, 0 for Valid OTP
+        return userService.verifyRegistrationOTP(otpForVerification);
     }
 
     @PostMapping("/user/register")

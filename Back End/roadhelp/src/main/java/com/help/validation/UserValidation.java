@@ -1,24 +1,26 @@
 package com.help.validation;
 
-import com.help.model.Admin;
+import com.help.model.User;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
+
 import java.util.regex.Pattern;
 
 @Component
-public class AdminValidation {
+public class UserValidation {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^[6-9]\\d{9}$");
     private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z]{2,50}$");
     private static final Pattern AADHAR_PATTERN = Pattern.compile("^\\d{12}$");
     private static final Pattern ZIP_PATTERN = Pattern.compile("^\\d{5,6}$");
 
-    public String isValidAdminDetails(Admin admin) {
-        if (!isValidName(admin.getAdminFirstName())) return "Admin first name is invalid.";
-        else if(!isValidName(admin.getAdminLastName())) return "Admin last name is invalid.";
-        else if(!isValidEmail(admin.getAdminEmailId())) return "Admin email is invalid.";
-        else if(!isValidPhone(String.valueOf(admin.getAdminPhoneNumber()))) return "Admin phone number is invalid.";
-        else if(!isValidAadhar(String.valueOf(admin.getAadharCardNumber())))return "Admin aadhar number is invalid.";
-        else if(!isValidZipCode(admin.getZipCode())) return "Admin zip code is invalid.";
+    public String isValidUserDetails(User user) {
+        if (!isValidName(user.getUserFirstName())) return "User first name is invalid.";
+        else if(!isValidName(user.getUserLastName())) return "User last name is invalid.";
+        else if(!isValidEmail(user.getUserEmailId())) return "User email is invalid.";
+        else if(!isValidPhone(String.valueOf(user.getUserPhoneNumber()))) return "User phone number is invalid.";
+        else if(!isValidAadhar(String.valueOf(user.getAadharCardNumber())))return "User aadhar number is invalid.";
+        else if(!isValidZipCode(user.getZipCode())) return "User zip code is invalid.";
         return "Validated.";
     }
 
@@ -43,5 +45,3 @@ public class AdminValidation {
         return zip != null && ZIP_PATTERN.matcher(zip).matches();
     }
 }
-
-

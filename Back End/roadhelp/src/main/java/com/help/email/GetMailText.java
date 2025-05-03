@@ -26,7 +26,7 @@ public class GetMailText {
 
            🔒 OTP: {}
 
-           This OTP is valid for 10 minutes.
+           This OTP is valid for 1 minute.
            Keep this OTP confidential to ensure the security of your admin account.
            If you did not initiate this request, please report to the System Administrator immediately.
 

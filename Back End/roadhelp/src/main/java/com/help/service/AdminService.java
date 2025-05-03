@@ -28,7 +28,7 @@ public class AdminService {
     private final AdminValidation adminValidation;
     private final PostRepository postRepository;
     private final EmailService emailService;
-    private Map<String, OtpDetails> otpStorage = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, OtpDetails> otpStorage = new ConcurrentHashMap<>();
 
     @Autowired
     public AdminService(AdminRepository adminRepository, UserAuthDataRepository userAuthDataRepository,
