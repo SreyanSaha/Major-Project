@@ -32,18 +32,19 @@ public class UserService {
     }
 
     public boolean sendRegistrationEmailOTP(String email){
-        if(!userValidation.isValidEmail(email))return false;
+        String updatedEmail=email.replace("\""," ").trim();
+        if(!userValidation.isValidEmail(updatedEmail))return false;
         OtpDetails otpDetails=new OtpDetails();
-        this.otpStorage.put(email,otpDetails);
-        System.out.println(otpStorage.get(email).getOtp());
-        return emailService.sendRegistrationEmailOTP(email, GetMailText.userMailSubjectOTP,GetMailText.userMailTextOTP.replace("{}", otpDetails.getOtp()));
+        this.otpStorage.put(updatedEmail,otpDetails);
+        return emailService.sendRegistrationEmailOTP(updatedEmail, GetMailText.userMailSubjectOTP,GetMailText.userMailTextOTP.replace("{}", otpDetails.getOtp()));
     }
 
     public int verifyRegistrationOTP(OtpForVerification otpForVerification){
-        if(this.otpStorage.get(otpForVerification.getEmail())==null) System.out.println(this.otpStorage.keySet().toArray()[0]);
-        if(!this.otpStorage.get(otpForVerification.getEmail().trim()).getGeneratedAt().plusMinutes(1).isAfter(LocalDateTime.now())){this.otpStorage.remove(otpForVerification.getEmail());return -1;}
-        if(this.otpStorage.get(otpForVerification.getEmail().trim()).getOtp().compareTo(otpForVerification.getOtp()) != 0) return -2;
-        this.otpStorage.remove(otpForVerification.getEmail().trim());
+        otpForVerification.setEmail(otpForVerification.getEmail().replace("\""," ").trim());
+        System.out.println(otpForVerification.getEmail());
+        if(!this.otpStorage.get(otpForVerification.getEmail()).getGeneratedAt().plusMinutes(1).isAfter(LocalDateTime.now())){this.otpStorage.remove(otpForVerification.getEmail());return -1;}
+        if(this.otpStorage.get(otpForVerification.getEmail()).getOtp().compareTo(otpForVerification.getOtp()) != 0) return -2;
+        this.otpStorage.remove(otpForVerification.getEmail());
         return 0;
     }
 

@@ -41,16 +41,18 @@ public class AdminService {
     }
 
     public boolean sendRegistrationEmailOTP(String email) {
-        if(!adminValidation.isValidEmail(email))return false;
+        String updatedEmail=email.replace("\""," ").trim();
+        if(!adminValidation.isValidEmail(updatedEmail))return false;
         OtpDetails otpDetails=new OtpDetails();
-        otpStorage.put(email,otpDetails);
-        return emailService.sendRegistrationEmailOTP(email,GetMailText.adminMailSubjectOTP,GetMailText.adminMailTextOTP.replace("{}", otpDetails.getOtp()));
+        this.otpStorage.put(updatedEmail,otpDetails);
+        return emailService.sendRegistrationEmailOTP(updatedEmail,GetMailText.adminMailSubjectOTP,GetMailText.adminMailTextOTP.replace("{}", otpDetails.getOtp()));
     }
 
     public int verifyRegistrationOTP(OtpForVerification otpForVerification){
-        if(!otpStorage.get(otpForVerification.getEmail()).getGeneratedAt().plusMinutes(1).isAfter(LocalDateTime.now())){otpStorage.remove(otpForVerification.getEmail());return -1;}
-        if(otpStorage.get(otpForVerification.getEmail()).getOtp().compareTo(otpForVerification.getOtp()) != 0) return -2;
-        otpStorage.remove(otpForVerification.getEmail());
+        otpForVerification.setEmail(otpForVerification.getEmail().replace("\""," ").trim());
+        if(!this.otpStorage.get(otpForVerification.getEmail()).getGeneratedAt().plusMinutes(1).isAfter(LocalDateTime.now())){this.otpStorage.remove(otpForVerification.getEmail());return -1;}
+        if(this.otpStorage.get(otpForVerification.getEmail()).getOtp().compareTo(otpForVerification.getOtp()) != 0) return -2;
+        this.otpStorage.remove(otpForVerification.getEmail());
         return 0;
     }
 
