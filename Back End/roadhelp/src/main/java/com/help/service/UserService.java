@@ -3,11 +3,13 @@ package com.help.service;
 import com.help.dto.OtpForVerification;
 import com.help.email.EmailService;
 import com.help.email.GetMailText;
+import com.help.model.AddressDetails;
 import com.help.model.OtpDetails;
 import com.help.model.User;
 import com.help.repository.UserAuthDataRepository;
 import com.help.repository.UserRepository;
 import com.help.validation.UserValidation;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -20,15 +22,17 @@ public class UserService {
     private final UserAuthDataRepository userAuthDataRepository;
     private final UserValidation userValidation;
     private final EmailService emailService;
+    private final GeoService geoService;
     private final ConcurrentHashMap<String, OtpDetails> otpStorage = new ConcurrentHashMap<String, OtpDetails>();
 
     @Autowired
     public UserService(UserRepository userRepository, UserAuthDataRepository userAuthDataRepository,
-                       UserValidation userValidation, EmailService emailService) {
+                       UserValidation userValidation, EmailService emailService, GeoService geoService) {
         this.userRepository = userRepository;
         this.userAuthDataRepository = userAuthDataRepository;
         this.userValidation=userValidation;
         this.emailService=emailService;
+        this.geoService=geoService;
     }
 
     public boolean sendRegistrationEmailOTP(String email){
@@ -48,9 +52,21 @@ public class UserService {
         return 0;
     }
 
-    public void saveUser(User user) {
+    @Transactional
+    public boolean saveUser(User user) {
+        AddressDetails addressDetails=null;
+        if(user.getStreet()==null || user.getCity()==null || user.getState()==null || user.getZipCode()==null) {
+            addressDetails=geoService.getAddressFromLatLng(user.getLatitude(),user.getLongitude());
+            if(addressDetails==null)return false;
+        }
+        user.setStreet(addressDetails.getStreet());
+        user.setCity(addressDetails.getCity());
+        user.setState(addressDetails.getState());
+        user.setZipCode(addressDetails.getZip());
         userRepository.save(user);
+        return true;
     }
+
     public User getUserByAuthId(int authId){
         return userRepository.getUserByAuthData_AuthId(authId);
     }

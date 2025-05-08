@@ -8,9 +8,14 @@ const UserSignup = (props) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [aadhaar, setAadhaar] = useState("");
+  const [phoneno, setNumber] = useState("");
   const [useLiveLocation, setUseLiveLocation] = useState(false);
-  const [location, setLocation] = useState("");
-  const [address, setAddress] = useState({ street: "", city: "", state: "", zip: "" });
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongtitude] = useState("");
+  const [address, setAddress] = useState("");// { street: "", city: "", state: "", zip: "" }
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [zip, setZip] = useState("");
   const [login, setLogin] = useState(props.status);
 
   const [otpSent, setOtpSent] = useState(false);
@@ -24,13 +29,16 @@ const UserSignup = (props) => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLocation(`Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}`);
+          setLatitude(position.coords.latitude);
+          setLongtitude(position.coords.longitude);
+          //setLocation(`Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}`);
           setUseLiveLocation(true);
+          updateMsg("Location fetched.");
         },
-        (error) => alert("Error fetching location")
+        (error) => updateMsg("Error fetching location")
       );
     } else {
-      alert("Geolocation is not supported by this browser.");
+      updateMsg("Geolocation is not supported by this browser.");
     }
   };
 
@@ -70,6 +78,48 @@ const UserSignup = (props) => {
         updateMsg("An error occurred while sending OTP email.");
         setOtpSent(false);
         setTimerActive(false);
+    }
+  };
+
+  const validatePassword = ()=>{
+    return password===confirmPassword?false:true;
+  };
+
+  const proceedForSignup = async ()=>{
+    if(validatePassword()===false){updateMsg("Passwords are not matching!");return;}
+    try{
+      const response = await axios.post("http://localhost:8080/auth/user/register",
+        {
+          registerRequest:{
+            "username":username,
+            "password":password,
+            "userTypeRole":0
+          },
+          user:{
+            "userFirstName":firstName,
+            "userLastName":lastName,
+            "aadharCardNumber":aadhaar,
+            "userEmailId":email,
+            "userPhoneNumber":phoneno,
+            "latitude":latitude,
+            "longitude":longitude,
+            "street":address,
+            "city":city,
+            "state":state,
+            "zipCode":zip
+          }
+        },
+        {
+          headers:{
+              "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===201)updateMsg("Signup successfull.");
+      else if(response.status===401)updateMsg("Signup failed.");
+    }catch(exception){
+      console.log(exception);
+      updateMsg("An error occurred while during signup process.");
     }
   };
 
@@ -289,6 +339,13 @@ const UserSignup = (props) => {
               >
                 Verify OTP
               </button>
+              {timer===0?(<button
+                type="button"
+                style={styles.button}
+                onClick={sendOtp}
+              >
+                resend OTP
+              </button>):""}
             </>
           )}
           <p style={styles.Text} onClick={() => setLogin(true)}>
@@ -359,6 +416,14 @@ const UserSignup = (props) => {
               style={styles.input}
             />
 
+            <input
+              type="text"
+              placeholder="Phone Number"
+              value={phoneno}
+              onChange={(e) => setNumber(e.target.value)}
+              style={styles.input}
+            />
+
             <div style={styles.inputRow}>
               <input
                 type="password"
@@ -392,7 +457,7 @@ const UserSignup = (props) => {
                   type="text"
                   placeholder="Street Address"
                   value={address.street}
-                  onChange={(e) => setAddress({ ...address, street: e.target.value })}
+                  onChange={(e) => setAddress(e.target.value )}
                   style={styles.input}
                 />
                 <div style={styles.inputRow}>
@@ -400,14 +465,14 @@ const UserSignup = (props) => {
                     type="text"
                     placeholder="City"
                     value={address.city}
-                    onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                    onChange={(e) => setCity(e.target.value )}
                     style={styles.input}
                   />
                   <input
                     type="text"
                     placeholder="State"
                     value={address.state}
-                    onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                    onChange={(e) => setState(e.target.value )}
                     style={styles.input}
                   />
                 </div>
@@ -415,7 +480,7 @@ const UserSignup = (props) => {
                   type="text"
                   placeholder="Zip Code"
                   value={address.zip}
-                  onChange={(e) => setAddress({ ...address, zip: e.target.value })}
+                  onChange={(e) => setZip(e.target.value )}
                   style={styles.input}
                 />
               </>
@@ -423,6 +488,7 @@ const UserSignup = (props) => {
             <button
               type="submit"
               style={styles.button}
+              onClick={proceedForSignup}
             >
               Signup
             </button>

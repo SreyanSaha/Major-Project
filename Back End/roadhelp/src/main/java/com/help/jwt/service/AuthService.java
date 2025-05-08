@@ -3,7 +3,13 @@ package com.help.jwt.service;
 import com.help.jwt.dto.AuthResponse;
 import com.help.jwt.dto.AuthRequest;
 import com.help.jwt.dto.RegisterRequest;
+import com.help.model.Admin;
+import com.help.model.User;
 import com.help.model.UserAuthData;
+import com.help.repository.UserAuthDataRepository;
+import com.help.service.AdminService;
+import com.help.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,21 +21,45 @@ public class AuthService {
     private final UserAuthDataService userAuthDataService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final UserAuthDataRepository userAuthDataRepository;
+    private final UserService userService;
+    private final AdminService adminService;
 
     @Autowired
-    public AuthService(UserAuthDataService userAuthDataService, JwtService jwtService, AuthenticationManager authenticationManager) {
+    public AuthService(UserAuthDataService userAuthDataService, JwtService jwtService, AuthenticationManager authenticationManager,
+                       UserAuthDataRepository userAuthDataRepository, UserService userService, AdminService adminService) {
         this.userAuthDataService = userAuthDataService;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.userAuthDataRepository = userAuthDataRepository;
+        this.userService = userService;
+        this.adminService = adminService;
     }
 
-    public boolean register(RegisterRequest request) {
+    @Transactional
+    public boolean register(RegisterRequest request, User user) {
+        if(userAuthDataRepository.findByUsername(request.getUsername()).isPresent()) return false;
         UserAuthData userAuthData = new UserAuthData();
         userAuthData.setUsername(request.getUsername());
         userAuthData.setPassword(request.getPassword());
         userAuthData.setUserTypeRole(request.getUserTypeRole());
         userAuthDataService.saveUser(userAuthData);
-        return true;
+       boolean response=userService.saveUser(user);
+       if(!response)throw new RuntimeException("Failed to register user.");
+       return response;
+    }
+
+    @Transactional
+    public boolean register(RegisterRequest request, Admin admin) {
+        if(userAuthDataRepository.findByUsername(request.getUsername()).isPresent()) return false;
+        UserAuthData userAuthData = new UserAuthData();
+        userAuthData.setUsername(request.getUsername());
+        userAuthData.setPassword(request.getPassword());
+        userAuthData.setUserTypeRole(request.getUserTypeRole());
+        userAuthDataService.saveUser(userAuthData);
+        boolean response=adminService.saveAdmin(admin);
+        if(!response)throw new RuntimeException("Failed to register admin.");
+        return response;
     }
 
     public AuthResponse authenticate(AuthRequest request) {

@@ -35,7 +35,6 @@ public class User {
     private String city;
     @Column(nullable = false)
     private String state;
-    @Column(nullable = false)
     private String country;
     @Column(nullable = false)
     private String zipCode;
@@ -67,6 +66,7 @@ public class User {
         this.validRepostPoints=0l;
         this.userStatus=1;// 0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
         this.signupDateTime=LocalDateTime.now();
+        this.city="India";
     }
 
     public List<EmergencyPost> getEmergencyPostList() {
