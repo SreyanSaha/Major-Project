@@ -37,15 +37,15 @@ public class AuthService {
     }
 
     @Transactional
-    public boolean register(RegisterRequest request, User user) {
-        if(userAuthDataRepository.findByUsername(request.getUsername()).isPresent()) return false;
+    public String register(RegisterRequest request, User user) {
+        if(userAuthDataRepository.findByUsername(request.getUsername()).isPresent()) return "User already exists.";
         UserAuthData userAuthData = new UserAuthData();
         userAuthData.setUsername(request.getUsername());
         userAuthData.setPassword(request.getPassword());
         userAuthData.setUserTypeRole(request.getUserTypeRole());
         userAuthDataService.saveUser(userAuthData);
-       boolean response=userService.saveUser(user);
-       if(!response)throw new RuntimeException("Failed to register user.");
+       String response=userService.saveUser(user);
+       if(!response.equals("Validated."))throw new RuntimeException("Failed to register user.");
        return response;
     }
 

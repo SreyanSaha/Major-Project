@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 const UserSignup = (props) => {
+  const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -81,13 +82,11 @@ const UserSignup = (props) => {
     }
   };
 
-  const validatePassword = ()=>{
-    return password===confirmPassword?false:true;
-  };
-
   const proceedForSignup = async ()=>{
-    if(validatePassword()===false){updateMsg("Passwords are not matching!");return;}
-    try{
+    if(password!==confirmPassword){
+      updateMsg("Passwords are not matching!");
+    }else{
+      try{
       const response = await axios.post("http://localhost:8080/auth/user/register",
         {
           registerRequest:{
@@ -115,11 +114,12 @@ const UserSignup = (props) => {
           }
         }
       );
-      if(response.status===201)updateMsg("Signup successfull.");
-      else if(response.status===401)updateMsg("Signup failed.");
+      if(response.status===201){updateMsg(response.data);setOtpVerified(true);}
+      else if(response.status===401){updateMsg(response.data);setOtpVerified(true);}
     }catch(exception){
       console.log(exception);
       updateMsg("An error occurred while during signup process.");
+    }
     }
   };
 
@@ -377,7 +377,7 @@ const UserSignup = (props) => {
           {msg!=null?(<div style={styles.alertDiv}>
             <h3 style={styles.alertText}>{msg}</h3>
           </div>):""}
-          <form style={styles.form}>
+          <form style={styles.form} onSubmit={(e) => { e.preventDefault(); proceedForSignup(); }}>
             <div style={styles.inputRow}>
               <input
                 type="text"
@@ -406,6 +406,14 @@ const UserSignup = (props) => {
               //onChange={(e) => setEmail(e.target.value)}
               style={styles.input}
               readOnly
+            />
+
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              style={styles.input}
             />
 
             <input

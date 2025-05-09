@@ -39,8 +39,9 @@ public class AuthenticationController {
 
     @PostMapping("/user/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterWrapper wrapper) {
-        if(authService.register(wrapper.getRegisterRequest(),wrapper.getUser())) return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully!");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Failed to register user");
+        String response=authService.register(wrapper.getRegisterRequest(),wrapper.getUser());
+        if(response.equals("Validated.")) return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully!");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @PostMapping("/user/login")

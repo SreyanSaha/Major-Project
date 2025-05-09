@@ -53,18 +53,21 @@ public class UserService {
     }
 
     @Transactional
-    public boolean saveUser(User user) {
+    public String saveUser(User user) {
         AddressDetails addressDetails=null;
-        if(user.getStreet()==null || user.getCity()==null || user.getState()==null || user.getZipCode()==null) {
+        if(user.getStreet()==null || user.getStreet().isEmpty() || user.getCity()==null || user.getCity().isEmpty() ||
+                user.getState()==null || user.getState().isEmpty() || user.getZipCode()==null || user.getZipCode().isEmpty()) {
             addressDetails=geoService.getAddressFromLatLng(user.getLatitude(),user.getLongitude());
-            if(addressDetails==null)return false;
+            if(addressDetails==null)return "Failed to fetch the address.";
         }
         user.setStreet(addressDetails.getStreet());
         user.setCity(addressDetails.getCity());
         user.setState(addressDetails.getState());
         user.setZipCode(addressDetails.getZip());
+        String response=userValidation.isValidUserDetails(user);
+        if(!response.equals("Validated."))return response;
         userRepository.save(user);
-        return true;
+        return response;
     }
 
     public User getUserByAuthId(int authId){
