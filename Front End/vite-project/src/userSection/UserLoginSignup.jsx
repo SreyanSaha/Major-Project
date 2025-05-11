@@ -8,7 +8,6 @@ const UserSignup = (props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [aadhaar, setAadhaar] = useState("");
   const [phoneno, setNumber] = useState("");
   const [useLiveLocation, setUseLiveLocation] = useState(false);
   const [latitude, setLatitude] = useState("");
@@ -94,10 +93,12 @@ const UserSignup = (props) => {
             "password":password,
             "userTypeRole":0
           },
+          admin:{
+            
+          },
           user:{
             "userFirstName":firstName,
             "userLastName":lastName,
-            "aadharCardNumber":aadhaar,
             "userEmailId":email,
             "userPhoneNumber":phoneno,
             "latitude":latitude,
@@ -114,11 +115,10 @@ const UserSignup = (props) => {
           }
         }
       );
-      if(response.status===201){updateMsg(response.data);setOtpVerified(true);}
-      else if(response.status===401){updateMsg(response.data);setOtpVerified(true);}
+      updateMsg(response.data);
     }catch(exception){
       console.log(exception);
-      updateMsg("An error occurred while during signup process.");
+      updateMsg("An error occurred during signup process."+exception);
     }
     }
   };
@@ -418,14 +418,6 @@ const UserSignup = (props) => {
 
             <input
               type="text"
-              placeholder="Aadhaar Card Number"
-              value={aadhaar}
-              onChange={(e) => setAadhaar(e.target.value)}
-              style={styles.input}
-            />
-
-            <input
-              type="text"
               placeholder="Phone Number"
               value={phoneno}
               onChange={(e) => setNumber(e.target.value)}
@@ -494,7 +486,7 @@ const UserSignup = (props) => {
               </>
             )}
             <button
-              type="submit"
+              type="button"
               style={styles.button}
               onClick={proceedForSignup}
             >

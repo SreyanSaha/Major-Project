@@ -37,7 +37,7 @@ public class PostService {
             response.put("msg", msg);
             return response;
         }
-        User user=userRepository.findByUsername(username);
+        User user=userRepository.findByUsername(username).get();
         post.setUser(user);
         post.setAuthorProfileName(user.getUserFirstName()+" "+user.getUserLastName());
         post.setAuthorProfileImagePath(user.getProfileImagePath());
@@ -175,7 +175,7 @@ public class PostService {
     }
 
     public boolean deletePost(int postId, String username){
-        if(userRepository.findByUsername(username).getUserId()!=postRepository.findById(postId).get().getUser().getUserId())return false;
+        if(userRepository.findByUsername(username).get().getUserId()!=postRepository.findById(postId).get().getUser().getUserId())return false;
         postRepository.deleteById(postId);
         return true;
     }
@@ -185,7 +185,7 @@ public class PostService {
     }
 
     public boolean deleteComment(int commentId, String username) {
-        if(userRepository.findByUsername(username).getUserId()!=postCommentRepository.findById(commentId).get().getUser().getUserId())return false;
+        if(userRepository.findByUsername(username).get().getUserId()!=postCommentRepository.findById(commentId).get().getUser().getUserId())return false;
         postCommentRepository.deleteById(commentId);
         return true;
     }

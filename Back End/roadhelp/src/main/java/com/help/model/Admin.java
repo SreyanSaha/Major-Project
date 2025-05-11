@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long adminId;
+    private int adminId;
     private short adminRole;//2 -> super admin, 1 -> regional admin, 0 -> local admin
     private short adminStatus;//0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
     private LocalDateTime signupDateTime;
@@ -15,8 +15,6 @@ public class Admin {
     private String adminFirstName;
     @Column(nullable = false)
     private String adminLastName;
-    @Column(nullable = false)
-    private long aadharCardNumber;
     @Column(nullable = false)
     private String adminEmailId;
     @Column(nullable = false)
@@ -43,8 +41,7 @@ public class Admin {
     private String adminEmployeeId;//Company Name (Dropdown - Auto-fills based on Sector)
     @Column(nullable = false)
     private String adminCompanyName;
-    @OneToOne
-    @JoinColumn(name = "auth_id", referencedColumnName = "authId")
+    @OneToOne(mappedBy = "admin", cascade = CascadeType.ALL)
     private UserAuthData authData;
 
     public Admin() {}
@@ -63,11 +60,11 @@ public class Admin {
         this.adminStatus=-1;//0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
         this.signupDateTime=LocalDateTime.now();
     }
-    public long getAdminId() {
+    public int getAdminId() {
         return adminId;
     }
 
-    public void setAdminId(long adminId) {
+    public void setAdminId(int adminId) {
         this.adminId = adminId;
     }
 
@@ -117,14 +114,6 @@ public class Admin {
 
     public void setAdminLastName(String adminLastName) {
         this.adminLastName = adminLastName;
-    }
-
-    public long getAadharCardNumber() {
-        return aadharCardNumber;
-    }
-
-    public void setAadharCardNumber(long aadharCardNumber) {
-        this.aadharCardNumber = aadharCardNumber;
     }
 
     public String getAdminEmailId() {

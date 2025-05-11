@@ -3,12 +3,16 @@ package com.help.jwt.service;
 import com.help.jwt.dto.AuthResponse;
 import com.help.jwt.dto.AuthRequest;
 import com.help.jwt.dto.RegisterRequest;
+import com.help.model.AddressDetails;
 import com.help.model.Admin;
 import com.help.model.User;
 import com.help.model.UserAuthData;
+import com.help.repository.AdminRepository;
 import com.help.repository.UserAuthDataRepository;
-import com.help.service.AdminService;
-import com.help.service.UserService;
+import com.help.repository.UserRepository;
+import com.help.service.GeoService;
+import com.help.validation.AdminValidation;
+import com.help.validation.UserValidation;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,43 +26,74 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserAuthDataRepository userAuthDataRepository;
-    private final UserService userService;
-    private final AdminService adminService;
+    private final AdminValidation adminValidation;
+    private final GeoService geoService;
+    private final UserValidation userValidation;
+    private final UserRepository userRepository;
+    private final AdminRepository adminRepository;
 
     @Autowired
     public AuthService(UserAuthDataService userAuthDataService, JwtService jwtService, AuthenticationManager authenticationManager,
-                       UserAuthDataRepository userAuthDataRepository, UserService userService, AdminService adminService) {
+                       UserAuthDataRepository userAuthDataRepository, UserValidation userValidation, AdminValidation adminValidation,
+                       UserRepository userRepository, GeoService geoService, AdminRepository adminRepository) {
         this.userAuthDataService = userAuthDataService;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.userAuthDataRepository = userAuthDataRepository;
-        this.userService = userService;
-        this.adminService = adminService;
+        this.userValidation = userValidation;
+        this.adminValidation = adminValidation;
+        this.geoService = geoService;
+        this.userRepository = userRepository;
+        this.adminRepository = adminRepository;
     }
 
     @Transactional
-    public String register(RegisterRequest request, User user) {
+    public String register(RegisterRequest request, User user) {// User register
         if(userAuthDataRepository.findByUsername(request.getUsername()).isPresent()) return "User already exists.";
         UserAuthData userAuthData = new UserAuthData();
         userAuthData.setUsername(request.getUsername());
         userAuthData.setPassword(request.getPassword());
-        userAuthData.setUserTypeRole(request.getUserTypeRole());
+        userAuthData.setUserTypeRole((short)0);
+
+        if(user.getStreet()==null || user.getStreet().isEmpty() || user.getCity()==null || user.getCity().isEmpty() ||
+                user.getState()==null || user.getState().isEmpty() || user.getZipCode()==null || user.getZipCode().isEmpty()) {
+            AddressDetails addressDetails=geoService.getAddressFromLatLng(user.getLatitude(),user.getLongitude());
+            if(addressDetails==null)return "Failed to fetch the address.";
+            user.setStreet(addressDetails.getStreet());
+            user.setCity(addressDetails.getCity());
+            user.setState(addressDetails.getState());
+            user.setZipCode(addressDetails.getZip());
+        }
+        String response=userValidation.isValidUserDetails(user);
+        if(!response.equals("Validated.")) return response;
+        userAuthData.setAdmin(null);
+        userAuthData.setUser(userRepository.save(user));
         userAuthDataService.saveUser(userAuthData);
-       String response=userService.saveUser(user);
-       if(!response.equals("Validated."))throw new RuntimeException("Failed to register user.");
-       return response;
+        return response;
     }
 
     @Transactional
-    public boolean register(RegisterRequest request, Admin admin) {
-        if(userAuthDataRepository.findByUsername(request.getUsername()).isPresent()) return false;
+    public String register(RegisterRequest request, Admin admin) {// Admin registration
+        if(userAuthDataRepository.findByUsername(request.getUsername()).isPresent()) return "Admin already exists.";
         UserAuthData userAuthData = new UserAuthData();
         userAuthData.setUsername(request.getUsername());
         userAuthData.setPassword(request.getPassword());
-        userAuthData.setUserTypeRole(request.getUserTypeRole());
+        userAuthData.setUserTypeRole((short) 1);
+
+        if(admin.getStreet()==null || admin.getStreet().isEmpty() || admin.getCity()==null || admin.getCity().isEmpty() ||
+                admin.getState()==null || admin.getState().isEmpty() || admin.getZipCode()==null || admin.getZipCode().isEmpty()) {
+            AddressDetails addressDetails=geoService.getAddressFromLatLng(admin.getLatitude(),admin.getLongitude());
+            if(addressDetails==null)return "Failed to fetch the address.";
+            admin.setStreet(addressDetails.getStreet());
+            admin.setCity(addressDetails.getCity());
+            admin.setState(addressDetails.getState());
+            admin.setZipCode(addressDetails.getZip());
+        }
+        String response=adminValidation.isValidAdminDetails(admin);
+        if(!response.equals("Validated.")) return response;
+        userAuthData.setUser(null);
+        userAuthData.setAdmin(adminRepository.save(admin));
         userAuthDataService.saveUser(userAuthData);
-        boolean response=adminService.saveAdmin(admin);
-        if(!response)throw new RuntimeException("Failed to register admin.");
         return response;
     }
 

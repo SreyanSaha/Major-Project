@@ -6,6 +6,7 @@ import com.help.email.GetMailText;
 import com.help.model.AddressDetails;
 import com.help.model.OtpDetails;
 import com.help.model.User;
+import com.help.model.UserAuthData;
 import com.help.repository.UserAuthDataRepository;
 import com.help.repository.UserRepository;
 import com.help.validation.UserValidation;
@@ -52,24 +53,6 @@ public class UserService {
         return 0;
     }
 
-    @Transactional
-    public String saveUser(User user) {
-        AddressDetails addressDetails=null;
-        if(user.getStreet()==null || user.getStreet().isEmpty() || user.getCity()==null || user.getCity().isEmpty() ||
-                user.getState()==null || user.getState().isEmpty() || user.getZipCode()==null || user.getZipCode().isEmpty()) {
-            addressDetails=geoService.getAddressFromLatLng(user.getLatitude(),user.getLongitude());
-            if(addressDetails==null)return "Failed to fetch the address.";
-        }
-        user.setStreet(addressDetails.getStreet());
-        user.setCity(addressDetails.getCity());
-        user.setState(addressDetails.getState());
-        user.setZipCode(addressDetails.getZip());
-        String response=userValidation.isValidUserDetails(user);
-        if(!response.equals("Validated."))return response;
-        userRepository.save(user);
-        return response;
-    }
-
     public User getUserByAuthId(int authId){
         return userRepository.getUserByAuthData_AuthId(authId);
     }
@@ -79,7 +62,7 @@ public class UserService {
     }
 
     public User updateUser(String username, User user) {
-        user.setUserId(userRepository.findByUsername(username).getUserId());
+        user.setUserId(userRepository.findByUsername(username).get().getUserId());
         return userRepository.save(user);
     }
 

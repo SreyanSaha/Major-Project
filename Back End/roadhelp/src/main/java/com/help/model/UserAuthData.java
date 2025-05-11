@@ -13,9 +13,11 @@ public class UserAuthData {
     private String password;
     @Column(nullable = false)
     private short userTypeRole;//1 -> Admin, 0-> User
-    @OneToOne(mappedBy = "authData", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = true)
     private User user;
-    @OneToOne(mappedBy = "authData", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "admin_id", referencedColumnName = "adminId", nullable = true)
     private Admin admin;
 
     public UserAuthData() {}

@@ -13,8 +13,6 @@ public class User {
     @Column(nullable = false)
     private String userLastName;
     @Column(nullable = false, unique = true)
-    private Long aadharCardNumber;
-    @Column(nullable = false, unique = true)
     private String userEmailId;
     @Column(nullable = false, unique = true)
     private Long userPhoneNumber;
@@ -25,9 +23,7 @@ public class User {
     private short userStatus;// 0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
     private LocalDateTime signupDateTime;
     private LocalDateTime timeOutEndTime;
-    @Column(nullable = false)
     private Double latitude;
-    @Column(nullable = false)
     private Double longitude;
     @Column(nullable = false)
     private String street;
@@ -46,8 +42,7 @@ public class User {
     private List<PostComment> comments;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Campaign> campaigns;
-    @OneToOne
-    @JoinColumn(name = "auth_id", referencedColumnName = "authId")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserAuthData authData;
 
     public User() {}
@@ -66,7 +61,15 @@ public class User {
         this.validRepostPoints=0l;
         this.userStatus=1;// 0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
         this.signupDateTime=LocalDateTime.now();
-        this.city="India";
+        this.country="India";
+    }
+
+    public List<Campaign> getCampaigns() {
+        return campaigns;
+    }
+
+    public void setCampaigns(List<Campaign> campaigns) {
+        this.campaigns = campaigns;
     }
 
     public List<EmergencyPost> getEmergencyPostList() {
@@ -187,14 +190,6 @@ public class User {
 
     public void setUserLastName(String userLastName) {
         this.userLastName = userLastName;
-    }
-
-    public Long getAadharCardNumber() {
-        return aadharCardNumber;
-    }
-
-    public void setAadharCardNumber(Long aadharCardNumber) {
-        this.aadharCardNumber = aadharCardNumber;
     }
 
     public String getUserEmailId() {

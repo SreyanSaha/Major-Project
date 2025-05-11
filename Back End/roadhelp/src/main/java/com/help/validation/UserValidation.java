@@ -10,21 +10,19 @@ import java.util.regex.Pattern;
 public class UserValidation {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^[6-9]\\d{9}$");
-    private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z]{2,50}$");
-    private static final Pattern AADHAR_PATTERN = Pattern.compile("^\\d{12}$");
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z]+(?:\\s[A-Za-z]+)*$");
     private static final Pattern ZIP_PATTERN = Pattern.compile("^\\d{5,6}$");
-    private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s,./#'&()-]*$\n");
+    private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s]*$");
 
     public String isValidUserDetails(User user) {
         if (!isValidName(user.getUserFirstName())) return "User first name is invalid.";
-        else if(!isValidName(user.getUserLastName())) return "User last name is invalid.";
-        else if(!isValidEmail(user.getUserEmailId())) return "User email is invalid.";
-        else if(!isValidPhone(String.valueOf(user.getUserPhoneNumber()))) return "User phone number is invalid.";
-        else if(!isValidAadhar(String.valueOf(user.getAadharCardNumber())))return "User aadhar number is invalid.";
-        else if(!isValidAlphanumeric(user.getStreet()))return "User address is invalid.";
-        else if(!isValidName(user.getCity()))return "User city is invalid.";
-        else if(!isValidName(user.getState()))return "User state is invalid.";
-        else if(!isValidZipCode(user.getZipCode())) return "User zip code is invalid.";
+        if(!isValidName(user.getUserLastName())) return "User last name is invalid.";
+        if(!isValidEmail(user.getUserEmailId())) return "User email is invalid.";
+        if(!isValidPhone(String.valueOf(user.getUserPhoneNumber()))) return "User phone number is invalid.";
+        if(!isValidAlphanumeric(user.getStreet()))return "User address is invalid.";
+        if(!isValidName(user.getCity()))return "User city is invalid.";
+        if(!isValidName(user.getState()))return "User state is invalid.";
+        if(!isValidZipCode(user.getZipCode())) return "User zip code is invalid.";
         return "Validated.";
     }
 
@@ -39,18 +37,17 @@ public class UserValidation {
     }
 
     public boolean isValidPhone(String phone) {
-        return phone != null && PHONE_PATTERN.matcher(phone).matches();
+        if(phone==null || phone.trim().isEmpty())return false;
+        return PHONE_PATTERN.matcher(phone.trim()).matches();
     }
 
     public boolean isValidName(String name) {
-        return name != null && NAME_PATTERN.matcher(name).matches();
-    }
-
-    public boolean isValidAadhar(String aadhar) {
-        return aadhar != null && AADHAR_PATTERN.matcher(aadhar).matches();
+        if(name==null || name.trim().isEmpty())return false;
+        return NAME_PATTERN.matcher(name.trim()).matches();
     }
 
     public boolean isValidZipCode(String zip) {
-        return zip != null && ZIP_PATTERN.matcher(zip).matches();
+        if(zip==null || zip.trim().isEmpty())return false;
+        return ZIP_PATTERN.matcher(zip.trim()).matches();
     }
 }

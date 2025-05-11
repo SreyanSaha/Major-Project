@@ -17,9 +17,9 @@ public class UserAuthDataService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void saveUser(UserAuthData userAuthData) {
+    public UserAuthData saveUser(UserAuthData userAuthData) {
         userAuthData.setPassword(passwordEncoder.encode(userAuthData.getPassword()));
-        userAuthDataRepository.save(userAuthData);
+        return userAuthDataRepository.save(userAuthData);
     }
 
     public int getAuthId(String username){
@@ -28,6 +28,10 @@ public class UserAuthDataService {
 
     public int getUserAuthDataTypeRole(String username){
         return userAuthDataRepository.findByUsername(username).get().getUserTypeRole();
+    }
+
+    public UserAuthData getUserAuthData(String username){
+        return userAuthDataRepository.findByUsername(username).get();
     }
 }
 

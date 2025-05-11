@@ -25,7 +25,7 @@ public class EmergencyPostService {
 
     public Map<String, Object> createEmergencyPost(EmergencyPost post, String username) {
         Map<String, Object> response = new HashMap<>();
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username).get();
         if (user == null) {
             response.put("msg", "User not found with username: " + username);
             return response;
@@ -42,7 +42,7 @@ public class EmergencyPostService {
     }
 
     public boolean deletePost(int postId, String username) {
-        if(emergencyPostRepository.findById(postId).get().getUser().getUserId()!=userRepository.findByUsername(username).getUserId())return false;
+        if(emergencyPostRepository.findById(postId).get().getUser().getUserId()!=userRepository.findByUsername(username).get().getUserId())return false;
         emergencyPostRepository.deleteById(postId);
         return true;
     }
@@ -86,7 +86,7 @@ public class EmergencyPostService {
         existingPost.setEmergencyPostStatus(updatedPost.getEmergencyPostStatus());
 
         // Update author info from username
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username).get();
         if (user != null) {
             existingPost.setUser(user);
             existingPost.setAuthorProfileName(user.getUserFirstName() + " " + user.getUserLastName());

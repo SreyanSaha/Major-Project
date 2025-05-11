@@ -8,18 +8,24 @@ import java.util.regex.Pattern;
 public class AdminValidation {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^[6-9]\\d{9}$");
-    private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z]{2,50}$");
-    private static final Pattern AADHAR_PATTERN = Pattern.compile("^\\d{12}$");
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z]+(?:\\s[A-Za-z]+)*$");
     private static final Pattern ZIP_PATTERN = Pattern.compile("^\\d{5,6}$");
+    private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s]*$");
 
     public String isValidAdminDetails(Admin admin) {
         if (!isValidName(admin.getAdminFirstName())) return "Admin first name is invalid.";
-        else if(!isValidName(admin.getAdminLastName())) return "Admin last name is invalid.";
-        else if(!isValidEmail(admin.getAdminEmailId())) return "Admin email is invalid.";
-        else if(!isValidPhone(String.valueOf(admin.getAdminPhoneNumber()))) return "Admin phone number is invalid.";
-        else if(!isValidAadhar(String.valueOf(admin.getAadharCardNumber())))return "Admin aadhar number is invalid.";
-        else if(!isValidZipCode(admin.getZipCode())) return "Admin zip code is invalid.";
+        if(!isValidName(admin.getAdminLastName())) return "Admin last name is invalid.";
+        if(!isValidEmail(admin.getAdminEmailId())) return "Admin email is invalid.";
+        if(!isValidPhone(String.valueOf(admin.getAdminPhoneNumber()))) return "Admin phone number is invalid.";
+        if(!isValidAlphanumeric(admin.getStreet()))return "Admin address is invalid.";
+        if(!isValidName(admin.getCity()))return "Admin city is invalid.";
+        if(!isValidName(admin.getState()))return "Admin state is invalid.";
+        if(!isValidZipCode(admin.getZipCode())) return "Admin zip code is invalid.";
         return "Validated.";
+    }
+    public boolean isValidAlphanumeric(String text){
+        if(text==null || text.trim().isEmpty())return false;
+        return ALPHANUMERIC_PATTERN.matcher(text.trim()).matches();
     }
 
     public boolean isValidEmail(String email) {
@@ -28,19 +34,18 @@ public class AdminValidation {
     }
 
     public boolean isValidPhone(String phone) {
-        return phone != null && PHONE_PATTERN.matcher(phone).matches();
+        if(phone==null || phone.trim().isEmpty())return false;
+        return PHONE_PATTERN.matcher(phone).matches();
     }
 
     public boolean isValidName(String name) {
-        return name != null && NAME_PATTERN.matcher(name).matches();
-    }
-
-    public boolean isValidAadhar(String aadhar) {
-        return aadhar != null && AADHAR_PATTERN.matcher(aadhar).matches();
+        if(name==null || name.trim().isEmpty())return false;
+        return NAME_PATTERN.matcher(name).matches();
     }
 
     public boolean isValidZipCode(String zip) {
-        return zip != null && ZIP_PATTERN.matcher(zip).matches();
+        if(zip==null || zip.trim().isEmpty())return false;
+        return ZIP_PATTERN.matcher(zip).matches();
     }
 }
 

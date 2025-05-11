@@ -41,7 +41,7 @@ public class AuthenticationController {
     public ResponseEntity<?> registerUser(@RequestBody RegisterWrapper wrapper) {
         String response=authService.register(wrapper.getRegisterRequest(),wrapper.getUser());
         if(response.equals("Validated.")) return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully!");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/user/login")
@@ -61,8 +61,9 @@ public class AuthenticationController {
 
     @PostMapping("/admin/register")
     public ResponseEntity<?> registerAdmin(@RequestBody RegisterWrapper wrapper) {
-        if(authService.register(wrapper.getRegisterRequest(),wrapper.getAdmin())) return ResponseEntity.status(HttpStatus.CREATED).body("Admin registered successfully!");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Admin not registered");
+        String response=authService.register(wrapper.getRegisterRequest(),wrapper.getAdmin());
+        if(response.equals("Validated.")) return ResponseEntity.status(HttpStatus.CREATED).body("Admin registered successfully!");
+        return ResponseEntity.status(HttpStatus.OK).body("Admin not registered");
     }
 
     @PostMapping("/admin/login")
