@@ -46,7 +46,9 @@ public class AuthenticationController {
 
     @PostMapping("/user/login")
     public ResponseEntity<AuthResponse> loginUser(@RequestBody AuthRequest request) {
-        return ResponseEntity.ok(authService.authenticate(request));
+        AuthResponse authResponse=authService.authenticate(request);
+        if(authResponse==null)return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(authResponse);
     }
 
     @PostMapping("/admin/email/otp")
@@ -68,6 +70,8 @@ public class AuthenticationController {
 
     @PostMapping("/admin/login")
     public ResponseEntity<AuthResponse> loginAdmin(@RequestBody AuthRequest request) {
-        return ResponseEntity.ok(authService.authenticate(request));
+        AuthResponse authResponse=authService.authenticate(request);
+        if(authResponse==null)return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(authResponse);
     }
 }
