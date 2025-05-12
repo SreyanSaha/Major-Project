@@ -15,10 +15,13 @@ import com.help.validation.AdminValidation;
 import com.help.validation.UserValidation;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 
 @Service
 public class AuthService {
@@ -95,6 +98,13 @@ public class AuthService {
         userAuthData.setAdmin(adminRepository.save(admin));
         userAuthDataService.saveUser(userAuthData);
         return response;
+    }
+
+    public ResponseCookie getJwtCookie(AuthResponse response){
+        String token=response.getToken();
+        response.setToken(null);
+        return ResponseCookie.from("token", token).httpOnly(true).secure(true)
+                .path("/").maxAge(Duration.ofHours(1)).sameSite("Strict").build();
     }
 
     public AuthResponse authenticate(AuthRequest request) {

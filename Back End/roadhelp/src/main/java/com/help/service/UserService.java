@@ -46,7 +46,6 @@ public class UserService {
 
     public int verifyRegistrationOTP(OtpForVerification otpForVerification){
         otpForVerification.setEmail(otpForVerification.getEmail().replace("\""," ").trim());
-        System.out.println(otpForVerification.getEmail());
         if(!this.otpStorage.get(otpForVerification.getEmail()).getGeneratedAt().plusMinutes(1).isAfter(LocalDateTime.now())){this.otpStorage.remove(otpForVerification.getEmail());return -1;}
         if(this.otpStorage.get(otpForVerification.getEmail()).getOtp().compareTo(otpForVerification.getOtp()) != 0) return -2;
         this.otpStorage.remove(otpForVerification.getEmail());

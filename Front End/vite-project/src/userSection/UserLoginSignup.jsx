@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "../loadingComponents/Loading";
 
 const UserSignup = (props) => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -17,6 +20,7 @@ const UserSignup = (props) => {
   const [state, setState] = useState("");
   const [zip, setZip] = useState("");
   const [login, setLogin] = useState(props.status);
+  const [processing, setProcessing] = useState(false);
 
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
@@ -57,6 +61,7 @@ const UserSignup = (props) => {
 
   const sendOtp = async () => {
     updateMsg("Please wait");
+    setProcessing(true);
     try{
         const response = await axios.post("http://localhost:8080/auth/user/email/otp",email,{
             headers:{
@@ -65,16 +70,19 @@ const UserSignup = (props) => {
         });
         if(response.data===true){
             updateMsg("Otp Email sent");
+            setProcessing(false);
             setTimer(60);
             setOtpSent(true);
             setTimerActive(true);
         }else {
+            setProcessing(false);
             updateMsg("Failed to send Otp Email");
             setOtpSent(false);
             setTimerActive(false);
         }
     }catch(exception){
         console.log(exception);
+        setProcessing(false);
         updateMsg("An error occurred while sending OTP email.");
         setOtpSent(false);
         setTimerActive(false);
@@ -85,6 +93,7 @@ const UserSignup = (props) => {
     if(password!==confirmPassword){
       updateMsg("Passwords are not matching!");
     }else{
+      setProcessing(true);
       try{
       const response = await axios.post("http://localhost:8080/auth/user/register",
         {
@@ -115,11 +124,49 @@ const UserSignup = (props) => {
           }
         }
       );
-      updateMsg(response.data);
+      if(response.status===201){
+        setProcessing(false);
+        updateMsg(response.data);
+      }
     }catch(exception){
       console.log(exception);
       updateMsg("An error occurred during signup process."+exception);
     }
+    }
+  };
+// const user = JSON.parse(localStorage.getItem("user"));
+// if (user?.authenticated) {
+//   console.log("Username:", user.username);
+//   console.log("Role:", user.role);
+// }
+  const handleLogin = async () => {
+    setProcessing(true);
+    try{
+      const response = await axios.post("http://localhost:8080/auth/user/login",{
+        "username":username,
+        "password":password,
+        "userTypeRole":0
+      },
+      {
+        withCredentials: true 
+      });
+      if(response.status===200){
+        const {username, role} = response.data;
+        localStorage.setItem(
+          "user",
+          JSON.stringify(
+          {
+            username: username,
+            role: role
+          })
+        );
+        setProcessing(false);
+        navigate("/");
+      }
+    }catch(exception){
+      console.log(exception);
+      updateMsg("Invalid user details!"+exception);
+      setProcessing(false);
     }
   };
 
@@ -298,6 +345,7 @@ const UserSignup = (props) => {
             </ul>
           </div>
         </div>
+        {processing?<LoadingOverlay/>:""}
         <div style={styles.card}>
           <h2 style={styles.title}>Verify Email</h2>
           {msg!=null?(<div style={styles.alertDiv}>
@@ -371,7 +419,7 @@ const UserSignup = (props) => {
             </ul>
           </div>
         </div>
-
+        {processing?<LoadingOverlay/>:""}
         <div style={styles.card}>
           <h2 style={styles.title}>User Signup</h2>
           {msg!=null?(<div style={styles.alertDiv}>
@@ -486,9 +534,8 @@ const UserSignup = (props) => {
               </>
             )}
             <button
-              type="button"
+              type="submit"
               style={styles.button}
-              onClick={proceedForSignup}
             >
               Signup
             </button>
@@ -514,15 +561,18 @@ const UserSignup = (props) => {
             </ul>
           </div>
         </div>
-
+        {processing?<LoadingOverlay/>:""}
         <div style={styles.card}>
           <h2 style={styles.title}>User Login</h2>
-          <form style={styles.form}>
+          {msg!=null?(<div style={styles.alertDiv}>
+            <h3 style={styles.alertText}>{msg}</h3>
+          </div>):""}
+          <form style={styles.form} onSubmit={(e) => { e.preventDefault(); handleLogin();}}>
             <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               style={styles.input}
             />
             <input
