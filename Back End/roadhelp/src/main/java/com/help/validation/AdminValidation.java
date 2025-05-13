@@ -11,9 +11,11 @@ public class AdminValidation {
     private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z]+(?:\\s[A-Za-z]+)*$");
     private static final Pattern ZIP_PATTERN = Pattern.compile("^\\d{5,6}$");
     private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s]*$");
+    private static final Pattern EMPLOYEE_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9\\-_.#/]+$");
+    private static final Pattern COMPANY_NAME = Pattern.compile("^[a-zA-Z0-9&.,'()\\- ]{2,100}$");
 
     public String isValidAdminDetails(Admin admin) {
-        if (!isValidName(admin.getAdminFirstName())) return "Admin first name is invalid.";
+        if(!isValidName(admin.getAdminFirstName())) return "Admin first name is invalid.";
         if(!isValidName(admin.getAdminLastName())) return "Admin last name is invalid.";
         if(!isValidEmail(admin.getAdminEmailId())) return "Admin email is invalid.";
         if(!isValidPhone(String.valueOf(admin.getAdminPhoneNumber()))) return "Admin phone number is invalid.";
@@ -21,6 +23,9 @@ public class AdminValidation {
         if(!isValidName(admin.getCity()))return "Admin city is invalid.";
         if(!isValidName(admin.getState()))return "Admin state is invalid.";
         if(!isValidZipCode(admin.getZipCode())) return "Admin zip code is invalid.";
+        if(!isValidDepartment(admin.getAdminDepartment()))return "Admin department is invalid.";
+        if(!isValidEmpId(admin.getAdminEmployeeId())) return "Admin employee Id is invalid.";
+        if(!isValidCompanyName(admin.getAdminCompanyName()))return "Admin organization name is invalid.";
         return "Validated.";
     }
     public boolean isValidAlphanumeric(String text){
@@ -35,18 +40,34 @@ public class AdminValidation {
 
     public boolean isValidPhone(String phone) {
         if(phone==null || phone.trim().isEmpty())return false;
-        return PHONE_PATTERN.matcher(phone).matches();
+        return PHONE_PATTERN.matcher(phone.trim()).matches();
     }
 
     public boolean isValidName(String name) {
         if(name==null || name.trim().isEmpty())return false;
-        return NAME_PATTERN.matcher(name).matches();
+        return NAME_PATTERN.matcher(name.trim()).matches();
     }
 
     public boolean isValidZipCode(String zip) {
         if(zip==null || zip.trim().isEmpty())return false;
-        return ZIP_PATTERN.matcher(zip).matches();
+        return ZIP_PATTERN.matcher(zip.trim()).matches();
     }
+
+    public boolean isValidDepartment(String department){
+       if(department==null || department.trim().isEmpty())return false;
+       return NAME_PATTERN.matcher(department.trim()).matches();
+    }
+
+    public boolean isValidEmpId(String empId){
+        if(empId==null || empId.trim().isEmpty()) return false;
+        return EMPLOYEE_ID_PATTERN.matcher(empId.trim()).matches();
+    }
+
+    public boolean isValidCompanyName(String company){
+        if(company==null || company.trim().isEmpty())return false;
+        return COMPANY_NAME.matcher(company.trim()).matches();
+    }
+
 }
 
 

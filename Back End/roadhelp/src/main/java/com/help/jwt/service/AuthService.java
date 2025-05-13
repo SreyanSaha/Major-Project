@@ -93,7 +93,8 @@ public class AuthService {
             admin.setZipCode(addressDetails.getZip());
         }
         String response=adminValidation.isValidAdminDetails(admin);
-        if(!response.equals("Validated.")) return response;
+        if(!response.equals("Validated.")) {System.out.println(response);
+            System.out.println(admin.getAdminCompanyName());return response;}
         userAuthData.setUser(null);
         userAuthData.setAdmin(adminRepository.save(admin));
         userAuthDataService.saveUser(userAuthData);

@@ -67,7 +67,7 @@ public class AuthenticationController {
     public ResponseEntity<?> registerAdmin(@RequestBody RegisterWrapper wrapper) {
         String response=authService.register(wrapper.getRegisterRequest(),wrapper.getAdmin());
         if(response.equals("Validated.")) return ResponseEntity.status(HttpStatus.CREATED).body("Admin registered successfully!");
-        return ResponseEntity.status(HttpStatus.OK).body("Admin not registered");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/admin/login")

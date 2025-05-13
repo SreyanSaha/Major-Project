@@ -15,7 +15,7 @@ public class UserValidation {
     private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s]*$");
 
     public String isValidUserDetails(User user) {
-        if (!isValidName(user.getUserFirstName())) return "User first name is invalid.";
+        if(!isValidName(user.getUserFirstName())) return "User first name is invalid.";
         if(!isValidName(user.getUserLastName())) return "User last name is invalid.";
         if(!isValidEmail(user.getUserEmailId())) return "User email is invalid.";
         if(!isValidPhone(String.valueOf(user.getUserPhoneNumber()))) return "User phone number is invalid.";

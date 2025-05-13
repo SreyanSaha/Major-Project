@@ -7,7 +7,7 @@ public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int adminId;
-    private short adminRole;//2 -> super admin, 1 -> regional admin, 0 -> local admin
+    private short adminRole;//2 -> super admin, 1 -> admin, 0 -> local admin
     private short adminStatus;//0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
     private LocalDateTime signupDateTime;
     private LocalDateTime timeOutEndTime;
@@ -21,9 +21,7 @@ public class Admin {
     private long adminPhoneNumber;
     @Column(nullable = false)
     private String profileImagePath;
-    @Column(nullable = false)
     private Double latitude;
-    @Column(nullable = false)
     private Double longitude;
     @Column(nullable = false)
     private String street;
@@ -56,9 +54,10 @@ public class Admin {
 
     @PrePersist
     protected void onCreate(){
-        this.adminRole=-1;//2 -> super admin, 1 -> regional admin, 0 -> local admin
-        this.adminStatus=-1;//0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
+        this.adminRole=-1;//2 -> super admin, 1 -> admin, 0 -> local admin
+        this.adminStatus=0;//0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
         this.signupDateTime=LocalDateTime.now();
+        this.country="India";
     }
     public int getAdminId() {
         return adminId;
