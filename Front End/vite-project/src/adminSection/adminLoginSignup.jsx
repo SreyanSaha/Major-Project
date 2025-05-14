@@ -93,13 +93,12 @@ const AdminSignup=(props)=>{
   };
 
   const proceedForSignup = async ()=>{
-    if(password!==confirmPassword){
-      updateMsg("Passwords are not matching!");
-    }else{
+    if(password!==confirmPassword)updateMsg("Passwords are not matching!");
+    else{
       setProcessing(true);
       try{
-      const response = await axios.post("http://localhost:8080/auth/admin/register",
-        {
+        const formData=new FormData();
+        const wrapper={
           registerRequest:{
             "username":username,
             "password":password,
@@ -120,13 +119,14 @@ const AdminSignup=(props)=>{
             "adminEmployeeId":empId,
             "adminCompanyName":organizationName
           },
-          user:{
-            
-          }
-        },
+          user:{}
+        }
+        formData.append("wrapper", JSON.stringify(wrapper));
+        formData.append("profileImage", profileImage);
+        const response = await axios.post("http://localhost:8080/auth/admin/register",formData,
         {
           headers:{
-              "Content-Type": "application/json"
+            "Content-Type": "multipart/form-data"
           }
         }
       );
@@ -152,12 +152,12 @@ const AdminSignup=(props)=>{
       const response = await axios.post("http://localhost:8080/auth/admin/login",{
         "username":username,
         "password":password,
-        "userTypeRole":0
+        "userTypeRole":1
       },
       {
         withCredentials: true 
       });
-      if(response.status===200){
+      if(response.status===200 && typeof response.data===Object){
         const {username, role} = response.data;
         localStorage.setItem(
           "user",
@@ -167,6 +167,9 @@ const AdminSignup=(props)=>{
             role: role
           })
         );
+        setProcessing(false);
+      }else if(typeof response.data===String){
+        updateMsg(response.data);
         setProcessing(false);
       }
     }catch(exception){
@@ -624,12 +627,15 @@ const AdminSignup=(props)=>{
       {processing?<LoadingOverlay/>:""}
       <div style={styles.card}>
         <h2 style={styles.title}>Admin Login</h2>
-        <form style={styles.form}>
+        {msg!=null?(<div style={styles.alertDiv}>
+              <h3 style={styles.alertText}>{msg}</h3>
+            </div>):""}
+        <form style={styles.form} onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             style={styles.input}
           />
           <input

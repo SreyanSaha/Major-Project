@@ -7,7 +7,7 @@ public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int adminId;
-    private short adminRole;//2 -> super admin, 1 -> admin, 0 -> local admin
+    private short adminRole;//0 -> local admin, 1 -> admin, 2 -> super admin
     private short adminStatus;//0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
     private LocalDateTime signupDateTime;
     private LocalDateTime timeOutEndTime;
@@ -54,7 +54,7 @@ public class Admin {
 
     @PrePersist
     protected void onCreate(){
-        this.adminRole=-1;//2 -> super admin, 1 -> admin, 0 -> local admin
+        this.adminRole=-1;//0 -> local admin, 1 -> admin, 2 -> super admin
         this.adminStatus=0;//0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
         this.signupDateTime=LocalDateTime.now();
         this.country="India";

@@ -20,8 +20,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -76,7 +82,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String register(RegisterRequest request, Admin admin) {// Admin registration
+    public String register(RegisterRequest request, Admin admin, MultipartFile profileImage) {// Admin registration
         if(userAuthDataRepository.findByUsername(request.getUsername()).isPresent()) return "Admin already exists.";
         UserAuthData userAuthData = new UserAuthData();
         userAuthData.setUsername(request.getUsername());
@@ -93,12 +99,33 @@ public class AuthService {
             admin.setZipCode(addressDetails.getZip());
         }
         String response=adminValidation.isValidAdminDetails(admin);
-        if(!response.equals("Validated.")) {System.out.println(response);
-            System.out.println(admin.getAdminCompanyName());return response;}
+        if(!response.equals("Validated.")) return response;
+        String path=saveAdminProfileImage(profileImage);
+        if(path==null)return "Failed to upload profile image.";
         userAuthData.setUser(null);
+        admin.setProfileImagePath(path);
         userAuthData.setAdmin(adminRepository.save(admin));
         userAuthDataService.saveUser(userAuthData);
         return response;
+    }
+
+    private String saveAdminProfileImage(MultipartFile profileImage){
+        try{
+            if(profileImage.isEmpty() || profileImage.getSize() > (5 * 1024 * 1024))return null;
+            String profileImagePath=Paths.get("").toAbsolutePath().toString()+"/src/main/java/com/help/allMedia/adminProfileImage";
+            Path adminProfileImagePath=Paths.get(profileImagePath);
+            if(!Files.exists(adminProfileImagePath))Files.createDirectories(adminProfileImagePath);
+            Path uploadPath=adminProfileImagePath.resolve(UUID.randomUUID().toString()+"_"+System.currentTimeMillis()+"_"+profileImage.getOriginalFilename());
+            profileImage.transferTo(uploadPath.toFile());
+            return uploadPath.toString();
+        }catch(Exception e){e.printStackTrace();}
+        return null;
+    }
+
+    public boolean canAdminLogin(AuthRequest request){
+        Admin admin=adminRepository.findByUsername(request.getUsername());
+        System.out.println(admin.getAdminRole() != -1 && admin.getAdminStatus() != 0);
+        return admin.getAdminRole() != -1 && admin.getAdminStatus() != 0;
     }
 
     public ResponseCookie getJwtCookie(AuthResponse response){
