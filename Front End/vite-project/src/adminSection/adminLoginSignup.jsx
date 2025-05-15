@@ -157,7 +157,7 @@ const AdminSignup=(props)=>{
       {
         withCredentials: true 
       });
-      if(response.status===200 && typeof response.data===Object){
+      if(response.status===200){
         const {username, role} = response.data;
         localStorage.setItem(
           "user",
@@ -168,7 +168,7 @@ const AdminSignup=(props)=>{
           })
         );
         setProcessing(false);
-      }else if(typeof response.data===String){
+      }else if(response.status===202){
         updateMsg(response.data);
         setProcessing(false);
       }
