@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "../../loadingComponents/Loading";
 
 export default function UserUploadedPostsComponent() {
   const navigate = useNavigate();
@@ -29,12 +30,16 @@ export default function UserUploadedPostsComponent() {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.username && user.role === 0) setAuthenticated(true);
-    else navigate("/user/login");
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      console.log("Fetched user:", user);
+      if (user?.username && user?.role === 0) setAuthenticated(true);
+      else navigate("/user/login");
+    } catch (err) {
+      console.error("Error parsing user from localStorage:", err);
+      navigate("/user/login");
+    }
   }, [navigate]);
-
-  if(!authenticated)return null;
 
   const handleDelete = (id) => {
     setPosts(posts.filter((post) => post.id !== id));
@@ -126,7 +131,8 @@ export default function UserUploadedPostsComponent() {
       color: "white",
     },
   };
-
+  if (!authenticated) return null;
+  // <LoadingOverlay/>
   return (
     <div>
       <h2 style={{ textAlign: "center", color: "#11398f", marginBottom: "1rem" }}>

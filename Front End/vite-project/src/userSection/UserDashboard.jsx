@@ -3,6 +3,7 @@ import UserDashboardLayout from "./components/UserDashboardLayout";
 import UserUploadedPostsComponent from "./components/UserPosts";
 import UserCampaignPostsComponent from "./components/UserCampaign";
 import UserEmergencyPostsComponent from "./components/UserEmergencyPosts";
+import UserProfile from "./components/UserProfile";
 
 export default function UserDashboard(props) {
   const [activeTab, setActiveTab] = useState(props.activeTab);
@@ -10,6 +11,7 @@ export default function UserDashboard(props) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedin, setLogin] = useState(false);
   const [layout, setLayout] = useState(<UserDashboardLayout/>);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const styles = {
     container: {
@@ -40,30 +42,71 @@ export default function UserDashboard(props) {
       cursor: "pointer",
     },
     sidebar: {
-      position: "fixed",
-      top: "0",
-      left: isSidebarOpen ? "0" : "-290px",
-      width: "250px",
-      height: "100%",
-      backgroundColor: "#11398f",
-      color: "#ffffff",
-      padding: "2rem 1rem",
-      transition: "left 0.3s ease",
-      display: "flex",
-      flexDirection: "column",
-      gap: "1.5rem",
-      zIndex: 1000,
-    },
-    sidebarItem: {
-      fontSize: "1.2rem",
-      cursor: "pointer",
-      padding: "0.5rem",
-      borderRadius: "8px",
-      transition: "background 0.2s",
-    },
-    sidebarItemHover: {
-      backgroundColor: "#1a4bc3",
-    },
+    position: "fixed",
+    top: "0",
+    left: isSidebarOpen ? "0" : "-300px",
+    width: "270px",
+    height: "100vh",
+    backgroundColor: "#11398f",
+    color: "#ffffff",
+    padding: "2rem 1rem",
+    transition: "left 0.3s ease",
+    display: "flex",
+    flexDirection: "column",
+    zIndex: 1000,
+    boxShadow: "2px 0 10px rgba(0, 0, 0, 0.3)",
+    overflowY: "auto",
+  },
+
+  sidebarHeader: {
+    marginTop:"-50px",
+    fontWeight: "bold",
+    fontSize: "1.4rem",
+    color: "#ffffff",
+    marginBottom: "10px",
+    textAlign: "left",
+    borderBottom: "1px solid rgba(255,255,255,0.3)",
+    paddingBottom: "1rem",
+  },
+
+  sidebarItem: {
+    fontSize: "1.1rem",
+    cursor: "pointer",
+    padding: "0.7rem 1rem",
+    borderRadius: "8px",
+    transition: "background 0.2s, transform 0.2s",
+  },
+
+  sidebarItemHover: {
+    backgroundColor: "#1a4bc3",
+  },
+
+  sidebarMessage: {
+    fontSize: "1rem",
+    marginBottom: "1rem",
+    padding: "0 0.5rem",
+    color: "#c7d4ff",
+  },
+
+  searchInput: {
+    padding: "0.5rem",
+    borderRadius: "6px",
+    border: "none",
+    outline: "none",
+    marginBottom: "0.5rem",
+    fontSize: "1rem",
+  },
+
+  searchButton: {
+    padding: "0.5rem",
+    backgroundColor: "#ffffff",
+    color: "#11398f",
+    border: "none",
+    borderRadius: "6px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    marginBottom: "1.5rem",
+  },
   };
 
   const handleSearch = () => {
@@ -79,6 +122,8 @@ export default function UserDashboard(props) {
       case "campaigns".toLowerCase():setLayout(<UserCampaignPostsComponent/>);
       break;
       case "e-posts".toLocaleLowerCase():setLayout(<UserEmergencyPostsComponent/>);
+      break;
+      case "profile":setLayout(<UserProfile/>);
       break;
     }
   };
@@ -100,6 +145,26 @@ export default function UserDashboard(props) {
   >
     ✖
   </div>
+
+  <div style={styles.sidebarHeader}>👋 Welcome!</div>
+  <div style={styles.sidebarMessage}>
+    Manage your posts, campaigns, profile, and more from here.
+  </div>
+
+  <input
+  type="text"
+  placeholder="Search users..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") handleSearch();
+  }}
+  style={styles.searchInput}
+/>
+
+<button onClick={handleSearch} style={styles.searchButton}>
+  Search
+</button>
 
   <div
     style={styles.sidebarItem}
@@ -137,7 +202,7 @@ export default function UserDashboard(props) {
     style={styles.sidebarItem}
     onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1a4bc3")}
     onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-    onClick={() => setIsSidebarOpen(false)}
+    onClick={() => {setIsSidebarOpen(false); updatelayout("profile");}}
   >
     Profile
   </div>

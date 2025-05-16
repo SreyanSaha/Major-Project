@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
+import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "../../loadingComponents/Loading";
 
 export default function UserEmergencyPostsComponent() {
+  const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(false);
   const [emergencies, setEmergencies] = useState([
     {
       id: 1,
@@ -17,6 +21,18 @@ export default function UserEmergencyPostsComponent() {
   ]);
 
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  useEffect(() => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        console.log("Fetched user:", user);
+        if (user?.username && user?.role === 0) setAuthenticated(true);
+        else navigate("/user/login");
+      } catch (err) {
+        console.error("Error parsing user from localStorage:", err);
+        navigate("/user/login");
+      }
+    }, [navigate]);
 
   const handleDelete = (id) => {
     setEmergencies(emergencies.filter((item) => item.id !== id));
