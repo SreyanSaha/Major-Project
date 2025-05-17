@@ -1,6 +1,11 @@
 import { useState } from "react";
+import LoadingOverlay from "../../loadingComponents/Loading";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function UploadCampaign() {
+  const navigate = useNavigate();
+  const [msg,updateMsg] = useState(null);
   const [images, setImages] = useState([null, null, null, null, null]);
   const [paymentImage, setPaymentImage] = useState(null);
   const [address, setAddress] = useState("");
@@ -9,6 +14,8 @@ function UploadCampaign() {
   const [zipCode, setZipCode] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [campaignType, setCampaignType] = useState(-1);
+  const [processing, setProcessing] = useState(false);
 
   const handleImageChange = (index, file) => {
     const newImages = [...images];
@@ -16,18 +23,56 @@ function UploadCampaign() {
     setImages(newImages);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Logic to upload campaign data (images, address, payment image etc.)
-    console.log("Uploading Campaign:", { title, description, address, city, state, zipCode, images, paymentImage });
-    alert("Campaign uploaded successfully!");
+  const handleSubmit = async() => {
+    setProcessing(true);
+    try{
+      const formData=new FormData();
+      const campaign={
+        "campaignTitle":title,
+        "campaignDescription":description,
+        "street":address,
+        "city":city,
+        "state":state,
+        "postalCode":zipCode,
+        "campaignType":campaignType
+      };
+      formData.append("campaign", JSON.stringify(campaign));
+      images.forEach((image)=>{
+        formData.append("image", image);
+      });
+      formData.append("upiQRImage", paymentImage);
+      const response = await axios.post("http://localhost:8080/campaign/create",formData,{
+        headers:{
+            "Content-Type": "multipart/form-data"
+          }
+      });
+      if(response.status===401 || response.status===403){
+        setProcessing(false);
+        useNavigate("/user/login");
+      }else if(response.status===201){
+        setProcessing(false);
+        updateMsg("Campaing post created. Waiting for admins approval.");
+      }
+      else if(response.status===200){
+        setProcessing(false);
+        updateMsg(response.data);
+      }
+    }catch(exception){
+      setProcessing(false);
+      updateMsg(exception);
+      console.log(exception);
+      //navigate("/user/login");
+    }
   };
 
   return (
     <div style={styles.container}>
+      {processing?<LoadingOverlay/>:""}
       <h2 style={styles.heading}>Upload Campaign</h2>
-
-      <form onSubmit={handleSubmit} style={styles.form}>
+      {msg!=null?(<div style={styles.alertDiv}>
+              <h3 style={styles.alertText}>{msg}</h3>
+            </div>):""}
+      <form style={styles.form} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
         <input
           type="text"
           placeholder="Enter Campaign Title"
@@ -37,9 +82,21 @@ function UploadCampaign() {
           required
         />
 
+        <select
+          value={campaignType}
+          onChange={(e) => setCampaignType(e.target.value)}
+          style={styles.selectField}
+          required
+        >
+        <option value="">Select Campaign Type</option>
+        <option value="-1">Donation</option>
+        <option value="0">Awareness</option>
+        <option value="1">Volunteering</option>
+      </select>
+
         <div style={styles.noteSection}>
           <p style={styles.noteText}>
-            ⚡ <strong>Note:</strong> Please mention your online payment details (like UPI ID, bank details, etc.) inside the description.
+            ⚡ <strong>Note:</strong> Please mention about the campaign properly and also mention the online payment details (like UPI ID, bank details, etc.) inside the description.
           </p>
         </div>
 
@@ -113,7 +170,7 @@ function UploadCampaign() {
         
         <div style={styles.noteSection}>
           <p style={styles.noteText}>
-            ⚡ <strong>Note:</strong> Please upload your online payment UPI QR Code.
+            ⚡ <strong>Note:</strong> As our site does not allow any means of cash transaction so, please upload your online payment UPI QR Code.
           </p>
         </div>
 
@@ -126,7 +183,7 @@ function UploadCampaign() {
                 style={styles.previewImage}
               />
             ) : (
-              <span style={styles.placeholderText}>Upload UPI QR or Receipt Image</span>
+              <span style={styles.placeholderText}>Upload UPI QR</span>
             )}
           </label>
           <input
@@ -147,6 +204,27 @@ function UploadCampaign() {
 }
 
 const styles = {
+  alertDiv:{
+        textAlign: "center",
+    },
+    alertText: {
+        backgroundColor: "rgb(255, 64, 57)",
+        padding: "2px",
+        color: "white",
+        borderRadius: "8px",
+        width: "50%",
+        maxWidth: "80%",
+        margin: "auto",
+        marginBottom: "15px",
+    },
+  selectField: {
+  width: "95%",
+  padding: "0.8rem",
+  borderRadius: "8px",
+  border: "1px solid #007bff",
+  backgroundColor: "#ffffff",
+  color: "#333",
+  },
   container: {
     backgroundColor: "#f0f8ff",
     minHeight: "100vh",

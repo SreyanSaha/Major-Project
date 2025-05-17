@@ -8,24 +8,19 @@ public class Campaign {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int campaignId;
     @Column(nullable = false)
-    private String campaignTitle, campaignDescription,
-            campaignOrganizerName, campaignOrganizerContact, campaignOrganizerEmail;
-    @Column(nullable = false)
-    private short campaignOrganizerProfileImagePath;
+    private String campaignTitle, campaignDescription, campaignOrganizerName,
+            campaignOrganizerEmail,campaignOrganizerProfileImagePath;
     private short status; // -1 = Inactive, 0 = Active, 1 = Completed
     @Column(nullable = false)
-    private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;
+    private long campaignOrganizerContact;
     @Column(nullable = false)
-    private Double latitude;
-    @Column(nullable = false)
-    private Double longitude;
+    private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5, upiImage;
     @Column(nullable = false)
     private String street;
     @Column(nullable = false)
     private String city;
     @Column(nullable = false)
     private String state;
-    @Column(nullable = false)
     private String country;
     @Column(nullable = false)
     private String postalCode;
@@ -36,6 +31,20 @@ public class Campaign {
     private User user;
 
     public Campaign() {
+    }
+
+    @PrePersist
+    protected void onCreate(){
+        this.status=-1;
+        this.country="India";
+    }
+
+    public String getUpiImage() {
+        return upiImage;
+    }
+
+    public void setUpiImage(String upiImage) {
+        this.upiImage = upiImage;
     }
 
     public int getCampaignId() {
@@ -70,11 +79,11 @@ public class Campaign {
         this.campaignOrganizerName = campaignOrganizerName;
     }
 
-    public String getCampaignOrganizerContact() {
+    public long getCampaignOrganizerContact() {
         return campaignOrganizerContact;
     }
 
-    public void setCampaignOrganizerContact(String campaignOrganizerContact) {
+    public void setCampaignOrganizerContact(long campaignOrganizerContact) {
         this.campaignOrganizerContact = campaignOrganizerContact;
     }
 
@@ -86,11 +95,11 @@ public class Campaign {
         this.campaignOrganizerEmail = campaignOrganizerEmail;
     }
 
-    public short getCampaignOrganizerProfileImagePath() {
+    public String getCampaignOrganizerProfileImagePath() {
         return campaignOrganizerProfileImagePath;
     }
 
-    public void setCampaignOrganizerProfileImagePath(short campaignOrganizerProfileImagePath) {
+    public void setCampaignOrganizerProfileImagePath(String campaignOrganizerProfileImagePath) {
         this.campaignOrganizerProfileImagePath = campaignOrganizerProfileImagePath;
     }
 
@@ -140,22 +149,6 @@ public class Campaign {
 
     public void setImagePath5(String imagePath5) {
         this.imagePath5 = imagePath5;
-    }
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
     }
 
     public String getStreet() {
