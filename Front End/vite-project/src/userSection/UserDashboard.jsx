@@ -1,17 +1,31 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import UserDashboardLayout from "./components/UserDashboardLayout";
 import UserUploadedPostsComponent from "./components/UserPosts";
 import UserCampaignPostsComponent from "./components/UserCampaign";
 import UserEmergencyPostsComponent from "./components/UserEmergencyPosts";
 import UserProfile from "./components/UserProfile";
+import { useNavigate } from "react-router-dom";
 
 export default function UserDashboard(props) {
+  const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState(props.activeTab);
   const [showAddPost, setShowAddPost] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedin, setLogin] = useState(false);
   const [layout, setLayout] = useState(<UserDashboardLayout/>);
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+        try {
+          const user = JSON.parse(localStorage.getItem("user"));
+          console.log("Fetched user's username:", user.username);
+          if (user?.username && user?.token && user?.role === 0) setAuthenticated(true);
+          else setAuthenticated(false);
+        } catch (err) {
+          console.error("Error parsing user from localStorage:", err);
+        }
+      }, []);
 
   const styles = {
     container: {
@@ -229,7 +243,7 @@ export default function UserDashboard(props) {
     onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
     onClick={() => setIsSidebarOpen(false)}
   >
-    {isLoggedin===true?"Logout":"Login"}
+    {authenticated===true?"Logout":"Login"}
   </div>
 </div>
 

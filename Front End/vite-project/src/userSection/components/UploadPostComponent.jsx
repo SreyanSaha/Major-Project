@@ -1,10 +1,25 @@
-import { useState } from "react";
+import { useState , useEffect} from "react";
+import { useNavigate } from "react-router-dom";
 
 function UploadPost() {
+  const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(false);
   const [images, setImages] = useState([null, null, null, null, null]);
   const [location, setLocation] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+
+  useEffect(() => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        console.log("Fetched user's username:", user.username);
+        if (user?.username && user?.token && user?.role === 0) setAuthenticated(true);
+        else navigate("/user/login");
+      } catch (err) {
+        console.error("Error parsing user from localStorage:", err);
+        navigate("/user/login");
+      }
+    }, [navigate]);
 
   const handleImageChange = (index, file) => {
     const newImages = [...images];
@@ -28,12 +43,11 @@ function UploadPost() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Uploading post:", { title, description, images, location });
-    alert("Post uploaded successfully!");
+  const handleSubmit = () => {
+    
   };
 
+  if (!authenticated) return null;
   return (
     <div style={styles.container}>
         <h2 style={styles.heading}>Upload Your Post</h2>

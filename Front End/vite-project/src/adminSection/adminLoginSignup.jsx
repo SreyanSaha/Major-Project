@@ -141,11 +141,23 @@ const AdminSignup=(props)=>{
     }
     }
   };
-// const user = JSON.parse(localStorage.getItem("user"));
+// const user = JSON.parse(localStorage.getItem("admin"));
 // if (user?.authenticated) {
 //   console.log("Username:", user.username);
 //   console.log("Role:", user.role);
 // }
+
+useEffect(() => {
+      try {
+        const admin = JSON.parse(localStorage.getItem("admin"));
+        console.log("Fetched amdin's username:", admin?.username);
+        if (admin?.username && admin?.token && admin?.role === 1) navigate("/admin/dashboard");
+      } catch (err) {
+        console.error("Error parsing user from localStorage:", err);
+        updateMsg("Failed to fetch your data, please login again.");
+      }
+    }, [navigate]);
+
   const handleLogin = async () => {
     setProcessing(true);
     try{
@@ -158,16 +170,18 @@ const AdminSignup=(props)=>{
         withCredentials: true 
       });
       if(response.status===200){
-        const {username, role} = response.data;
+        const {token, username, userTypeRole} = response.data;
         localStorage.setItem(
-          "user",
+          "admin",
           JSON.stringify(
           {
             username: username,
-            role: role
+            token:token,
+            role: userTypeRole
           })
         );
         setProcessing(false);
+        navigate("/admin/dashboard");
       }else if(response.status===202){
         updateMsg(response.data);
         setProcessing(false);

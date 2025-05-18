@@ -7,7 +7,6 @@ import com.help.jwt.dto.AuthRequest;
 import com.help.jwt.dto.AuthResponse;
 import com.help.jwt.dto.RegisterWrapper;
 import com.help.jwt.service.AuthService;
-import com.help.model.OtpDetails;
 import com.help.service.AdminService;
 import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +49,7 @@ public class AuthenticationController {
     public ResponseEntity<AuthResponse> loginUser(@RequestBody AuthRequest request) {
         AuthResponse authResponse=authService.authenticate(request);
         if(authResponse==null)return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, authService.getJwtCookie(authResponse).toString()).body(authResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(authResponse);
     }
 
     @PostMapping("/admin/email/otp")
@@ -77,7 +76,7 @@ public class AuthenticationController {
         AuthResponse authResponse=authService.authenticate(request);
         if(authResponse!=null){
             if(!authService.canAdminLogin(request))return ResponseEntity.status(HttpStatus.ACCEPTED).body("Admin status is inactive. Please try again later.");
-            return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, authService.getJwtCookie(authResponse).toString()).body(authResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(authResponse);
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
     }

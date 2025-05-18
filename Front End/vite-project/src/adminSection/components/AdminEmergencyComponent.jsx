@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const EmergencyPanel = () => {
+
   const emergencies = [
     {
       type: "Emergency",
@@ -79,7 +81,7 @@ const EmergencyPanel = () => {
     fontSize: "12px",
     float: "right",
   });
-
+  
   return (
     <div style={containerStyle}>
       <div style={titleStyle}>Emergency Panel</div>

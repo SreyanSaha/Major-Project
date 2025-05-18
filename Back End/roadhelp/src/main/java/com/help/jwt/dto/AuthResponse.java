@@ -1,7 +1,5 @@
  package com.help.jwt.dto;
 
- import java.util.Date;
-
  public class AuthResponse {
      private String token;
 	 private String username;

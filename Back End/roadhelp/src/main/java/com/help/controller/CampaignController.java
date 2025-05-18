@@ -1,5 +1,6 @@
 package com.help.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.help.jwt.service.UserAuthDataService;
 import com.help.model.Campaign;
 import com.help.service.CampaignService;
@@ -10,6 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.DataInput;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -27,7 +31,10 @@ public class CampaignController {
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createCampaign(@RequestPart("campaign") Campaign campaign, List<MultipartFile> images, MultipartFile upiQRImage, String uname){
+    public ResponseEntity<?> createCampaign(@RequestPart("campaign") String campaignJson, @RequestPart("images")List<MultipartFile> images,
+                                            @RequestPart("upiQRImage")MultipartFile upiQRImage, @RequestPart("uname")String uname) throws IOException {
+        System.out.println("Working campaign");
+        Campaign campaign=new ObjectMapper().readValue(campaignJson,Campaign.class);
         String response=campaignService.createCampaign(campaign, images, upiQRImage, uname);
         if(response.equals("created"))return ResponseEntity.status(HttpStatus.CREATED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);

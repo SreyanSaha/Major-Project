@@ -19,6 +19,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -126,13 +127,6 @@ public class AuthService {
         Admin admin=adminRepository.findByUsername(request.getUsername());
         System.out.println(admin.getAdminRole() != -1 && admin.getAdminStatus() != 0);
         return admin.getAdminRole() != -1 && admin.getAdminStatus() != 0;
-    }
-
-    public ResponseCookie getJwtCookie(AuthResponse response){
-        String token=response.getToken();
-        response.setToken(null);
-        return ResponseCookie.from("token", token).httpOnly(true).secure(true)
-                .path("/").maxAge(Duration.ofHours(1)).sameSite("Strict").build();
     }
 
     public AuthResponse authenticate(AuthRequest request) {

@@ -8,7 +8,7 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -31,7 +31,7 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY)
+        return Jwts.parser().setSigningKey(SECRET_KEY.getBytes(StandardCharsets.UTF_8))
                 .parseClaimsJws(token).getBody();
     }
 
@@ -42,7 +42,7 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder().setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY.getBytes(StandardCharsets.UTF_8)).compact();
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
@@ -54,7 +54,9 @@ public class JwtUtil {
             System.out.println("Token: " + token);
             System.out.println("Extracted Username: " + username);
             System.out.println("Expected Username: " + userDetails.getUsername());
-            System.out.println("Token Expired: " + isTokenNotExpired);
+            System.out.println("Valid username: " + isUsernameValid);
+            System.out.println("Token Exp Time: " + extractExpiration(token));
+            System.out.println("Token Not Expired: " + isTokenNotExpired);
             return isUsernameValid && isTokenNotExpired;
         } catch (ExpiredJwtException e) {
             System.out.println("JWT Token Expired: " + e.getMessage());

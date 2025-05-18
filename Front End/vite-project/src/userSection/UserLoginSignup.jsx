@@ -151,15 +151,17 @@ const UserSignup = (props) => {
         withCredentials: true 
       });
       if(response.status===200){
-        const {username, role} = response.data;
+        const {token, username, userTypeRole} = response.data;
         localStorage.setItem(
           "user",
           JSON.stringify(
           {
             username: username,
-            role: role
+            token:token,
+            role: userTypeRole
           })
         );
+        console.log(JSON.parse(localStorage.getItem("user")).token);
         setProcessing(false);
         navigate("/");
       }

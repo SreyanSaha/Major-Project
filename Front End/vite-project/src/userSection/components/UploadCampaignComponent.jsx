@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import LoadingOverlay from "../../loadingComponents/Loading";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function UploadCampaign() {
   const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(false);
   const [msg,updateMsg] = useState(null);
   const [images, setImages] = useState([null, null, null, null, null]);
   const [paymentImage, setPaymentImage] = useState(null);
@@ -17,6 +18,19 @@ function UploadCampaign() {
   const [campaignType, setCampaignType] = useState(-1);
   const [processing, setProcessing] = useState(false);
 
+  useEffect(() => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        console.log("Fetched user's username:", user.username);
+        if (user?.username && user?.token && user?.role === 0) setAuthenticated(true);
+        else navigate("/user/login");
+      } catch (err) {
+        console.error("Error parsing user from localStorage:", err);
+        updateMsg("Failed to fetch your data, please login again.");
+        navigate("/user/login");
+      }
+    }, [navigate]);
+
   const handleImageChange = (index, file) => {
     const newImages = [...images];
     newImages[index] = file;
@@ -26,6 +40,8 @@ function UploadCampaign() {
   const handleSubmit = async() => {
     setProcessing(true);
     try{
+      const user=JSON.parse(localStorage.getItem("user"));
+      console.log(JSON.parse(localStorage.getItem("user")).token);
       const formData=new FormData();
       const campaign={
         "campaignTitle":title,
@@ -38,20 +54,19 @@ function UploadCampaign() {
       };
       formData.append("campaign", JSON.stringify(campaign));
       images.forEach((image)=>{
-        formData.append("image", image);
+        formData.append("images", image);
       });
       formData.append("upiQRImage", paymentImage);
+      formData.append("uname",user.username);
       const response = await axios.post("http://localhost:8080/campaign/create",formData,{
         headers:{
+            "Authorization": "Bearer "+user.token,
             "Content-Type": "multipart/form-data"
           }
       });
-      if(response.status===401 || response.status===403){
+      if(response.status===201){
         setProcessing(false);
-        useNavigate("/user/login");
-      }else if(response.status===201){
-        setProcessing(false);
-        updateMsg("Campaing post created. Waiting for admins approval.");
+        updateMsg("Campaing post created. Waiting for admin's approval.");
       }
       else if(response.status===200){
         setProcessing(false);
@@ -59,12 +74,12 @@ function UploadCampaign() {
       }
     }catch(exception){
       setProcessing(false);
-      updateMsg(exception);
       console.log(exception);
-      //navigate("/user/login");
+      updateMsg("Token expired login again!");
+      if(exception.response && (exception.response.status===401 || exception.response.status===403))navigate("/user/login");
     }
   };
-
+  if (!authenticated) return null;
   return (
     <div style={styles.container}>
       {processing?<LoadingOverlay/>:""}
@@ -212,13 +227,13 @@ const styles = {
         padding: "2px",
         color: "white",
         borderRadius: "8px",
-        width: "50%",
+        width: "80%",
         maxWidth: "80%",
         margin: "auto",
         marginBottom: "15px",
     },
   selectField: {
-  width: "95%",
+  width: "100%",
   padding: "0.8rem",
   borderRadius: "8px",
   border: "1px solid #007bff",
@@ -227,7 +242,7 @@ const styles = {
   },
   container: {
     backgroundColor: "#f0f8ff",
-    minHeight: "100vh",
+    height: "100vh",
     padding: "1rem",
     display: "flex",
     flexDirection: "column",

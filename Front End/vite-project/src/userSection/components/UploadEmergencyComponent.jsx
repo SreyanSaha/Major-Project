@@ -1,6 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function UploadEmergencyPost() {
+  const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([null, null, null, null, null]);
@@ -9,6 +12,18 @@ function UploadEmergencyPost() {
   const [location, setLocation] = useState("");
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+
+  useEffect(() => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        console.log("Fetched user's username:", user.username);
+        if (user?.username && user?.token && user?.role === 0) setAuthenticated(true);
+        else navigate("/user/login");
+      } catch (err) {
+        console.error("Error parsing user from localStorage:", err);
+        navigate("/user/login");
+      }
+    }, [navigate]);
 
   const handleStartRecording = async () => {
     try {
@@ -79,6 +94,7 @@ function UploadEmergencyPost() {
     setImages(newImages);
   };
 
+  if (!authenticated) return null;
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>Upload Emergency Post</h2>

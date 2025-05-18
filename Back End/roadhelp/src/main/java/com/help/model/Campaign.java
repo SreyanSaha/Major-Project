@@ -9,7 +9,8 @@ public class Campaign {
     private int campaignId;
     @Column(nullable = false)
     private String campaignTitle, campaignDescription, campaignOrganizerName,
-            campaignOrganizerEmail,campaignOrganizerProfileImagePath;
+            campaignOrganizerEmail;
+    private String campaignOrganizerProfileImagePath;
     private short status; // -1 = Inactive, 0 = Active, 1 = Completed
     @Column(nullable = false)
     private long campaignOrganizerContact;

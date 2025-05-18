@@ -32,8 +32,8 @@ export default function UserUploadedPostsComponent() {
   useEffect(() => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
-      console.log("Fetched user:", user);
-      if (user?.username && user?.role === 0) setAuthenticated(true);
+      console.log("Fetched user's username:", user.username);
+      if (user?.username && user?.token && user?.role === 0) setAuthenticated(true);
       else navigate("/user/login");
     } catch (err) {
       console.error("Error parsing user from localStorage:", err);

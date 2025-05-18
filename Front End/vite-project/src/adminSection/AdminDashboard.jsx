@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
+import { useNavigate } from "react-router-dom";
 import EmergencyPanel from './components/AdminEmergencyComponent';
 import AssignVolunteers from './components/AssignVolunteersComponent';
 import ManageCampaigns from './components/AdminCampaignsComponent';
@@ -43,6 +44,8 @@ const issues = [
 ];
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(false);
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [imageIndexes, setImageIndexes] = useState(
     issues.reduce((acc, issue) => {
@@ -51,12 +54,31 @@ export default function AdminDashboard() {
     }, {})
   );
 
+  useEffect(() => {
+      try {
+        const admin = JSON.parse(localStorage.getItem("admin"));
+        console.log("Fetched amdin's username:", admin?.username);
+        if (admin?.username && admin?.token && admin?.role === 1) setAuthenticated(true);
+        else navigate("/admin/login");
+      } catch (err) {
+        console.error("Error parsing user from localStorage:", err);
+        updateMsg("Failed to fetch your data, please login again.");
+        navigate("/admin/login");
+      }
+    }, [navigate]);
+
   const handleImageChange = (id, direction) => {
     setImageIndexes((prev) => {
       const totalImages = issues.find((issue) => issue.id === id).images.length;
       const newIndex = (prev[id] + direction + totalImages) % totalImages;
       return { ...prev, [id]: newIndex };
     });
+  };
+
+  const handleLogout=()=>{
+    localStorage.removeItem("admin");
+    setAuthenticated(false);
+    navigate("/admin/login");
   };
 
   const styles = {
@@ -251,8 +273,9 @@ export default function AdminDashboard() {
     'Push Notification',
     'Communication Panel',
     'Emergency Panels',
+    'Logout',
   ];
-
+  if (!authenticated) return null;
   return (
     <div style={styles.dashboardContainer}>
       <div style={styles.sidebar}>
@@ -260,7 +283,9 @@ export default function AdminDashboard() {
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {menuItems.map((item) => (
               <li key={item} style={styles.listItem(activeMenu === item)}
-              onClick={() => {setActiveMenu(item);chnageComponents(item);}}
+              onClick={() => {
+                if(item==="Logout")handleLogout();
+                else{setActiveMenu(item);chnageComponents(item);}}}
               onMouseOver={(e) =>(e.currentTarget.style.backgroundColor = '#2563eb')}
               onMouseOut={(e) =>(e.currentTarget.style.backgroundColor = activeMenu === item ? '#3b82f6' : 'transparent')}
             >
