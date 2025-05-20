@@ -15,19 +15,14 @@ import com.help.validation.AdminValidation;
 import com.help.validation.UserValidation;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.UUID;
 
 @Service
@@ -113,7 +108,7 @@ public class AuthService {
     private String saveAdminProfileImage(MultipartFile profileImage){
         try{
             if(profileImage.isEmpty() || profileImage.getSize() > (5 * 1024 * 1024))return null;
-            String profileImagePath=Paths.get("").toAbsolutePath().toString()+"/src/main/java/com/help/allMedia/adminProfileImage";
+            String profileImagePath=Paths.get("").toAbsolutePath().toString()+"/allMedia/adminProfileImage";
             Path adminProfileImagePath=Paths.get(profileImagePath);
             if(!Files.exists(adminProfileImagePath))Files.createDirectories(adminProfileImagePath);
             Path uploadPath=adminProfileImagePath.resolve(UUID.randomUUID().toString()+"_"+System.currentTimeMillis()+"_"+profileImage.getOriginalFilename());

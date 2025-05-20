@@ -1,32 +1,88 @@
 import React, { useState , useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingOverlay from "../../loadingComponents/Loading";
+import axios from "axios";
 
 export default function UserCampaignPostsComponent() {
   const navigate = useNavigate();
   const [authenticated, setAuthenticated] = useState(false);
-  const [campaigns, setCampaigns] = useState([
-    {
-      id: 1,
-      title: "Plant a Tree Campaign",
-      description: "Join us to plant trees in your locality this Sunday.",
-      image: "",
-    },
-    {
-      id: 2,
-      title: "Clothes Donation Drive",
-      description: "Donate unused clothes for the homeless during winter.",
-      image: "",
-    },
-  ]);
+  const [processing, setProcessing] = useState(false);
+  const [campaigns, setCampaigns] = useState([]);
+  const [msg,updateMsg] = useState(null);
+
+    // [{
+    //   id: 1,
+    //   title: "Plant a Tree Campaign",
+    //   description: "Join us to plant trees in your locality this Sunday.",
+    //   image: "",
+    // },
+    // {
+    //   id: 2,
+    //   title: "Clothes Donation Drive",
+    //   description: "Donate unused clothes for the homeless during winter.",
+    //   image: "",
+    // },]
 
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  const fetchUserCampaigns=async()=>{
+    try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      if(campaigns.length===0){
+        setProcessing(true);
+        const response=await axios.get("http://localhost:8080/campaign/user/all-campaigns",
+          {
+            headers:{
+                "Authorization": "Bearer "+user.token,
+                "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          setProcessing(false);
+          updateMsg(response.data);
+        }else if(response.status===202){
+          setProcessing(false);
+          setCampaigns(response.data);
+        }
+    }
+    }catch(exception){
+      console.log(exception);
+      navigate("/user/login");
+    }
+  };
+
+  const refreshCampaigns= async ()=>{
+    try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      setProcessing(true);
+      const response=await axios.get("http://localhost:8080/campaign/user/all-campaigns",
+        {
+          headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        setProcessing(false);
+        updateMsg(response.data);
+      }else if(response.status===202){
+        setProcessing(false);
+        setCampaigns(response.data);
+      }
+    
+    }catch(exception){
+      console.log(exception);
+      navigate("/user/login");
+    }
+  };
 
   useEffect(() => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
         console.log("Fetched user:", user);
-        if (user?.username && user?.role === 0) setAuthenticated(true);
+        if (user?.username && user?.role === 0) {setAuthenticated(true);fetchUserCampaigns();}
         else navigate("/user/login");
       } catch (err) {
         console.error("Error parsing user from localStorage:", err);
@@ -48,7 +104,7 @@ export default function UserCampaignPostsComponent() {
     },
     card: {
       position: "relative",
-      maxWidth:"400px",
+      width:"300px",
       height: "auto",
       backgroundColor: "#ffffff",
       padding: "1rem",
@@ -127,12 +183,32 @@ export default function UserCampaignPostsComponent() {
 
   return (
     <div>
+      {processing?<LoadingOverlay/>:""}
       <h2 style={{ textAlign: "center", color: "#2d7a2d", marginBottom: "1rem" }}>
         Your Campaign Posts
       </h2>
+      <button
+        onClick={refreshCampaigns}
+        style={{
+          margin: "0 auto 1rem auto",
+          display: "block",
+          padding: "0.5rem 1.2rem",
+          backgroundColor: "#2d7a2d",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          fontSize: "0.95rem",
+          cursor: "pointer",
+        }}
+      >
+        🔄 Refresh Feed
+      </button>
+      {msg!=null?(<div style={styles.alertDiv}>
+            <h3 style={styles.alertText}>{msg}</h3>
+          </div>):""}
       <div style={styles.cardGrid}>
         {campaigns.map((item) => (
-          <div key={item.id} style={styles.card}>
+          <div key={item.campaignId} style={styles.card}>
             {deleteConfirmId === item.id && (
               <div style={styles.confirmOverlay}>
                 <p style={{ marginBottom: "0.5rem", fontWeight: "600" }}>Confirm Delete?</p>
@@ -152,9 +228,9 @@ export default function UserCampaignPostsComponent() {
                 </div>
               </div>
             )}
-            <div style={styles.imagePlaceholder}></div>
-            <div style={styles.title}>{item.title}</div>
-            <div style={styles.desc}>{item.description}</div>
+            <div style={styles.imagePlaceholder}><img style={{ width: "100%", height: "180px", objectFit: "contain" }} src={`http://localhost:8080/media${item.imagePath1.replace("\\", "/")}`}/></div>
+            <div style={styles.title}>{item.campaignTitle}</div>
+            <div style={styles.desc}>{item.campaignDescription}</div>
             <div style={styles.actions}>
               <button style={{ ...styles.button, ...styles.editBtn }}>Edit</button>
               <button

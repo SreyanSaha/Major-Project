@@ -31,7 +31,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/user/register", "/auth/user/login","/auth/admin/register","/auth/admin/login",
-                        "/auth/user/email/otp","/auth/user/otp/verify","/auth/admin/email/otp","/auth/admin/otp/verify").permitAll().anyRequest().authenticated())
+                        "/auth/user/email/otp","/auth/user/otp/verify","/auth/admin/email/otp","/auth/admin/otp/verify","/media/**").permitAll().anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider()).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).build();
     }
 

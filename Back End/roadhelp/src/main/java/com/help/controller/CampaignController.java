@@ -39,4 +39,11 @@ public class CampaignController {
         if(response.equals("created"))return ResponseEntity.status(HttpStatus.CREATED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @GetMapping("/user/all-campaigns")
+    public ResponseEntity<?> getUserAllCampaigns(){
+        List<Campaign> campaigns=campaignService.getAllCampaignsOfUser();
+        if(campaigns.isEmpty())return ResponseEntity.status(HttpStatus.OK).body("No campaign pots found.");
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(campaigns);
+    }
 }

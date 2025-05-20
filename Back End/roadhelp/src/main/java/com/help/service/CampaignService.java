@@ -43,12 +43,12 @@ public class CampaignService {
         campaign.setCampaignOrganizerContact(user.get().getUserPhoneNumber());
         String []campaignPaths=saveCampaignImages(images, upiQRImage);
         if(campaignPaths==null)return "Failed to create campaign.";
-        campaign.setUpiImage(campaignPaths[0]);
-        campaign.setImagePath1(campaignPaths[1]);
-        campaign.setImagePath2(campaignPaths[2]);
-        campaign.setImagePath3(campaignPaths[3]);
-        campaign.setImagePath4(campaignPaths[4]);
-        campaign.setImagePath5(campaignPaths[5]);
+        campaign.setUpiImage(campaignPaths[0].replace(Paths.get("").toAbsolutePath().toString()+"\\allMedia",""));
+        campaign.setImagePath1(campaignPaths[1].replace(Paths.get("").toAbsolutePath().toString()+"\\allMedia",""));
+        campaign.setImagePath2(campaignPaths[2].replace(Paths.get("").toAbsolutePath().toString()+"\\allMedia",""));
+        campaign.setImagePath3(campaignPaths[3].replace(Paths.get("").toAbsolutePath().toString()+"\\allMedia",""));
+        campaign.setImagePath4(campaignPaths[4].replace(Paths.get("").toAbsolutePath().toString()+"\\allMedia",""));
+        campaign.setImagePath5(campaignPaths[5].replace(Paths.get("").toAbsolutePath().toString()+"\\allMedia",""));
         campaignRepository.save(campaign);
         return "created";
     }
@@ -57,7 +57,7 @@ public class CampaignService {
         String []imagePaths=new String[6];int count=0;Path rootPath=Paths.get("");
         try{
             if(upiQRImage.isEmpty() || upiQRImage.getSize() > (5 * 1024 * 1024))return null;
-            String campaignUpi=rootPath.toAbsolutePath().toString()+"/src/main/java/com/help/allMedia/campaignPaymentImageUPI";
+            String campaignUpi=rootPath.toAbsolutePath().toString()+"/allMedia/campaignPaymentImageUPI";
             Path campaignUpiPath=Paths.get(campaignUpi);
             if(!Files.exists(campaignUpiPath))Files.createDirectories(campaignUpiPath);
             Path upiUploadPath=campaignUpiPath.resolve(UUID.randomUUID().toString()+"_"+System.currentTimeMillis()+"_"+upiQRImage.getOriginalFilename());
@@ -65,7 +65,7 @@ public class CampaignService {
             upiQRImage.transferTo(upiUploadPath.toFile());
             for(MultipartFile image:images){
                 if(image.isEmpty() || image.getSize() > (5 * 1024 * 1024))return null;
-                String campaignImagePath=rootPath.toAbsolutePath().toString()+"/src/main/java/com/help/allMedia/campaignImages";
+                String campaignImagePath=rootPath.toAbsolutePath().toString()+"/allMedia/campaignImages";
                 Path campaignPath=Paths.get(campaignImagePath);
                 if(!Files.exists(campaignPath))Files.createDirectories(campaignPath);
                 Path uploadPath=campaignPath.resolve(UUID.randomUUID().toString()+"_"+System.currentTimeMillis()+"_"+image.getOriginalFilename());
@@ -78,5 +78,10 @@ public class CampaignService {
             for(String path:imagePaths) try{Files.delete(Paths.get(path));}catch (Exception e1){System.out.println(e1.toString());}
         }
         return null;
+    }
+
+    public List<Campaign> getAllCampaignsOfUser() {
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        return campaignRepository.findAllCampaignsOfUser(username);
     }
 }
