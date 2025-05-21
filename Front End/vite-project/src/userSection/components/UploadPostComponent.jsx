@@ -8,6 +8,10 @@ function UploadPost() {
   const [location, setLocation] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [zip, setZip] = useState("");
 
   useEffect(() => {
       try {
@@ -43,8 +47,36 @@ function UploadPost() {
     }
   };
 
-  const handleSubmit = () => {
-    
+  const handleSubmit = async() => {
+    setProcessing(true);
+    try{
+      const user=JSON.parse(localStorage.getItem("user"));
+      console.log(JSON.parse(localStorage.getItem("user")).token);
+      const formData=new FormData();
+      const post={
+        
+      };
+      formData.append("post", JSON.stringify(campaign));
+      images.forEach((image)=>{
+        formData.append("images", image);
+      });
+      formData.append("uname",user.username);
+      const response = await axios.post("http://localhost:8080/post/create",formData,{
+        headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "multipart/form-data"
+          }
+      });
+      if(response.status===200){
+        setProcessing(false);
+        updateMsg(response.data);
+      }
+    }catch(exception){
+      setProcessing(false);
+      console.log(exception);
+      updateMsg("Token expired login again!");
+      if(exception.response && (exception.response.status===401 || exception.response.status===403))navigate("/user/login");
+    }
   };
 
   if (!authenticated) return null;
@@ -106,6 +138,41 @@ function UploadPost() {
             placeholder="Current Location"
             style={styles.input}
             readOnly
+          />
+        </div>
+
+        <div style={styles.addressSection}>
+          <input
+            type="text"
+            placeholder="Address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            style={styles.input}
+            required
+          />
+          <input
+            type="text"
+            placeholder="City"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            style={styles.input}
+            required
+          />
+          <input
+            type="text"
+            placeholder="State"
+            value={state}
+            onChange={(e) => setState(e.target.value)}
+            style={styles.input}
+            required
+          />
+          <input
+            type="text"
+            placeholder="ZIP Code"
+            value={zip}
+            onChange={(e) => setZip(e.target.value)}
+            style={styles.input}
+            required
           />
         </div>
 
@@ -211,6 +278,11 @@ const styles = {
     cursor: "pointer",
     fontWeight: "bold",
     transition: "background-color 0.3s",
+  },
+  addressSection: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
   },
   submitButton: {
     marginTop: "1rem",

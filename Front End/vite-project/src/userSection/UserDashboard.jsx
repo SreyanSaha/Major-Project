@@ -4,6 +4,7 @@ import UserUploadedPostsComponent from "./components/UserPosts";
 import UserCampaignPostsComponent from "./components/UserCampaign";
 import UserEmergencyPostsComponent from "./components/UserEmergencyPosts";
 import UserProfile from "./components/UserProfile";
+import CampaignPostCard from "./components/CampaignFullPostComponent";
 import { useNavigate } from "react-router-dom";
 
 export default function UserDashboard(props) {

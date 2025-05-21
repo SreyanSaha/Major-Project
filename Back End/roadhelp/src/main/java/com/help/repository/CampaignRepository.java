@@ -1,6 +1,6 @@
 package com.help.repository;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.help.dto.UserCampaign;
 import com.help.model.Campaign;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,6 +11,6 @@ import java.util.List;
 
 @Repository
 public interface CampaignRepository extends JpaRepository<Campaign, Integer> {
-    @Query(value = "SELECT c.* FROM campaign c JOIN user_auth_data a ON c.user_id=a.user_id WHERE a.username=:username", nativeQuery = true)
-    List<Campaign> findAllCampaignsOfUser(@Param("username") String username);
+    @Query("SELECT new com.help.dto.UserCampaign(c.campaignId, c.campaignTitle, c.campaignDescription, c.status, c.imagePath1) FROM Campaign c JOIN c.user.authData a WHERE a.username = :username")
+    List<UserCampaign> findAllCampaignsOfUser(@Param("username") String username);
 }

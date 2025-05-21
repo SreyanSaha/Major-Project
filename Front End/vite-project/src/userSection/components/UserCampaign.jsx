@@ -209,13 +209,13 @@ export default function UserCampaignPostsComponent() {
       <div style={styles.cardGrid}>
         {campaigns.map((item) => (
           <div key={item.campaignId} style={styles.card}>
-            {deleteConfirmId === item.id && (
+            {deleteConfirmId === item.campaignId && (
               <div style={styles.confirmOverlay}>
                 <p style={{ marginBottom: "0.5rem", fontWeight: "600" }}>Confirm Delete?</p>
                 <div>
                   <button
                     style={{ ...styles.confirmBtn, ...styles.confirmYes }}
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => handleDelete(item.campaignId)}
                   >
                     Yes
                   </button>
@@ -231,11 +231,21 @@ export default function UserCampaignPostsComponent() {
             <div style={styles.imagePlaceholder}><img style={{ width: "100%", height: "180px", objectFit: "contain" }} src={`http://localhost:8080/media${item.imagePath1.replace("\\", "/")}`}/></div>
             <div style={styles.title}>{item.campaignTitle}</div>
             <div style={styles.desc}>{item.campaignDescription}</div>
+
+            <div
+              style={{
+              ...styles.statusBadge,
+              backgroundColor:item.status === 0 ? "#d4edda" : "#f8d7da",
+              color:item.status === 0 ? "#155724" : "#721c24",}}
+            >
+              {item.status === 0 ? "Accepted" : "Not Accepted"}
+            </div>
+
             <div style={styles.actions}>
               <button style={{ ...styles.button, ...styles.editBtn }}>Edit</button>
               <button
                 style={{ ...styles.button, ...styles.deleteBtn }}
-                onClick={() => setDeleteConfirmId(item.id)}
+                onClick={() => setDeleteConfirmId(item.campaignId)}
               >
                 Delete
               </button>

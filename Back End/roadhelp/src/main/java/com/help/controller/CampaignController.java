@@ -1,6 +1,7 @@
 package com.help.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.help.dto.UserCampaign;
 import com.help.jwt.service.UserAuthDataService;
 import com.help.model.Campaign;
 import com.help.service.CampaignService;
@@ -11,8 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.List;
 
@@ -20,14 +19,10 @@ import java.util.List;
 @RequestMapping("/campaign")
 public class CampaignController {
     private final CampaignService campaignService;
-    private final UserService userService;
-    private final UserAuthDataService userAuthDataService;
 
     @Autowired
-    public CampaignController(CampaignService campaignService, UserService userService, UserAuthDataService userAuthDataService){
+    public CampaignController(CampaignService campaignService){
         this.campaignService=campaignService;
-        this.userService=userService;
-        this.userAuthDataService=userAuthDataService;
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -42,7 +37,7 @@ public class CampaignController {
 
     @GetMapping("/user/all-campaigns")
     public ResponseEntity<?> getUserAllCampaigns(){
-        List<Campaign> campaigns=campaignService.getAllCampaignsOfUser();
+        List<UserCampaign> campaigns=campaignService.getAllCampaignsOfUser();
         if(campaigns.isEmpty())return ResponseEntity.status(HttpStatus.OK).body("No campaign pots found.");
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(campaigns);
     }
