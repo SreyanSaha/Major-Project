@@ -1,39 +1,21 @@
 import React, { useState , useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingOverlay from "../../loadingComponents/Loading";
+import axios from "axios";
 
 export default function UserUploadedPostsComponent() {
   const navigate = useNavigate();
+  const [msg,updateMsg] = useState(null);
   const [authenticated, setAuthenticated] = useState(false);
-
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "Clean Water Campaign",
-      description: "Promoting clean water access in rural areas.",
-      image: "",
-    },
-    {
-      id: 2,
-      title: "Emergency Road Block",
-      description: "Blocked road near Sector 5, Salt Lake. Needs attention.",
-      image: "",
-    },
-    {
-      id: 3,
-      title: "Food Distribution Drive",
-      description: "Join us in helping the underprivileged this weekend.",
-      image: "",
-    },
-  ]);
-
+  const [posts, setPosts] = useState([]);
+  const [processing, setProcessing] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   useEffect(() => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
-      console.log("Fetched user's username:", user.username);
-      if (user?.username && user?.token && user?.role === 0) setAuthenticated(true);
+      console.log("Fetched user:", user);
+      if (user?.username && user?.role === 0) {setAuthenticated(true);fetchUserPosts();}
       else navigate("/user/login");
     } catch (err) {
       console.error("Error parsing user from localStorage:", err);
@@ -44,6 +26,59 @@ export default function UserUploadedPostsComponent() {
   const handleDelete = (id) => {
     setPosts(posts.filter((post) => post.id !== id));
     setDeleteConfirmId(null);
+  };
+
+  const fetchUserPosts=async()=>{
+    try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      if(posts.length===0){
+        setProcessing(true);
+        const response=await axios.get("http://localhost:8080/post/user/all-posts",
+          {
+            headers:{
+                "Authorization": "Bearer "+user.token,
+                "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          setProcessing(false);
+          updateMsg(response.data);
+        }else if(response.status===202){
+          setProcessing(false);
+          setPosts(response.data);
+        }
+    }
+    }catch(exception){
+      console.log(exception);
+      navigate("/user/login");
+    }
+  };
+
+  const refreshPosts= async ()=>{
+    try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      setProcessing(true);
+      const response=await axios.get("http://localhost:8080/post/user/all-posts",
+        {
+          headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        setProcessing(false);
+        updateMsg(response.data);
+      }else if(response.status===202){
+        setProcessing(false);
+        setPosts(response.data);
+      }
+    
+    }catch(exception){
+      console.log(exception);
+      navigate("/user/login");
+    }
   };
 
   const styles = {
@@ -132,22 +167,41 @@ export default function UserUploadedPostsComponent() {
     },
   };
   if (!authenticated) return null;
-  // <LoadingOverlay/>
   return (
     <div>
+      {processing?<LoadingOverlay/>:""}
       <h2 style={{ textAlign: "center", color: "#11398f", marginBottom: "1rem" }}>
         Your Uploaded Posts
       </h2>
+      <button
+        onClick={refreshPosts}
+        style={{
+          margin: "0 auto 1rem auto",
+          display: "block",
+          padding: "0.5rem 1.2rem",
+          backgroundColor: "#2d7a2d",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          fontSize: "0.95rem",
+          cursor: "pointer",
+        }}
+      >
+        🔄 Refresh Feed
+      </button>
+      {msg!=null?(<div style={styles.alertDiv}>
+            <h3 style={styles.alertText}>{msg}</h3>
+          </div>):""}
       <div style={styles.cardGrid}>
         {posts.map((post) => (
-          <div key={post.id} style={styles.card}>
-            {deleteConfirmId === post.id && (
+          <div key={post.postId} style={styles.card}>
+            {deleteConfirmId === post.postId && (
               <div style={styles.confirmOverlay}>
                 <p style={{ marginBottom: "0.5rem", fontWeight: "600" }}>Confirm Delete?</p>
                 <div>
                   <button
                     style={{ ...styles.confirmBtn, ...styles.confirmYes }}
-                    onClick={() => handleDelete(post.id)}
+                    onClick={() => handleDelete(post.postId)}
                   >
                     Yes
                   </button>
@@ -160,9 +214,36 @@ export default function UserUploadedPostsComponent() {
                 </div>
               </div>
             )}
-            <div style={styles.imagePlaceholder}></div>
-            <div style={styles.title}>{post.title}</div>
-            <div style={styles.desc}>{post.description}</div>
+            <div style={styles.imagePlaceholder}><img style={{ width: "100%", height: "180px", objectFit: "contain" }} src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`}/></div>
+            <div style={styles.title}>{post.postTitle}</div>
+            <div style={styles.desc}>{post.postDescription}</div>
+            <div
+              style={{
+                fontWeight: "bold",
+                color:
+                  post.postStatus === 1
+                    ? "green"
+                    : post.postStatus === 0
+                    ? "#e67e22"
+                    : "#d9534f",
+                backgroundColor:
+                  post.postStatus === 1
+                    ? "#dff0d8"
+                    : post.postStatus === 0
+                    ? "#fcf8e3"
+                    : "#f2dede",
+                padding: "0.3rem 0.6rem",
+                borderRadius: "5px",
+                display: "inline-block",
+                fontSize: "0.85rem",
+              }}
+            >
+              {post.postStatus === 1
+                ? "Completed"
+                : post.postStatus === 0
+                ? "Work in Progress"
+                : "Under Review"}
+            </div>
             <div style={styles.actions}>
               <button style={{ ...styles.button, ...styles.editBtn }}>Edit</button>
               <button

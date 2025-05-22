@@ -3,7 +3,7 @@ import UploadPost from "./UploadPostComponent";
 import UploadCampaign from "./UploadCampaignComponent";
 import UploadEmergencyPost from "./UploadEmergencyComponent";
 
-export default function UserDashboardLayout() {
+export default function UserDashboardLayout({setLayout}) {
   const [activeTab, setActiveTab] = useState("posts");
   const [showAddPost, setShowAddPost] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

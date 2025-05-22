@@ -32,7 +32,6 @@ public class CampaignService {
         if(!uname.equals(username))return "Invalid username!";
         System.out.println("Username:"+username);
         Optional<User> user=userRepository.findByUsername(username);
-        if(user.isEmpty())return "User does not exists.";
         campaign.setUser(user.get());
         campaign.setCampaignOrganizerName(user.get().getUserFirstName()+" "+user.get().getUserLastName());
         campaign.setCampaignOrganizerProfileImagePath(user.get().getProfileImagePath());

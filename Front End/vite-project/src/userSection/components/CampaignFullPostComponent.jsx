@@ -5,12 +5,13 @@ const CampaignPostCard = (props) => {
   const navigate = useNavigate();
   const [imageIndex, setImageIndex] = useState(0);
   const [showComments, setShowComments] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
         try {
           const user = JSON.parse(localStorage.getItem("user"));
           console.log("Fetched user:", user);
-          if (user?.username && user?.role === 0) {setAuthenticated(true);fetchUserCampaigns();}
+          if (user?.username && user?.role === 0) setAuthenticated(true);
           else navigate("/user/login");
         } catch (err) {
           console.error("Error parsing user from localStorage:", err);
@@ -22,13 +23,13 @@ const CampaignPostCard = (props) => {
     campaignTitle: "Beach Cleanup Drive",
     campaignDescription: "Join us this weekend to clean the local beach and make it better for all!",
     organizerName: "Eco Warriors",
-    organizerImage: "https://via.placeholder.com/100x100.png?text=Organizer",
+    organizerImage: "",
     images: [
-      "https://via.placeholder.com/600x300.png?text=Campaign+Image+1",
-      "https://via.placeholder.com/600x300.png?text=Campaign+Image+2",
-      "https://via.placeholder.com/600x300.png?text=Campaign+Image+3"
+      "",
+      "",
+      ""
     ],
-    paymentQr: "https://via.placeholder.com/150x150.png?text=Payment+QR"
+    paymentQr: ""
   };
 
   const nextImage = () => {
@@ -129,6 +130,7 @@ const CampaignPostCard = (props) => {
     },
   };
 
+  if (!authenticated) return null;
   return (
     <div style={styles.card}>
       {/* Organizer Info */}

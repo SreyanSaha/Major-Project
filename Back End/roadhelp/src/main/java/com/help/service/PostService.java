@@ -1,14 +1,18 @@
 package com.help.service;
 
+import com.help.dto.UserPost;
 import com.help.model.*;
 import com.help.repository.*;
 import com.help.validation.PostValidation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 @Service
 public class PostService {
@@ -30,21 +34,43 @@ public class PostService {
         this.userRepository = userRepository;
     }
 
-    public Map<String, Object> createPost(Post post, String username) {
+    public String createPost(List<MultipartFile> images, Post post, String uname) {
         String msg=postValidation.isValidPostDetails(post);
-        if(!msg.equals("Validated")){
-            Map<String, Object> response=new HashMap<String, Object>();
-            response.put("msg", msg);
-            return response;
+        if(!msg.equals("Validated"))return msg;
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();String root=Paths.get("").toAbsolutePath().toString();
+        if(!uname.equals(username))return "Invalid username!";
+        Optional<User> user=userRepository.findByUsername(username);
+        post.setUser(user.get());
+        post.setAuthorProfileImagePath(user.get().getProfileImagePath());
+        post.setAuthorProfileName(user.get().getUserFirstName()+" "+user.get().getUserLastName());
+        String []postImagePaths=savePostImages(images, root);
+        if(postImagePaths==null)return "Failed to create post.";
+        post.setImagePath1(postImagePaths[0].replace(root+"\\allMedia",""));
+        post.setImagePath2(postImagePaths[1].replace(root+"\\allMedia",""));
+        post.setImagePath3(postImagePaths[2].replace(root+"\\allMedia",""));
+        post.setImagePath4(postImagePaths[3].replace(root+"\\allMedia",""));
+        post.setImagePath5(postImagePaths[4].replace(root+"\\allMedia",""));
+        postRepository.save(post);
+        return "created";
+    }
+
+    private String[] savePostImages(List<MultipartFile> images, String root){
+        String []imagePaths=new String[5];int count=0;
+        try{
+            for(MultipartFile image:images){
+                if(image.isEmpty() || image.getSize() > (5 * 1024 * 1024))return null;
+                Path postImagePath=Paths.get(root+"/allMedia/postImages");
+                if(!Files.exists(postImagePath))Files.createDirectories(postImagePath);
+                Path uploadPath=postImagePath.resolve(UUID.randomUUID().toString()+"_"+System.currentTimeMillis()+"_"+image.getOriginalFilename());
+                imagePaths[count++]=uploadPath.toString();
+                image.transferTo(uploadPath.toFile());
+            }
+            return imagePaths;
+        }catch (Exception e){
+            e.printStackTrace();
+            for(String path:imagePaths) try{Files.delete(Paths.get(path));}catch (Exception e1){System.out.println(e1.toString());}
         }
-        User user=userRepository.findByUsername(username).get();
-        post.setUser(user);
-        post.setAuthorProfileName(user.getUserFirstName()+" "+user.getUserLastName());
-        post.setAuthorProfileImagePath(user.getProfileImagePath());
-        user=null;
-        Map<String, Object> response=new HashMap<String, Object>();
-        response.put("post", postRepository.save(post));
-        return response;
+        return null;
     }
 
     public String getPostLocation(int postId) {
@@ -196,5 +222,10 @@ public class PostService {
 
     public List<Post> getAllPosts() {
        return postRepository.findAllPost();
+    }
+
+    public List<UserPost> getAllPostsOfUser() {
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        return postRepository.findAllPostsOfUser(username);
     }
 }

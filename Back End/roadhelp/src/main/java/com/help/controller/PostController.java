@@ -1,6 +1,9 @@
 package com.help.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.help.dto.UserPost;
 import com.help.jwt.service.UserAuthDataService;
+import com.help.model.Post;
 import com.help.model.PostComment;
 import com.help.service.PostService;
 import com.help.service.UserService;
@@ -28,12 +31,25 @@ public class PostController {
         this.userService = userService;
         this.userAuthDataService = userAuthDataService;
     }
+
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPost(@RequestPart("post") String postJson,
                                         @RequestPart("images") List<MultipartFile> images,
                                         @RequestPart("uname")String uname){
+        System.out.println("Creating post ");
+        Post post=null;
+        try{post=new ObjectMapper().readValue(postJson, Post.class);}
+        catch(Exception e){e.printStackTrace();return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create post.");}
+        String response=postService.createPost(images,post,uname);
+        if(response.equals("created"))return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
-        return ResponseEntity.status(HttpStatus.OK).body("");
+    @GetMapping("/user/all-posts")
+    public ResponseEntity<?> getUserAllPosts(){
+        List<UserPost> posts=postService.getAllPostsOfUser();
+        if(posts.isEmpty())return ResponseEntity.status(HttpStatus.OK).body("No posts found.");
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(posts);
     }
 
 //    @GetMapping("/nearby")

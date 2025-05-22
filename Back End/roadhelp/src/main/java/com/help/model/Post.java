@@ -10,7 +10,8 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int postId;
     @Column(nullable = false)
-    private String authorProfileName, authorProfileImagePath;
+    private String authorProfileName;
+    private String authorProfileImagePath;
     @Column(nullable = false)
     private LocalDateTime postUploadDateTime;
     @Column(nullable = false)
@@ -19,9 +20,7 @@ public class Post {
     @Column(nullable = false)
     private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;
     private String afterWorkImagePath1, afterWorkImagePath2, afterWorkImagePath3, afterWorkImagePath4, afterWorkImagePath5;
-    @Column(nullable = false)
     private Double latitude;
-    @Column(nullable = false)
     private Double longitude;
     @Column(nullable = false)
     private String street;
@@ -49,6 +48,7 @@ public class Post {
         this.upVoteCount=this.commentCount=this.downVoteCount=0;
         this.postStatus=(short)-1;
         this.postReports=0;
+        this.country="India";
     }
 
     public Double getLatitude() {

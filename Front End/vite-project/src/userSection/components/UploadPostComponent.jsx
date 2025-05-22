@@ -1,8 +1,12 @@
 import { useState , useEffect} from "react";
 import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "../../loadingComponents/Loading";
+import axios from "axios";
 
 function UploadPost() {
   const navigate = useNavigate();
+  const [msg,updateMsg] = useState(null);
+  const [processing, setProcessing] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [images, setImages] = useState([null, null, null, null, null]);
   const [location, setLocation] = useState("");
@@ -51,12 +55,16 @@ function UploadPost() {
     setProcessing(true);
     try{
       const user=JSON.parse(localStorage.getItem("user"));
-      console.log(JSON.parse(localStorage.getItem("user")).token);
       const formData=new FormData();
       const post={
-        
+        "postTitle":title,
+        "postDescription":description,
+        "street":address,
+        "city":city,
+        "state":state,
+        "postalCode":zip
       };
-      formData.append("post", JSON.stringify(campaign));
+      formData.append("post", JSON.stringify(post));
       images.forEach((image)=>{
         formData.append("images", image);
       });
@@ -67,7 +75,10 @@ function UploadPost() {
             "Content-Type": "multipart/form-data"
           }
       });
-      if(response.status===200){
+      if(response.status===201){
+        setProcessing(false);
+        updateMsg("Post created.");
+      }else if(response.status===200){
         setProcessing(false);
         updateMsg(response.data);
       }
@@ -82,9 +93,12 @@ function UploadPost() {
   if (!authenticated) return null;
   return (
     <div style={styles.container}>
+        {processing?<LoadingOverlay/>:""}
         <h2 style={styles.heading}>Upload Your Post</h2>
-
-      <form onSubmit={handleSubmit} style={styles.form}>
+        {msg!=null?(<div style={styles.alertDiv}>
+              <h3 style={styles.alertText}>{msg}</h3>
+            </div>):""}
+      <form style={styles.form} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
         <input
           type="text"
           placeholder="Enter Post Title"
@@ -185,8 +199,21 @@ function UploadPost() {
 }
 
 const styles = {
+  alertDiv:{
+        textAlign: "center",
+    },
+    alertText: {
+        backgroundColor: "rgb(255, 64, 57)",
+        padding: "2px",
+        color: "white",
+        borderRadius: "8px",
+        width: "100%",
+        marginBottom: "15px",
+        margin: "auto",
+        marginTop:"-10px",
+    },
   container: {
-    backgroundColor: "#f0f8ff", // Light blue
+    backgroundColor: "#f0f8ff",
     minHeight: "100vh",
     padding: "2rem",
     display: "flex",
@@ -203,7 +230,7 @@ const styles = {
     borderRadius: "12px",
     boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
     width: "100%",
-    maxWidth: "600px",
+    maxWidth: "700px",
     display: "flex",
     flexDirection: "column",
     gap: "1.5rem",

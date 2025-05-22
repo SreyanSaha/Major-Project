@@ -2,6 +2,8 @@ package com.help.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 public class Campaign {
     @Id
@@ -25,6 +27,7 @@ public class Campaign {
     private String country;
     @Column(nullable = false)
     private String postalCode;
+    private LocalDateTime campaignCreationTime;
     @Column(nullable = false)
     private short campaignType;//Donation -> -1, Awareness -> 0, Volunteer -> 1
     @ManyToOne
@@ -38,6 +41,15 @@ public class Campaign {
     protected void onCreate(){
         this.status=-1;
         this.country="India";
+        this.campaignCreationTime=LocalDateTime.now();
+    }
+
+    public LocalDateTime getCampaignCreationTime() {
+        return campaignCreationTime;
+    }
+
+    public void setCampaignCreationTime(LocalDateTime campaignCreationTime) {
+        this.campaignCreationTime = campaignCreationTime;
     }
 
     public String getUpiImage() {

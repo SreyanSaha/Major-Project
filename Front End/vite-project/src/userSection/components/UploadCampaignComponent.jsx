@@ -228,9 +228,8 @@ const styles = {
         color: "white",
         borderRadius: "8px",
         width: "80%",
-        maxWidth: "80%",
         margin: "auto",
-        marginBottom: "15px",
+        marginBottom: "10px",
     },
   selectField: {
   width: "100%",

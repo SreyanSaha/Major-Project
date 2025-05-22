@@ -3,6 +3,7 @@ import UserAuth from './userSection/UserLoginSignup'
 import AdminDashboard from './adminSection/AdminDashboard'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import UserDashboard from './userSection/UserDashboard'
+import CampaignPostCard from './userSection/components/CampaignFullPostComponent'
 function App() {
   return (
     <Router>
@@ -18,7 +19,7 @@ function App() {
         <Route path="/admin/signup" element={<AdminAuth />} />
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        
+        <Route path="/campaign" element={<CampaignPostCard/>}/>
       </Routes>
     </Router>
   )
