@@ -13,13 +13,14 @@ public class AdminValidation {
     private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s]*$");
     private static final Pattern EMPLOYEE_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9\\-_.#/]+$");
     private static final Pattern COMPANY_NAME = Pattern.compile("^[a-zA-Z0-9&.,'()\\- ]{2,100}$");
+    private static final Pattern ADDRESS_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s,'./#\\-()&@]+$");
 
     public String isValidAdminDetails(Admin admin) {
         if(!isValidName(admin.getAdminFirstName())) return "Admin first name is invalid.";
         if(!isValidName(admin.getAdminLastName())) return "Admin last name is invalid.";
         if(!isValidEmail(admin.getAdminEmailId())) return "Admin email is invalid.";
         if(!isValidPhone(String.valueOf(admin.getAdminPhoneNumber()))) return "Admin phone number is invalid.";
-        if(!isValidAlphanumeric(admin.getStreet()))return "Admin address is invalid.";
+        if(!isValidAddress(admin.getStreet()))return "Admin address is invalid.";
         if(!isValidName(admin.getCity()))return "Admin city is invalid.";
         if(!isValidName(admin.getState()))return "Admin state is invalid.";
         if(!isValidZipCode(admin.getZipCode())) return "Admin zip code is invalid.";
@@ -28,6 +29,12 @@ public class AdminValidation {
         if(!isValidCompanyName(admin.getAdminCompanyName()))return "Admin organization name is invalid.";
         return "Validated.";
     }
+
+    public boolean isValidAddress(String address){
+        if(address==null || address.trim().isEmpty())return false;
+        return ADDRESS_PATTERN.matcher(address.trim()).matches();
+    }
+
     public boolean isValidAlphanumeric(String text){
         if(text==null || text.trim().isEmpty())return false;
         return ALPHANUMERIC_PATTERN.matcher(text.trim()).matches();

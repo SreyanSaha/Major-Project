@@ -20,7 +20,7 @@ public class EmailService{
             mail.setTo(toEmail);mail.setSubject(subject);
             mail.setText(body);javaMailSender.send(mail);
             return true;
-        }catch (Exception e){e.fillInStackTrace();}
+        }catch (Exception e){e.printStackTrace();}
         return false;
     }
 }

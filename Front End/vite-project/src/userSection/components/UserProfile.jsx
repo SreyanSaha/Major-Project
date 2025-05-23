@@ -1,32 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useState , useEffect} from "react";
+import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "../../loadingComponents/Loading";
+import axios from "axios";
 
 export default function UserProfile() {
-  const [user, setUser] = useState(null);
-  const [formData, setFormData] = useState({});
+  const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [profilePreview, setProfilePreview] = useState("");
+  const [userProfile, setUserProfile] = useState({});
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [country, setCountry] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [zip, setZip] = useState("");
+  const [profileImage, setProfileImage] = useState("");
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    // Simulate fetching user data (replace with API call if needed)
-    const storedUser = JSON.parse(localStorage.getItem("user")) || {
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      address: "123 Main Street",
-      city: "Kolkata",
-      state: "West Bengal",
-      zip: "700001",
-      profileImage: "",
-    };
-    setUser(storedUser);
-    setFormData(storedUser);
-    setProfilePreview(storedUser.profileImage || "");
-  }, []);
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        console.log("Fetched user's username:", user.username);
+        if (user?.username && user?.token && user?.role === 0) {setAuthenticated(true);fetchUserProfile();}
+        else navigate("/user/login");
+      } catch (err) {
+        console.error("Error parsing user from localStorage:", err);
+        updateMsg("Failed to fetch your data, please login again.");
+        navigate("/user/login");
+      }
+    }, [navigate]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -40,25 +46,46 @@ export default function UserProfile() {
     }
   };
 
+  const fetchUserProfile = async (username) =>{
+    try{
+      if(userProfile===null){
+        const user = JSON.parse(localStorage.getItem("user"));
+        const response = await axios.get(`http://localhost:8080/user/profile?uname=${user.username}`,
+          {
+            headers:{
+                "Authorization": "Bearer "+user.token,
+                "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          setProcessing(false);
+          setUserProfile(response.data);
+          console.log(response.data);
+        }else if(response.status===202){
+          setProcessing(false);
+          
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+    }
+  };
+
   const handleUpdate = () => {
-    // TODO: connect to backend update API
-    localStorage.setItem("user", JSON.stringify(formData));
-    alert("Profile updated successfully!");
+    
   };
 
   const handleDelete = () => {
-    localStorage.removeItem("user");
-    alert("User deleted.");
-    setUser(null);
-    setConfirmDelete(false);
+    
   };
 
-  if (!user)
-    return (
-      <div style={{ textAlign: "center", marginTop: "3rem", color: "#11398f" }}>
-        User not found.
-      </div>
-    );
+  // if (!user)
+  //   return (
+  //     <div style={{ textAlign: "center", marginTop: "3rem", color: "#11398f" }}>
+  //       User not found.
+  //     </div>
+  //   );
 
   const styles = {
     container: {
@@ -222,14 +249,14 @@ export default function UserProfile() {
       boxShadow: "0 3px 8px rgba(30, 60, 180, 0.5)",
     },
   };
-
+  if (!authenticated) return null;
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>User Profile</h2>
 
       <div style={styles.profileImageWrapper}>
         <img
-          src={profilePreview || "https://via.placeholder.com/130?text=Profile"}
+          src={profilePreview || ""}
           alt="Profile"
           style={styles.profileImage}
         />
@@ -244,7 +271,7 @@ export default function UserProfile() {
         />
       </div>
 
-      <form style={styles.form} onSubmit={(e) => e.preventDefault()}>
+      <form style={styles.form} onSubmit={(e) => {e.preventDefault(); handleUpdate();}}>
         <label style={styles.label} htmlFor="firstName">
           First Name
         </label>
@@ -252,8 +279,8 @@ export default function UserProfile() {
           id="firstName"
           name="firstName"
           type="text"
-          value={formData.firstName || ""}
-          onChange={handleChange}
+          value={userProfile.userFirstName || ""}
+          onChange={(e) => setFirstName(e.target.value)}
           style={styles.input}
           required
         />
@@ -265,8 +292,8 @@ export default function UserProfile() {
           id="lastName"
           name="lastName"
           type="text"
-          value={formData.lastName || ""}
-          onChange={handleChange}
+          value={userProfile.userLastName || ""}
+          onChange={(e) => setLastName(e.target.value)}
           style={styles.input}
           required
         />
@@ -278,8 +305,8 @@ export default function UserProfile() {
           id="Phone Number"
           name="phoneNumber"
           type="text"
-          value={formData.lastName || ""}
-          onChange={handleChange}
+          value={userProfile.userPhoneNumber || ""}
+          onChange={(e) => setPhoneNumber(e.target.value)}
           style={styles.input}
           required
         />
@@ -291,8 +318,7 @@ export default function UserProfile() {
           id="Country"
           name="country"
           type="text"
-          value={formData.lastName || ""}
-          onChange={handleChange}
+          value={"India"}
           style={styles.input}
           required
         />
@@ -304,8 +330,7 @@ export default function UserProfile() {
           id="Civic Trust Score"
           name="civicTrustScore"
           type="text"
-          value={formData.lastName || "0"}
-          onChange={handleChange}
+          value={userProfile.civicTrustScore}
           style={{...styles.input, ...styles.disabledInput, }}
           required
         />
@@ -317,8 +342,8 @@ export default function UserProfile() {
           id="address"
           name="address"
           type="text"
-          value={formData.address || ""}
-          onChange={handleChange}
+          value={userProfile.street || ""}
+          onChange={(e) => setAddress(e.target.value)}
           style={{ ...styles.input, gridColumn: "1 / -1" }}
           required
         />
@@ -330,8 +355,8 @@ export default function UserProfile() {
           id="city"
           name="city"
           type="text"
-          value={formData.city || ""}
-          onChange={handleChange}
+          value={userProfile.city || ""}
+          onChange={(e) => setCity(e.target.value)}
           style={styles.input}
         />
 
@@ -342,8 +367,8 @@ export default function UserProfile() {
           id="state"
           name="state"
           type="text"
-          value={formData.state || ""}
-          onChange={handleChange}
+          value={userProfile.state || ""}
+          onChange={(e) => setState(e.target.value)}
           style={styles.input}
         />
 
@@ -354,8 +379,8 @@ export default function UserProfile() {
           id="zip"
           name="zip"
           type="text"
-          value={formData.zip || ""}
-          onChange={handleChange}
+          value={userProfile.zip || ""}
+          onChange={(e) => setZip(e.target.value)}
           style={styles.input}
         />
 
@@ -366,7 +391,7 @@ export default function UserProfile() {
           id="email"
           name="email"
           type="email"
-          value={formData.email || ""}
+          value={userProfile.userEmailId}
           disabled
           style={{ ...styles.input, ...styles.disabledInput, gridColumn: "1 / -1" }}
         />
@@ -374,7 +399,6 @@ export default function UserProfile() {
 
       <div style={styles.buttonsWrapper}>
         <button
-          onClick={handleUpdate}
           style={{ ...styles.button, ...styles.updateBtn }}
           onMouseOver={e => (e.currentTarget.style.backgroundColor = styles.updateBtnHover.backgroundColor)}
           onMouseOut={e => (e.currentTarget.style.backgroundColor = styles.updateBtn.backgroundColor)}

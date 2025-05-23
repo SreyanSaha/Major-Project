@@ -13,17 +13,23 @@ public class UserValidation {
     private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z]+(?:\\s[A-Za-z]+)*$");
     private static final Pattern ZIP_PATTERN = Pattern.compile("^\\d{5,6}$");
     private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s]*$");
+    private static final Pattern ADDRESS_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s,'./#\\-()&@]+$");
 
     public String isValidUserDetails(User user) {
         if(!isValidName(user.getUserFirstName())) return "User first name is invalid.";
         if(!isValidName(user.getUserLastName())) return "User last name is invalid.";
         if(!isValidEmail(user.getUserEmailId())) return "User email is invalid.";
         if(!isValidPhone(String.valueOf(user.getUserPhoneNumber()))) return "User phone number is invalid.";
-        if(!isValidAlphanumeric(user.getStreet()))return "User address is invalid.";
+        if(!isValidAddress(user.getStreet()))return "User address is invalid.";
         if(!isValidName(user.getCity()))return "User city is invalid.";
         if(!isValidName(user.getState()))return "User state is invalid.";
         if(!isValidZipCode(user.getZipCode())) return "User zip code is invalid.";
         return "Validated.";
+    }
+
+    public boolean isValidAddress(String address){
+        if(address==null || address.trim().isEmpty())return false;
+        return ADDRESS_PATTERN.matcher(address.trim()).matches();
     }
 
     public boolean isValidAlphanumeric(String text){

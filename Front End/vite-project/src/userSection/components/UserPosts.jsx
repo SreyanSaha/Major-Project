@@ -48,7 +48,7 @@ export default function UserUploadedPostsComponent() {
           setProcessing(false);
           setPosts(response.data);
         }
-    }
+      }
     }catch(exception){
       console.log(exception);
       navigate("/user/login");

@@ -18,8 +18,7 @@ public class User {
     private Long userPhoneNumber;
     @Column(unique = true)
     private String profileImagePath;
-    private Long contributionPoints;
-    private Long validRepostPoints;
+    private int civicTrustScore;
     private short userStatus;// 0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
     private LocalDateTime signupDateTime;
     private LocalDateTime timeOutEndTime;
@@ -57,11 +56,18 @@ public class User {
 
     @PrePersist
     protected void onCreate(){
-        this.contributionPoints=0l;
-        this.validRepostPoints=0l;
+        this.civicTrustScore=0;
         this.userStatus=1;// 0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
         this.signupDateTime=LocalDateTime.now();
         this.country="India";
+    }
+
+    public int getCivicTrustScore() {
+        return civicTrustScore;
+    }
+
+    public void setCivicTrustScore(int civicTrustScore) {
+        this.civicTrustScore = civicTrustScore;
     }
 
     public List<Campaign> getCampaigns() {
@@ -214,22 +220,6 @@ public class User {
 
     public void setProfileImagePath(String profileImagePath) {
         this.profileImagePath = profileImagePath;
-    }
-
-    public Long getContributionPoints() {
-        return contributionPoints;
-    }
-
-    public void setContributionPoints(Long contributionPoints) {
-        this.contributionPoints = contributionPoints;
-    }
-
-    public Long getValidRepostPoints() {
-        return validRepostPoints;
-    }
-
-    public void setValidRepostPoints(Long validRepostPoints) {
-        this.validRepostPoints = validRepostPoints;
     }
 
     public List<Post> getPostList() {

@@ -1,17 +1,17 @@
 package com.help.service;
 
 import com.help.dto.OtpForVerification;
+import com.help.dto.ServiceResponse;
+import com.help.dto.UserProfile;
 import com.help.email.EmailService;
 import com.help.email.GetMailText;
-import com.help.model.AddressDetails;
 import com.help.model.OtpDetails;
 import com.help.model.User;
-import com.help.model.UserAuthData;
 import com.help.repository.UserAuthDataRepository;
 import com.help.repository.UserRepository;
 import com.help.validation.UserValidation;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -69,8 +69,10 @@ public class UserService {
         userAuthDataRepository.deleteByUsername(username);
     }
 
-    public User getUserById(int userId) {
-        return userRepository.findById(userId).orElse(null);
+    public ServiceResponse<UserProfile> getUserById(int userId, String uname) {
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        if(!uname.trim().replace("\"","").equals(username))return new ServiceResponse<>("Invalid username!", null);
+        return new ServiceResponse<>("Found user.", userRepository.findUserById(userId).get());
     }
 
     public List<User> getUserByName(String name) {
@@ -79,5 +81,11 @@ public class UserService {
 
     public List<User> getUserByFirstNameLastName(String firstName, String lastName) {
         return userRepository.findByUserFirstNameAndUserLastNameIgnoreCase(firstName, lastName);
+    }
+
+    public ServiceResponse<UserProfile> getUserProfile(String uname) {
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        if(!uname.trim().replace("\"","").equals(username))return new ServiceResponse<>("Invalid username!", null);
+        return new ServiceResponse<>("Found user.", userRepository.findUserProfile(username).get());
     }
 }
