@@ -1,15 +1,19 @@
 package com.help.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.help.dto.ServiceResponse;
 import com.help.dto.UserProfile;
 import com.help.jwt.service.CustomUserDetailsService;
 import com.help.jwt.service.JwtService;
+import com.help.model.Post;
 import com.help.model.User;
 import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/user")
@@ -40,28 +44,32 @@ public class UserController {
     }
 
     @GetMapping("/search/name")// /search/name?name=search_string
-    public ResponseEntity<?> getAllUserByName(@RequestParam("name") String name, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
+    public ResponseEntity<?> getAllUserByName(@RequestParam("name") String name, @RequestHeader("uname") String uname){
 
         return ResponseEntity.ok().body(userService.getUserByName(name));
     }
 
-    @GetMapping("/search/fullname")// /search/fullname?fname=search_string&lname=search_string
-    public ResponseEntity<?> getAllUserByFirstAndLastName(@RequestParam("fname") String fname, @RequestParam("lname") String lname,
-                                                          @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
+    @GetMapping("/search/full-name")// /search/fullname?fname=search_string&lname=search_string
+    public ResponseEntity<?> getAllUserByFirstAndLastName(@RequestParam("fname") String fname,
+                                                          @RequestParam("lname") String lname, @RequestHeader("uname") String uname){
 
         return ResponseEntity.ok().body(userService.getUserByFirstNameLastName(fname, lname));
     }
 
-    @PutMapping("/update/user")
-    public ResponseEntity<?> updateUser(@RequestBody User user, @RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username) {
-
-        return ResponseEntity.ok().body(userService.updateUser(username, user));
+    @PutMapping(value = "/update-user", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateUser(@RequestPart("user") String userJson, @RequestPart("uname") String uname, @RequestPart("profileImage")MultipartFile profileImage) {
+        User newUser=null;
+        try{newUser=new ObjectMapper().readValue(userJson, User.class);}
+        catch (Exception e){e.printStackTrace();return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update user.");}
+        String response=userService.updateUser(uname, newUser, profileImage);
+        if(!response.equals("updated."))return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @DeleteMapping("/delete/user")
-    public ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username) {
+    @DeleteMapping("/delete-user")
+    public ResponseEntity<?> deleteUser(@RequestHeader("uname") String uname) {
 
-        userService.deleteUser(username);
+
         return ResponseEntity.ok("User deleted successfully");
     }
 }

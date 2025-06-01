@@ -21,9 +21,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u FROM User u JOIN u.authData a WHERE a.username = :username")
     Optional<User> findByUsername(@Param("username") String username);
 
-    @Query("SELECT new com.help.dto.UserProfile(u.userId, u.userFirstName, u.userLastName, u.userEmailId, u.userPhoneNumber, u.profileImagePath, u.civicTrustScore, u.userStatus, u.timeOutEndTime, u.street, u.city, u.state, u.zipCode) FROM User u WHERE u.userId = :userId")
+    @Query("SELECT new com.help.dto.UserProfile(u.userId, u.userFirstName, u.userLastName, u.userEmailId, u.userPhoneNumber, u.profileImagePath, u.civicTrustScore, u.userStatus, u.timeOutEndTime, u.street, u.city, u.state, u.zipCode, u.country) FROM User u WHERE u.userId = :userId")
     Optional<UserProfile> findUserById(@Param("userId")int userId);
 
-    @Query("SELECT new com.help.dto.UserProfile(u.userId, u.userFirstName, u.userLastName, u.userEmailId, u.userPhoneNumber, u.profileImagePath, u.civicTrustScore, u.userStatus, u.timeOutEndTime, u.street, u.city, u.state, u.zipCode) FROM User u JOIN u.authData a WHERE a.username = :username")
+    @Query("SELECT new com.help.dto.UserProfile(u.userId, u.userFirstName, u.userLastName, u.userEmailId, u.userPhoneNumber, u.profileImagePath, u.civicTrustScore, u.userStatus, u.timeOutEndTime, u.street, u.city, u.state, u.zipCode, u.country) FROM User u JOIN u.authData a WHERE a.username = :username")
     Optional<UserProfile> findUserProfile(@Param("username")String username);
 }

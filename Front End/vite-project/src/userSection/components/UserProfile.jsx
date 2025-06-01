@@ -5,8 +5,10 @@ import axios from "axios";
 
 export default function UserProfile() {
   const navigate = useNavigate();
+  const [msg,updateMsg] = useState(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [civicTrustScore, setCivicTrustScore] = useState(0);
   const [profilePreview, setProfilePreview] = useState("");
   const [userProfile, setUserProfile] = useState({});
   const [firstName, setFirstName] = useState("");
@@ -19,6 +21,19 @@ export default function UserProfile() {
   const [zip, setZip] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+  if (userProfile.userFirstName) setFirstName(userProfile.userFirstName);
+  if (userProfile.userLastName) setLastName(userProfile.userLastName);
+  if (userProfile.userPhoneNumber) setPhoneNumber(userProfile.userPhoneNumber);
+  if (userProfile.street) setAddress(userProfile.street);
+  if (userProfile.city) setCity(userProfile.city);
+  if (userProfile.state) setState(userProfile.state);
+  if (userProfile.country) setCountry(userProfile.country);
+  if (userProfile.civicTrustScore) setCivicTrustScore(userProfile.civicTrustScore);
+  if (userProfile.zipCode) setZip(userProfile.zipCode);
+  if (userProfile.profileImage) setProfilePreview(userProfile.profileImage);
+}, [userProfile]);
 
   useEffect(() => {
       try {
@@ -46,46 +61,93 @@ export default function UserProfile() {
     }
   };
 
-  const fetchUserProfile = async (username) =>{
+  const fetchUserProfile = async () =>{
     try{
-      if(userProfile===null){
-        const user = JSON.parse(localStorage.getItem("user"));
-        const response = await axios.get(`http://localhost:8080/user/profile?uname=${user.username}`,
-          {
-            headers:{
-                "Authorization": "Bearer "+user.token,
-                "Content-Type": "application/json"
-            }
+      setProcessing(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const response = await axios.get(`http://localhost:8080/user/profile?uname=${user.username}`,
+        {
+          headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
           }
-        );
-        if(response.status===200){
-          setProcessing(false);
-          setUserProfile(response.data);
-          console.log(response.data);
-        }else if(response.status===202){
-          setProcessing(false);
-          
         }
+      );
+      if(response.status===200){
+        setProcessing(false);
+        setUserProfile(response.data);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data);
       }
     }catch(exception){
       console.log(exception);
+      updateMsg("Token expired please login again.");
+      navigate("/user/login");
     }
   };
 
-  const handleUpdate = () => {
-    
+  const handleUpdate = async () => {
+    try{
+      const user=JSON.parse(localStorage.getItem("user"));
+      const formData=new FormData();
+      const newUser={
+        "userFirstName":firstName.current,
+        "userLastName":lastName.current,
+        "userEmailId":email.current,
+        "userPhoneNumber":phoneNumber.current,
+        "latitude":0,
+        "longitude":0,
+        "street":address.current,
+        "city":city.current,
+        "state":state.current,
+        "zipCode":zip.current
+      };
+      formData.append("user",JSON.stringify(newUser));
+      formData.append("uname",user.username);
+      formData.append("profileImage", profileImage[0]);
+      const response = await axios.put("http://localhost:8080/user/update-user",formData,{
+        headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "multipart/form-data"
+          }
+      });
+      if(response.status===201){
+        setProcessing(false);
+        updateMsg("Profile updated");
+      }
+      else if(response.status===200){
+        setProcessing(false);
+        updateMsg(response.data);
+      }
+    }catch(exception){
+      setProcessing(false);
+      console.log(exception);
+      if(exception.response && (exception.response.status===401 || exception.response.status===403)){updateMsg("Token expired login again!");
+       // navigate("/user/login");
+      }
+    }
   };
 
-  const handleDelete = () => {
-    
-  };
+  const handleDelete = async () => {
+    try{
+      setProcessing(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const formData=new FormData();
+      formData.append("uname",user.username);
+      const response = await axios.post("http://localhost:8080/user/delete-user",formData,
+        {
+          headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+          }
+        }
+      );
+            
+    }catch(exception){
 
-  // if (!user)
-  //   return (
-  //     <div style={{ textAlign: "center", marginTop: "3rem", color: "#11398f" }}>
-  //       User not found.
-  //     </div>
-  //   );
+    }
+  };
 
   const styles = {
     container: {
@@ -249,14 +311,18 @@ export default function UserProfile() {
       boxShadow: "0 3px 8px rgba(30, 60, 180, 0.5)",
     },
   };
+  
   if (!authenticated) return null;
   return (
     <div style={styles.container}>
+      {processing?<LoadingOverlay/>:""}
       <h2 style={styles.title}>User Profile</h2>
-
+      {msg!=null?(<div style={styles.alertDiv}>
+            <h3 style={styles.alertText}>{msg}</h3>
+          </div>):""}
       <div style={styles.profileImageWrapper}>
         <img
-          src={profilePreview || ""}
+          src={profilePreview || "profileImg"}
           alt="Profile"
           style={styles.profileImage}
         />
@@ -271,7 +337,7 @@ export default function UserProfile() {
         />
       </div>
 
-      <form style={styles.form} onSubmit={(e) => {e.preventDefault(); handleUpdate();}}>
+      <form style={styles.form} onSubmit={(e) => {e.preventDefault();}}>
         <label style={styles.label} htmlFor="firstName">
           First Name
         </label>
@@ -279,7 +345,7 @@ export default function UserProfile() {
           id="firstName"
           name="firstName"
           type="text"
-          value={userProfile.userFirstName || ""}
+          value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
           style={styles.input}
           required
@@ -292,7 +358,7 @@ export default function UserProfile() {
           id="lastName"
           name="lastName"
           type="text"
-          value={userProfile.userLastName || ""}
+          value={lastName}
           onChange={(e) => setLastName(e.target.value)}
           style={styles.input}
           required
@@ -305,7 +371,7 @@ export default function UserProfile() {
           id="Phone Number"
           name="phoneNumber"
           type="text"
-          value={userProfile.userPhoneNumber || ""}
+          value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
           style={styles.input}
           required
@@ -318,7 +384,7 @@ export default function UserProfile() {
           id="Country"
           name="country"
           type="text"
-          value={"India"}
+          value={country}
           style={styles.input}
           required
         />
@@ -330,7 +396,7 @@ export default function UserProfile() {
           id="Civic Trust Score"
           name="civicTrustScore"
           type="text"
-          value={userProfile.civicTrustScore}
+          value={civicTrustScore}
           style={{...styles.input, ...styles.disabledInput, }}
           required
         />
@@ -342,7 +408,7 @@ export default function UserProfile() {
           id="address"
           name="address"
           type="text"
-          value={userProfile.street || ""}
+          value={address}
           onChange={(e) => setAddress(e.target.value)}
           style={{ ...styles.input, gridColumn: "1 / -1" }}
           required
@@ -355,7 +421,7 @@ export default function UserProfile() {
           id="city"
           name="city"
           type="text"
-          value={userProfile.city || ""}
+          value={city}
           onChange={(e) => setCity(e.target.value)}
           style={styles.input}
         />
@@ -367,7 +433,7 @@ export default function UserProfile() {
           id="state"
           name="state"
           type="text"
-          value={userProfile.state || ""}
+          value={state}
           onChange={(e) => setState(e.target.value)}
           style={styles.input}
         />
@@ -379,7 +445,7 @@ export default function UserProfile() {
           id="zip"
           name="zip"
           type="text"
-          value={userProfile.zip || ""}
+          value={zip}
           onChange={(e) => setZip(e.target.value)}
           style={styles.input}
         />
@@ -391,7 +457,7 @@ export default function UserProfile() {
           id="email"
           name="email"
           type="email"
-          value={userProfile.userEmailId}
+          defaultValue={userProfile.userEmailId || ""}
           disabled
           style={{ ...styles.input, ...styles.disabledInput, gridColumn: "1 / -1" }}
         />
@@ -402,6 +468,7 @@ export default function UserProfile() {
           style={{ ...styles.button, ...styles.updateBtn }}
           onMouseOver={e => (e.currentTarget.style.backgroundColor = styles.updateBtnHover.backgroundColor)}
           onMouseOut={e => (e.currentTarget.style.backgroundColor = styles.updateBtn.backgroundColor)}
+          onClick={() => handleUpdate()}
         >
           Update
         </button>

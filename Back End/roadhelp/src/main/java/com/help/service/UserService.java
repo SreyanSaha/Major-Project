@@ -10,11 +10,18 @@ import com.help.model.User;
 import com.help.repository.UserAuthDataRepository;
 import com.help.repository.UserRepository;
 import com.help.validation.UserValidation;
+import jakarta.mail.Multipart;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -60,13 +67,48 @@ public class UserService {
         return userRepository.getUserByAuthData_AuthId(userAuthDataRepository.findByUsername(username).get().getAuthId());
     }
 
-    public User updateUser(String username, User user) {
-        user.setUserId(userRepository.findByUsername(username).get().getUserId());
-        return userRepository.save(user);
+    public String updateUser(String uname, User newUser, MultipartFile image) {
+        String msg=userValidation.isValidUserDetails(newUser);
+        if(!msg.equals("Validated."))return msg;
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        if(!uname.equals(username))return "Invalid username!";
+        String root=Paths.get("").toAbsolutePath().toString();
+        String profileImagePath=null;
+        User user=userRepository.findByUsername(username).get();
+        user.setUserFirstName(newUser.getUserFirstName());
+        user.setUserLastName(newUser.getUserLastName());
+        user.setUserPhoneNumber(newUser.getUserPhoneNumber());
+        user.setCity(newUser.getCity());
+        user.setState(newUser.getState());
+        user.setStreet(newUser.getStreet());
+        user.setZipCode(newUser.getZipCode());
+        user.setCountry(newUser.getCountry());
+        if(newUser.getProfileImagePath()!=null || !newUser.getProfileImagePath().isEmpty())profileImagePath=saveUserProfileImage(image, root);
+        if(profileImagePath==null)return "Failed to update profile image.";
+        user.setProfileImagePath(profileImagePath.replace(root+"\\allMedia",""));
+        userRepository.save(user);
+        return "updated.";
+    }
+
+    private String saveUserProfileImage( MultipartFile image, String root){
+        String path=null;
+        try{
+            if(image.isEmpty() || image.getSize() > (5 * 1024 * 1024))return null;
+            Path postImagePath=Paths.get(root+"/allMedia/userProfileImage");
+            if(!Files.exists(postImagePath))Files.createDirectories(postImagePath);
+            Path uploadPath=postImagePath.resolve(UUID.randomUUID().toString()+"_"+System.currentTimeMillis()+"_"+image.getOriginalFilename());
+            path=uploadPath.toString();
+            image.transferTo(uploadPath.toFile());
+            return path;
+        }catch (Exception e){
+            e.printStackTrace();
+            try{Files.delete(Paths.get(path));}catch (Exception e1){System.out.println(e1.toString());}
+        }
+        return null;
     }
 
     public void deleteUser(String username) {
-        userAuthDataRepository.deleteByUsername(username);
+
     }
 
     public ServiceResponse<UserProfile> getUserById(int userId, String uname) {

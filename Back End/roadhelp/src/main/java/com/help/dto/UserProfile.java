@@ -10,11 +10,11 @@ public class UserProfile {
     private int civicTrustScore;
     private short userStatus;// 0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
     private LocalDateTime timeOutEndTime;
-    private String street,city,state,zipCode;
+    private String street,city,state,zipCode,country;
 
     public UserProfile(int userId, String userFirstName, String userLastName, String userEmailId, Long userPhoneNumber,
                        String profileImagePath, int civicTrustScore, short userStatus, LocalDateTime timeOutEndTime, String street,
-                       String city, String state, String zipCode) {
+                       String city, String state, String zipCode, String country) {
         this.userId = userId;
         this.userFirstName = userFirstName;
         this.userLastName = userLastName;
@@ -28,6 +28,15 @@ public class UserProfile {
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;
+        this.country = country;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public int getUserId() {
