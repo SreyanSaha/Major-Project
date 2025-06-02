@@ -1,5 +1,6 @@
 package com.help.repository;
 
+import com.help.dto.PostData;
 import com.help.dto.UserPost;
 import com.help.model.Post;
 import org.springframework.data.domain.Page;
@@ -19,11 +20,14 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "LOWER(post_description) LIKE LOWER(CONCAT('%', :search, '%')) ORDER BY post_upload_date_time DESC", nativeQuery = true)
     Post findPostByPostTitle(@Param("search") String search);
 
-    @Query(value = "SELECT * FROM post p ORDER BY p.post_upload_date_time DESC LIMIT 10", nativeQuery = true)
-    List<Post> findLimitedPosts();
+    @Query("SELECT new com.help.dto.PostData(p.postId, p.authorProfileName, u.profileImagePath, p.postUploadDateTime, p.postTitle, p.postDescription, p.upVoteCount, " +
+            "p.downVoteCount, p.commentCount, p.postReports, p.imagePath1, p.postStatus) FROM Post p JOIN p.user u ORDER BY p.postUploadDateTime DESC LIMIT 10")
+    List<PostData> findLimitedPosts();
 
-    @Query(value = "SELECT * FROM post p ORDER BY p.post_upload_date_time DESC WHERE p.post_id >= startingId LIMIT 20", nativeQuery = true)
-    List<Post> findAllPost(@Param("startingId") int startingId);
+    @Query("SELECT new com.help.dto.PostData(p.postId, p.authorProfileName, u.profileImagePath, p.postUploadDateTime, p.postTitle, p.postDescription, p.upVoteCount, " +
+            "p.downVoteCount, p.commentCount, p.postReports, p.imagePath1, p.postStatus) FROM Post p JOIN p.user u " +
+            "WHERE p.postId > :startingId ORDER BY p.postUploadDateTime DESC LIMIT 20")
+    List<PostData> findAllPost(@Param("startingId") int startingId);
 
     @Query("SELECT new com.help.dto.UserPost(p.postId, p.postTitle, p.postDescription, p.imagePath1, p.postStatus) FROM Post p JOIN p.user.authData a WHERE a.username = :username")
     List<UserPost> findAllPostsOfUser(@Param("username")String username);

@@ -24,10 +24,12 @@ public class ServiceResponse <Type>{
 
     public ServiceResponse(Type object) {
         this.object = object;
+        this.objects=null;
     }
 
     public ServiceResponse(List<Type> objects) {
         this.objects = objects;
+        this.object=null;
     }
 
     public List<Type> getObjects() {

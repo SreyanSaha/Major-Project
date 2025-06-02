@@ -84,7 +84,8 @@ public class UserService {
         user.setZipCode(newUser.getZipCode());
         user.setCountry(newUser.getCountry());
         if(image!=null && !image.isEmpty()) {
-            if(user.getProfileImagePath()!=null && !deleteExistingProfileImage(user.getProfileImagePath()))return new ServiceResponse<>("Failed to update profile image.");
+            if(user.getProfileImagePath()!=null && !user.getProfileImagePath().isEmpty() && !deleteExistingProfileImage(user.getProfileImagePath()))
+                return new ServiceResponse<>("Failed to update profile image.");
             profileImagePath = saveUserProfileImage(image, root);
             if(profileImagePath==null)return new ServiceResponse<>("Failed to update profile image.");
             user.setProfileImagePath(profileImagePath.replace(root+"\\allMedia",""));

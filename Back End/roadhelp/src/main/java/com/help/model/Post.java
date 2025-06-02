@@ -11,7 +11,6 @@ public class Post {
     private int postId;
     @Column(nullable = false)
     private String authorProfileName;
-    private String authorProfileImagePath;
     @Column(nullable = false)
     private LocalDateTime postUploadDateTime;
     @Column(nullable = false)
@@ -129,14 +128,6 @@ public class Post {
 
     public void setAuthorProfileName(String authorProfileName) {
         this.authorProfileName = authorProfileName;
-    }
-
-    public String getAuthorProfileImagePath() {
-        return authorProfileImagePath;
-    }
-
-    public void setAuthorProfileImagePath(String authorProfileImagePath) {
-        this.authorProfileImagePath = authorProfileImagePath;
     }
 
     public LocalDateTime getPostUploadDateTime() {

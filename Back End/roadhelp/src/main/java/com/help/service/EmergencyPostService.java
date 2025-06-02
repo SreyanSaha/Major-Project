@@ -33,7 +33,6 @@ public class EmergencyPostService {
 
         post.setUser(user);
         post.setAuthorProfileName(user.getUserFirstName() + " " + user.getUserLastName());
-        post.setAuthorProfileImagePath(user.getProfileImagePath());
 
         EmergencyPost savedPost = emergencyPostRepository.save(post);
         response.put("post", savedPost);
@@ -90,7 +89,6 @@ public class EmergencyPostService {
         if (user != null) {
             existingPost.setUser(user);
             existingPost.setAuthorProfileName(user.getUserFirstName() + " " + user.getUserLastName());
-            existingPost.setAuthorProfileImagePath(user.getProfileImagePath());
         }
 
         EmergencyPost savedPost = emergencyPostRepository.save(existingPost);

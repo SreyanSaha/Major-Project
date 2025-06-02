@@ -19,10 +19,9 @@ export default function UserDashboard(props) {
 
   useEffect(() => {
         try {
-          const user = JSON.parse(localStorage.getItem("user"));
-          console.log("Fetched user's username:", user.username);
-          if (user?.username && user?.token && user?.role === 0) setAuthenticated(true);
-          else setAuthenticated(false);
+          const usr = localStorage.getItem("user");
+          if(usr===null)setAuthenticated(false);
+          else setAuthenticated(true);
         } catch (err) {
           console.error("Error parsing user from localStorage:", err);
         }
@@ -123,6 +122,10 @@ export default function UserDashboard(props) {
     marginBottom: "1.5rem",
   },
   };
+
+  const handleLogout = () =>{
+    if(authenticated)localStorage.removeItem("user");
+  }
 
   const handleSearch = () => {
     
@@ -242,7 +245,7 @@ export default function UserDashboard(props) {
     style={styles.sidebarItem}
     onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1a4bc3")}
     onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-    onClick={() => setIsSidebarOpen(false)}
+    onClick={() => {setIsSidebarOpen(false); handleLogout();}}
   >
     {authenticated===true?"Logout":"Login"}
   </div>

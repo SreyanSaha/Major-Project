@@ -9,7 +9,7 @@ public class EmergencyPost {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int emergencyPostId;
     @Column(nullable = false)
-    private String authorProfileName, authorProfileImagePath;
+    private String authorProfileName;
     private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;
     private String audioFilePath;
     private String emergencyPostTitle, emergencyPostDescription;
@@ -80,14 +80,6 @@ public class EmergencyPost {
 
     public void setAuthorProfileName(String authorProfileName) {
         this.authorProfileName = authorProfileName;
-    }
-
-    public String getAuthorProfileImagePath() {
-        return authorProfileImagePath;
-    }
-
-    public void setAuthorProfileImagePath(String authorProfileImagePath) {
-        this.authorProfileImagePath = authorProfileImagePath;
     }
 
     public String getImagePath1() {

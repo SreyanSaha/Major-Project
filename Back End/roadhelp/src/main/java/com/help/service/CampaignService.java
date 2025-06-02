@@ -1,5 +1,7 @@
 package com.help.service;
 
+import com.help.dto.CampaignPostData;
+import com.help.dto.ServiceResponse;
 import com.help.dto.UserCampaign;
 import com.help.model.Campaign;
 import com.help.model.User;
@@ -34,7 +36,6 @@ public class CampaignService {
         Optional<User> user=userRepository.findByUsername(username);
         campaign.setUser(user.get());
         campaign.setCampaignOrganizerName(user.get().getUserFirstName()+" "+user.get().getUserLastName());
-        campaign.setCampaignOrganizerProfileImagePath(user.get().getProfileImagePath());
         campaign.setCampaignOrganizerEmail(user.get().getUserEmailId());
         campaign.setCampaignOrganizerContact(user.get().getUserPhoneNumber());
         String []campaignPaths=saveCampaignImages(images, upiQRImage, root);
@@ -79,5 +80,9 @@ public class CampaignService {
     public List<UserCampaign> getAllCampaignsOfUser() {
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
         return campaignRepository.findAllCampaignsOfUser(username);
+    }
+
+    public ServiceResponse<List<CampaignPostData>> getLimitedCampaigns() {
+        return new ServiceResponse<List<CampaignPostData>>("Please login to view and access all the campaigns.",campaignRepository.findLimitedCampaigns());
     }
 }

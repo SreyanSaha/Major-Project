@@ -9,20 +9,6 @@ export default function UserCampaignPostsComponent() {
   const [processing, setProcessing] = useState(false);
   const [campaigns, setCampaigns] = useState([]);
   const [msg,updateMsg] = useState(null);
-
-    // [{
-    //   id: 1,
-    //   title: "Plant a Tree Campaign",
-    //   description: "Join us to plant trees in your locality this Sunday.",
-    //   image: "",
-    // },
-    // {
-    //   id: 2,
-    //   title: "Clothes Donation Drive",
-    //   description: "Donate unused clothes for the homeless during winter.",
-    //   image: "",
-    // },]
-
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const fetchUserCampaigns=async()=>{
@@ -234,11 +220,30 @@ export default function UserCampaignPostsComponent() {
 
             <div
               style={{
-              ...styles.statusBadge,
-              backgroundColor:item.status === 0 ? "#d4edda" : "#f8d7da",
-              color:item.status === 0 ? "#155724" : "#721c24",}}
+                ...styles.statusBadge,
+                backgroundColor:
+                item.status === 0
+                ? "#d4edda"
+                : item.status === 1
+                ? "#cce5ff"
+                : "#f8d7da",
+                color:
+                  item.status === 0
+                  ? "#155724"
+                  : item.status === 1
+                  ? "#004085"
+                  : "#721c24",
+                  padding: "0.3rem 0.5rem",
+                  borderRadius: "5px",
+                  textAlign: "center",
+                  fontWeight: "600",
+              }}
             >
-              {item.status === 0 ? "Accepted" : "Not Accepted"}
+          {item.status === 0
+            ? "Approved"
+            : item.status === 1
+            ? "Completed"
+            : "Not Approved"}
             </div>
 
             <div style={styles.actions}>

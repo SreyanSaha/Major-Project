@@ -1,9 +1,15 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
+import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "../../loadingComponents/Loading";
+import axios from "axios";
 import UploadPost from "./UploadPostComponent";
 import UploadCampaign from "./UploadCampaignComponent";
 import UploadEmergencyPost from "./UploadEmergencyComponent";
 
 export default function UserDashboardLayout({setLayout}) {
+  const navigate = useNavigate();
+  const [msg,updateMsg] = useState(null);
+  const [processing, setProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
   const [showAddPost, setShowAddPost] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -14,37 +20,151 @@ export default function UserDashboardLayout({setLayout}) {
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 20;
 
+  useEffect(() => {
+    const loadData = async () =>{
+      const response = await checkTokenHealth();
+      if(response){
+        if (activeTab === "posts") fetchAllPosts();
+        else if(activeTab === "campaigns") fetchAllCampaignPosts();
+        else fetchAllEmergencyPosts();
+      }else{
+        if (activeTab === "posts") fetchPosts();
+        else if(activeTab === "campaigns") fetchCampaignPosts();
+        else fetchEmergencyPosts();
+      }
+    }
+    loadData();
+}, [activeTab]);
+  
   const handleSearch = () => {
     console.log("Search initiated");
   };
-   
-  const fetPosts = async() =>{
 
+  const checkTokenHealth = async() =>{
+    try{
+      let user = localStorage.getItem("user");
+      if(user===null)return false;
+      else user = JSON.parse(user);
+      const response = await axios.post("http://localhost:8080/token/health",{},
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200 && response.data==="validated.")return true;
+    }catch(exception){
+      if(exception.response && (exception.response.status===401 || exception.response.status===403))
+      updateMsg("Please log in to access updates — your session may have expired or you're not signed in.");
+    }
+    return false;
+  } 
+
+  const fetchPosts = async() =>{
+    try{
+      if(posts.length===0){
+        setProcessing(true);
+        const response=await axios.get("http://localhost:8080/posts",
+          {
+            headers:{
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          setProcessing(false);
+          setPost(response.data.object===null? 
+                  response.data.objects: 
+                  response.data.object);
+          updateMsg(response.data.object.length===0?"Posts not found.":response.data.msg);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      updateMsg(exception);
+    }
   }
 
-  const fetCampaignPosts = async() =>{
+  const fetchCampaignPosts = async() =>{
+    try{
+      if(campaignPosts.length===0){
+        setProcessing(true);
+        const response=await axios.get("http://localhost:8080/campaigns",
+          {
+            headers:{
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          setProcessing(false);
+          setCampaigns(response.data.object===null? 
+                      response.data.objects: 
+                      response.data.object);
+          updateMsg(response.data.object.length===0?"Campaigs not found.":response.data.msg);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      updateMsg(exception);
+    }
+  }
+
+  const fetchEmergencyPosts = async() =>{
     
   }
 
-  const fetEmergencyPosts = async() =>{
-    
+  const fetchAllPosts = async()=>{
+
+  }
+  const fetchAllCampaignPosts = async()=>{
+
+  }
+  const fetchAllEmergencyPosts = async()=>{
+
   }
 
   const loadMore = async (pageCount) =>{
 
   }
 
-  const renderCards = (type) => {
-    return Array.from({ length: 6 }).map((_, index) => (
-      <div key={index} style={styles.card}>
-        <div style={styles.imagePlaceholder}></div>
-        <div style={styles.title}>{type} Title {index + 1}</div>
-        <div style={styles.desc}>Short description for {type.toLowerCase()} {index + 1}</div>
+  const renderCards = () => {
+    if (activeTab === "posts") {
+      return posts.map((post, index) => (
+      <div key={post.postId || index} style={styles.card}>
+        <div style={styles.imagePlaceholder}><img src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`}/></div>
+        <div style={styles.title}>{post.postTitle}</div>
+        <div style={styles.desc}>{post.postDescription}</div>
       </div>
     ));
+    }
+    else if(activeTab === "campaigns") {
+      return campaignPosts.map((campaigns, index)=>(
+        <div key={campaigns.campaignId || index} style={styles.card}>
+        <div style={styles.imagePlaceholder}><img src={`http://localhost:8080/media${campaigns.imagePath1.replace("\\", "/")}`}/></div>
+        <div style={styles.title}>{campaigns.campaignTitle}</div>
+        <div style={styles.desc}>{campaigns.campaignDescription}</div>
+      </div>
+      ));
+    }
+    else fetchAllEmergencyPosts();
   };
 
   const styles = {
+    alertDiv:{
+        textAlign: "center",
+    },
+    alertText: {
+        backgroundColor: "rgb(255, 64, 57)",
+        padding: "2px",
+        color: "white",
+        borderRadius: "8px",
+        width: "50%",
+        maxWidth: "80%",
+        margin: "auto",
+        marginBottom: "15px",
+    },
     container: {
       display: "flex",
       flexDirection: "column",
@@ -188,6 +308,7 @@ export default function UserDashboardLayout({setLayout}) {
 
   return (
     <div style={styles.container}>
+      {processing?<LoadingOverlay/>:""}
       <div style={styles.main}>
         <div style={styles.tabColumn}>
           <div
@@ -250,6 +371,10 @@ export default function UserDashboardLayout({setLayout}) {
           </div>
         )}
 
+        {msg!=null?(<div style={styles.alertDiv}>
+            <h3 style={styles.alertText}>{msg}</h3>
+          </div>):""}
+        
         <div style={styles.sectionTitle}>
           {activeTab === "posts"
             ? "📝 Posts"
@@ -257,16 +382,10 @@ export default function UserDashboardLayout({setLayout}) {
             ? "📢 Campaigns"
             : "🚨 Emergency"}
         </div>
-
+      
         {!showAddPost ? (
           <div style={styles.cardGrid}>
-            {renderCards(
-              activeTab === "posts"
-                ? "Post"
-                : activeTab === "campaigns"
-                ? "Campaign"
-                : "Emergency"
-            )}
+            {renderCards()}
           </div>
         ) : activeTab === "posts" ? (
           <UploadPost />
@@ -284,14 +403,19 @@ export default function UserDashboardLayout({setLayout}) {
       )}
       <button
         style={{
-          marginTop: "1rem",
-          padding: "0.75rem 2rem",
+          marginTop: "85%",
+          padding: "0.75rem 3rem",
           fontSize: "1rem",
           backgroundColor: "#11398f",
           color: "white",
           border: "none",
           borderRadius: "8px",
           cursor: "pointer",
+          position: "fixed",
+          bottom: "30px",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+          zIndex: 1000,
+          left: "30px",
         }}
         onClick={loadMore}
       >

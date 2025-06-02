@@ -12,7 +12,6 @@ public class Campaign {
     @Column(nullable = false)
     private String campaignTitle, campaignDescription, campaignOrganizerName,
             campaignOrganizerEmail;
-    private String campaignOrganizerProfileImagePath;
     private short status; // -1 = Inactive, 0 = Active, 1 = Completed
     @Column(nullable = false)
     private long campaignOrganizerContact;
@@ -133,14 +132,6 @@ public class Campaign {
 
     public void setCampaignOrganizerEmail(String campaignOrganizerEmail) {
         this.campaignOrganizerEmail = campaignOrganizerEmail;
-    }
-
-    public String getCampaignOrganizerProfileImagePath() {
-        return campaignOrganizerProfileImagePath;
-    }
-
-    public void setCampaignOrganizerProfileImagePath(String campaignOrganizerProfileImagePath) {
-        this.campaignOrganizerProfileImagePath = campaignOrganizerProfileImagePath;
     }
 
     public short getStatus() {

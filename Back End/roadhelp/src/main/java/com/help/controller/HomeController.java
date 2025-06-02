@@ -1,9 +1,12 @@
 package com.help.controller;
 
+import com.help.dto.CampaignPostData;
+import com.help.dto.PostData;
 import com.help.dto.ServiceResponse;
 import com.help.jwt.service.CustomUserDetailsService;
 import com.help.jwt.service.JwtService;
 import com.help.model.Post;
+import com.help.service.CampaignService;
 import com.help.service.EmergencyPostService;
 import com.help.service.PostService;
 import com.help.service.UserService;
@@ -23,27 +26,40 @@ public class HomeController {
     private final UserService userService;
     private final EmergencyPostService emergencyPostService;
     private final PostService postService;
+    private final CampaignService campaignService;
 
     @Autowired
-    public HomeController(UserService userService, EmergencyPostService emergencyPostService, PostService postService){
+    public HomeController(UserService userService, EmergencyPostService emergencyPostService, PostService postService, CampaignService campaignService){
         this.userService = userService;
         this.emergencyPostService = emergencyPostService;
         this.postService = postService;
+        this.campaignService = campaignService;
+    }
+
+    @PostMapping("token/health")
+    public ResponseEntity<?> isTokenValid(){
+        return ResponseEntity.status(HttpStatus.OK).body("validated.");
     }
 
     @GetMapping("posts")
     public ResponseEntity<?> getPosts(){
-        ServiceResponse<List<Post>> response = postService.getLimitedPosts();
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        ServiceResponse<List<PostData>> response = postService.getLimitedPosts();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("campaigns")
+    public ResponseEntity<?> getCampaigns(){
+        ServiceResponse<List<CampaignPostData>> response = campaignService.getLimitedCampaigns();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("all-posts/{startingId}")
     public ResponseEntity<?> getAllPosts(@PathVariable int startingId){
-        ServiceResponse<List<Post>> response = postService.getAllPosts(startingId);
+        ServiceResponse<List<PostData>> response = postService.getAllPosts(startingId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("emergency/posts")
+    @GetMapping("emergency")
     public ResponseEntity<?> getAllEmergencyPosts(){
         return ResponseEntity.ok().body(emergencyPostService.getLimitedEmergencyPosts());
     }

@@ -65,8 +65,8 @@ public class UserController {
 
         ServiceResponse<UserProfile> response=userService.updateUser(uname, newUser, profileImage);
 
-        if(response.getObject()==null && !response.getMsg().equals("updated."))return ResponseEntity.status(HttpStatus.ACCEPTED).body(response.getObject());
-        return ResponseEntity.status(HttpStatus.OK).body(response.getMsg());
+        if(response.getObject()==null && !response.getMsg().equals("updated."))return ResponseEntity.status(HttpStatus.ACCEPTED).body(response.getMsg());
+        return ResponseEntity.status(HttpStatus.OK).body(response.getObject());
     }
 
     @DeleteMapping("/delete-user")
