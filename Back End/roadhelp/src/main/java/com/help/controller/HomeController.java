@@ -1,57 +1,50 @@
 package com.help.controller;
 
+import com.help.dto.ServiceResponse;
 import com.help.jwt.service.CustomUserDetailsService;
 import com.help.jwt.service.JwtService;
+import com.help.model.Post;
 import com.help.service.EmergencyPostService;
 import com.help.service.PostService;
 import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/")
 public class HomeController {
     private final UserService userService;
-    private final JwtService jwtService;
-    private final CustomUserDetailsService customUserDetailsService;
     private final EmergencyPostService emergencyPostService;
     private final PostService postService;
 
     @Autowired
-    public HomeController(UserService userService, JwtService jwtService, CustomUserDetailsService customUserDetailsService, EmergencyPostService emergencyPostService, PostService postService){
+    public HomeController(UserService userService, EmergencyPostService emergencyPostService, PostService postService){
         this.userService = userService;
-        this.jwtService = jwtService;
-        this.customUserDetailsService = customUserDetailsService;
         this.emergencyPostService = emergencyPostService;
         this.postService = postService;
     }
 
     @GetMapping("posts")
-    public ResponseEntity<?> getAllPosts(){
-        return ResponseEntity.ok().body(postService.getLimitedPosts());
+    public ResponseEntity<?> getPosts(){
+        ServiceResponse<List<Post>> response = postService.getLimitedPosts();
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    @GetMapping("all-posts/{startingId}")
+    public ResponseEntity<?> getAllPosts(@PathVariable int startingId){
+        ServiceResponse<List<Post>> response = postService.getAllPosts(startingId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("emergency/posts")
     public ResponseEntity<?> getAllEmergencyPosts(){
         return ResponseEntity.ok().body(emergencyPostService.getLimitedEmergencyPosts());
-    }
-
-    @GetMapping("emergency/posts/all")
-    public ResponseEntity<?> getAllEmergencyPosts(@RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
-        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
-        return ResponseEntity.status(HttpStatus.CREATED).body(emergencyPostService.getAllEmergencyPosts());
-    }
-
-    @GetMapping("posts/all")
-    public ResponseEntity<?> getAllPosts(@RequestHeader("Authorization") String tokenHeader, @RequestHeader("Username") String username){
-        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.getAllPosts());
     }
 }

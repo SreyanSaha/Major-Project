@@ -7,6 +7,11 @@ public class ServiceResponse <Type>{
     private Type object;
     private List<Type> objects;
 
+    public ServiceResponse(String msg) {
+        this.msg = msg;
+        this.object = null;
+    }
+
     public ServiceResponse(String msg, Type object) {
         this.msg = msg;
         this.object = object;
@@ -14,6 +19,14 @@ public class ServiceResponse <Type>{
 
     public ServiceResponse(String msg, List<Type> objects) {
         this.msg = msg;
+        this.objects = objects;
+    }
+
+    public ServiceResponse(Type object) {
+        this.object = object;
+    }
+
+    public ServiceResponse(List<Type> objects) {
         this.objects = objects;
     }
 

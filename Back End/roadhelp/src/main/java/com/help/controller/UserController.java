@@ -57,13 +57,16 @@ public class UserController {
     }
 
     @PutMapping(value = "/update-user", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateUser(@RequestPart("user") String userJson, @RequestPart("uname") String uname, @RequestPart("profileImage")MultipartFile profileImage) {
+    public ResponseEntity<?> updateUser(@RequestPart("user") String userJson, @RequestPart("uname") String uname, @RequestPart(value = "profileImage", required = false)MultipartFile profileImage) {
         User newUser=null;
+
         try{newUser=new ObjectMapper().readValue(userJson, User.class);}
-        catch (Exception e){e.printStackTrace();return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update user.");}
-        String response=userService.updateUser(uname, newUser, profileImage);
-        if(!response.equals("updated."))return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        catch (Exception e){e.fillInStackTrace();return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update user.");}
+
+        ServiceResponse<UserProfile> response=userService.updateUser(uname, newUser, profileImage);
+
+        if(response.getObject()==null && !response.getMsg().equals("updated."))return ResponseEntity.status(HttpStatus.ACCEPTED).body(response.getObject());
+        return ResponseEntity.status(HttpStatus.OK).body(response.getMsg());
     }
 
     @DeleteMapping("/delete-user")

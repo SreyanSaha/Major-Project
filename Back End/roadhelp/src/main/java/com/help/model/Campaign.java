@@ -20,6 +20,7 @@ public class Campaign {
     private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5, upiImage;
     @Column(nullable = false)
     private String street;
+    private int upVoteCount, downVoteCount, campaignReports;
     @Column(nullable = false)
     private String city;
     @Column(nullable = false)
@@ -39,9 +40,35 @@ public class Campaign {
 
     @PrePersist
     protected void onCreate(){
+        this.upVoteCount=this.downVoteCount=0;
+        this.campaignReports=0;
         this.status=-1;
         this.country="India";
         this.campaignCreationTime=LocalDateTime.now();
+    }
+
+    public int getUpVoteCount() {
+        return upVoteCount;
+    }
+
+    public void setUpVoteCount(int upVoteCount) {
+        this.upVoteCount = upVoteCount;
+    }
+
+    public int getDownVoteCount() {
+        return downVoteCount;
+    }
+
+    public void setDownVoteCount(int downVoteCount) {
+        this.downVoteCount = downVoteCount;
+    }
+
+    public int getCampaignReports() {
+        return campaignReports;
+    }
+
+    public void setCampaignReports(int campaignReports) {
+        this.campaignReports = campaignReports;
     }
 
     public LocalDateTime getCampaignCreationTime() {

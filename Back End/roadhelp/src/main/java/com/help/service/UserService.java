@@ -67,11 +67,11 @@ public class UserService {
         return userRepository.getUserByAuthData_AuthId(userAuthDataRepository.findByUsername(username).get().getAuthId());
     }
 
-    public String updateUser(String uname, User newUser, MultipartFile image) {
+    public ServiceResponse<UserProfile> updateUser(String uname, User newUser, MultipartFile image) {
         String msg=userValidation.isValidUserDetails(newUser);
-        if(!msg.equals("Validated."))return msg;
+        if(!msg.equals("Validated.")) {return new ServiceResponse<>(msg,null);}
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
-        if(!uname.equals(username))return "Invalid username!";
+        if(!uname.equals(username))return new ServiceResponse<>("Invalid username!");
         String root=Paths.get("").toAbsolutePath().toString();
         String profileImagePath=null;
         User user=userRepository.findByUsername(username).get();
@@ -83,11 +83,21 @@ public class UserService {
         user.setStreet(newUser.getStreet());
         user.setZipCode(newUser.getZipCode());
         user.setCountry(newUser.getCountry());
-        if(newUser.getProfileImagePath()!=null || !newUser.getProfileImagePath().isEmpty())profileImagePath=saveUserProfileImage(image, root);
-        if(profileImagePath==null)return "Failed to update profile image.";
-        user.setProfileImagePath(profileImagePath.replace(root+"\\allMedia",""));
+        if(image!=null && !image.isEmpty()) {
+            if(user.getProfileImagePath()!=null && !deleteExistingProfileImage(user.getProfileImagePath()))return new ServiceResponse<>("Failed to update profile image.");
+            profileImagePath = saveUserProfileImage(image, root);
+            if(profileImagePath==null)return new ServiceResponse<>("Failed to update profile image.");
+            user.setProfileImagePath(profileImagePath.replace(root+"\\allMedia",""));
+        }
         userRepository.save(user);
-        return "updated.";
+        return new ServiceResponse<>("updated.", userRepository.findUserProfile(uname).get());
+    }
+
+    private boolean deleteExistingProfileImage(String imagePath){
+        String root=Paths.get("").toAbsolutePath().toString();
+        Path profilePath=Paths.get(root+"/allMedia"+imagePath);
+        try{Files.delete(profilePath);return true;}catch (Exception e){e.fillInStackTrace();}
+        return false;
     }
 
     private String saveUserProfileImage( MultipartFile image, String root){

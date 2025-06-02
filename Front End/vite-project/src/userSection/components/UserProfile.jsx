@@ -19,6 +19,7 @@ export default function UserProfile() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [zip, setZip] = useState("");
+  const [email, setEmail] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [processing, setProcessing] = useState(false);
 
@@ -32,7 +33,8 @@ export default function UserProfile() {
   if (userProfile.country) setCountry(userProfile.country);
   if (userProfile.civicTrustScore) setCivicTrustScore(userProfile.civicTrustScore);
   if (userProfile.zipCode) setZip(userProfile.zipCode);
-  if (userProfile.profileImage) setProfilePreview(userProfile.profileImage);
+  if (userProfile.userEmailId) setEmail(userProfile.userEmailId);
+  if (userProfile.profileImagePath) setProfilePreview(userProfile.profileImagePath);
 }, [userProfile]);
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function UserProfile() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfilePreview(reader.result);
-        setFormData(prev => ({ ...prev, profileImage: reader.result }));
+        setProfileImage(file);
       };
       reader.readAsDataURL(file);
     }
@@ -92,39 +94,42 @@ export default function UserProfile() {
       const user=JSON.parse(localStorage.getItem("user"));
       const formData=new FormData();
       const newUser={
-        "userFirstName":firstName.current,
-        "userLastName":lastName.current,
-        "userEmailId":email.current,
-        "userPhoneNumber":phoneNumber.current,
+        "userFirstName":firstName,
+        "userLastName":lastName,
+        "userEmailId":userProfile.userEmailId,
+        "userPhoneNumber":phoneNumber,
         "latitude":0,
         "longitude":0,
-        "street":address.current,
-        "city":city.current,
-        "state":state.current,
-        "zipCode":zip.current
+        "street":address,
+        "city":city,
+        "state":state,
+        "country":country,
+        "zipCode":zip
       };
       formData.append("user",JSON.stringify(newUser));
       formData.append("uname",user.username);
-      formData.append("profileImage", profileImage[0]);
+      formData.append("profileImage", profileImage);
       const response = await axios.put("http://localhost:8080/user/update-user",formData,{
         headers:{
             "Authorization": "Bearer "+user.token,
             "Content-Type": "multipart/form-data"
           }
       });
-      if(response.status===201){
+      if(response.status===200){
         setProcessing(false);
         updateMsg("Profile updated");
+        setUserProfile(response.data);
       }
-      else if(response.status===200){
+      else if(response.status===202){
         setProcessing(false);
         updateMsg(response.data);
       }
     }catch(exception){
       setProcessing(false);
       console.log(exception);
-      if(exception.response && (exception.response.status===401 || exception.response.status===403)){updateMsg("Token expired login again!");
-       // navigate("/user/login");
+      if(exception.response && (exception.response.status===401 || exception.response.status===403)){
+       updateMsg("Token expired login again!");
+       navigate("/user/login");
       }
     }
   };
@@ -150,6 +155,19 @@ export default function UserProfile() {
   };
 
   const styles = {
+    alertDiv:{
+        textAlign: "center",
+    },
+    alertText: {
+        backgroundColor: "rgb(255, 64, 57)",
+        padding: "2px",
+        color: "white",
+        borderRadius: "8px",
+        width: "50%",
+        maxWidth: "80%",
+        margin: "auto",
+        marginBottom: "15px",
+    },
     container: {
       width: "700px",
       margin: "2rem auto",
@@ -322,7 +340,11 @@ export default function UserProfile() {
           </div>):""}
       <div style={styles.profileImageWrapper}>
         <img
-          src={profilePreview || "profileImg"}
+          src={
+            profilePreview.startsWith("data:image")
+            ? profilePreview
+            : `http://localhost:8080/media${profilePreview.replace("\\", "/")}`
+          }
           alt="Profile"
           style={styles.profileImage}
         />
@@ -457,7 +479,7 @@ export default function UserProfile() {
           id="email"
           name="email"
           type="email"
-          defaultValue={userProfile.userEmailId || ""}
+          defaultValue={email}
           disabled
           style={{ ...styles.input, ...styles.disabledInput, gridColumn: "1 / -1" }}
         />

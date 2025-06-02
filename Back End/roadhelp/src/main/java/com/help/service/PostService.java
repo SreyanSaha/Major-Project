@@ -1,14 +1,16 @@
 package com.help.service;
 
+import com.help.dto.ServiceResponse;
 import com.help.dto.UserPost;
 import com.help.model.*;
 import com.help.repository.*;
 import com.help.validation.PostValidation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -216,12 +218,12 @@ public class PostService {
         return true;
     }
 
-    public List<Post> getLimitedPosts() {
-        return postRepository.findLimitedPosts();
+    public ServiceResponse<List<Post>> getLimitedPosts() {
+        return new ServiceResponse<List<Post>>("Please login to view and access all the posts.",postRepository.findLimitedPosts());
     }
 
-    public List<Post> getAllPosts() {
-       return postRepository.findAllPost();
+    public ServiceResponse<List<Post>> getAllPosts(int startingId) {
+       return new ServiceResponse<List<Post>>(postRepository.findAllPost(startingId));
     }
 
     public List<UserPost> getAllPostsOfUser() {

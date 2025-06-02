@@ -8,10 +8,31 @@ export default function UserDashboardLayout({setLayout}) {
   const [showAddPost, setShowAddPost] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedin, setLogin] = useState(false);
+  const [posts, setPost] = useState([]);
+  const [campaignPosts, setCampaigns] = useState([]);
+  const [emergencyPosts, setEmergencyPost] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 20;
 
   const handleSearch = () => {
     console.log("Search initiated");
   };
+   
+  const fetPosts = async() =>{
+
+  }
+
+  const fetCampaignPosts = async() =>{
+    
+  }
+
+  const fetEmergencyPosts = async() =>{
+    
+  }
+
+  const loadMore = async (pageCount) =>{
+
+  }
 
   const renderCards = (type) => {
     return Array.from({ length: 6 }).map((_, index) => (
@@ -261,6 +282,21 @@ export default function UserDashboardLayout({setLayout}) {
           +
         </div>
       )}
+      <button
+        style={{
+          marginTop: "1rem",
+          padding: "0.75rem 2rem",
+          fontSize: "1rem",
+          backgroundColor: "#11398f",
+          color: "white",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+        }}
+        onClick={loadMore}
+      >
+        Load More
+      </button>
     </div>
   );
 }
