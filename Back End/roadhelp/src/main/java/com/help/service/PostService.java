@@ -7,6 +7,9 @@ import com.help.model.*;
 import com.help.repository.*;
 import com.help.validation.PostValidation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -216,14 +219,16 @@ public class PostService {
         return true;
     }
 
-    public ServiceResponse<PostData> getLimitedPosts() {
-        List<PostData> list = postRepository.findLimitedPosts();
+    public ServiceResponse<PostData> getLimitedPosts(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("postUploadDateTime").descending());
+        List<PostData> list = postRepository.findLimitedPosts(pageRequest);
         return new ServiceResponse<PostData>(list.isEmpty()?"No posts are found.":"Please login to view and access all the posts.",list);
     }
 
-    public ServiceResponse<PostData> getAllPosts(int startingId) {
-        List<PostData> list = postRepository.findAllPost(startingId);
-       return new ServiceResponse<PostData>(list.isEmpty()?"No additional posts are found.":"",list);
+    public ServiceResponse<Page<PostData>> getAllPosts(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("postUploadDateTime").descending());
+        Page<PostData> list = postRepository.findAllByOrderByPostUploadDateTimeDesc(pageRequest);
+        return new ServiceResponse<>(list.getTotalPages()==0?"No additional posts are found.":"", list);
     }
 
     public ServiceResponse<UserPost> getAllPostsOfUser() {

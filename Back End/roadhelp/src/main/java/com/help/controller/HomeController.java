@@ -43,37 +43,44 @@ public class HomeController {
 
     @GetMapping("posts")
     public ResponseEntity<?> getPosts(){
-        ServiceResponse<PostData> response = postService.getLimitedPosts();
+        final int page=0,size=10;
+        ServiceResponse<PostData> response = postService.getLimitedPosts(page, size);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("campaigns")
     public ResponseEntity<?> getCampaigns(){
-        ServiceResponse<List<CampaignPostData>> response = campaignService.getLimitedCampaigns();
+        final int page=0,size=10;
+        ServiceResponse<CampaignPostData> response = campaignService.getLimitedCampaigns(page, size);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("all-posts/{startingId}")
-    public ResponseEntity<?> getAllPosts(@PathVariable int startingId){
-        ServiceResponse<PostData> response = postService.getAllPosts(startingId);
-        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response.getMsg());
+    // to be implemented
+    @GetMapping("emergency")
+    public ResponseEntity<?> getEmergency(){
+        final int page=0,size=10;
+
+        return ResponseEntity.status(HttpStatus.OK).body("");
+    }
+
+    @GetMapping("all-posts/page/{page}/size/{size}")
+    public ResponseEntity<?> getAllPosts(@PathVariable int page, @PathVariable int size){
+        ServiceResponse<Page<PostData>> response = postService.getAllPosts(page, size);
+        if(response.getObject().getTotalPages()==0)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("all-campaigns/{startingId}")
-    public ResponseEntity<?> getAllCampaigns(@PathVariable int startingId){
-        ServiceResponse<List<CampaignPostData>> response = campaignService.getAllCampaigns(startingId);
-        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response.getMsg());
+    @GetMapping("all-campaigns/page/{page}/size/{size}")
+    public ResponseEntity<?> getAllCampaigns(@PathVariable int page, @PathVariable int size){
+        ServiceResponse<Page<CampaignPostData>> response = campaignService.getAllCampaigns(page, size);
+        if(response.getObject().getTotalPages()==0)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("all-emergency-posts/{startingId}")
+    // to be implemented
+    @GetMapping("all-emergency/page/{page}/size/{size}")
     public ResponseEntity<?> getAllEmergencyPosts(@PathVariable int startingId){
         return ResponseEntity.status(HttpStatus.OK).body("");
     }
 
-    @GetMapping("emergency")
-    public ResponseEntity<?> getAllEmergencyPosts(){
-        return ResponseEntity.ok().body(emergencyPostService.getLimitedEmergencyPosts());
-    }
 }

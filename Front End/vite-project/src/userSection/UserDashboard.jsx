@@ -124,7 +124,8 @@ export default function UserDashboard(props) {
   };
 
   const handleLogout = () =>{
-    if(authenticated)localStorage.removeItem("user");
+    if(authenticated){localStorage.removeItem("user");setAuthenticated(false);}
+    else navigate("/user/login");
   }
 
   const handleSearch = () => {

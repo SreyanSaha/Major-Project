@@ -9,11 +9,11 @@ public class CampaignPostData {
     private short status; // -1 = Inactive, 0 = Active, 1 = Completed
     private long campaignOrganizerContact;
     private String imagePath1;
-    private int upVoteCount, downVoteCount, campaignReports;
+    private int upVoteCount, downVoteCount, campaignReports, civicTrustScore;
     private LocalDateTime campaignCreationTime;
     private short campaignType;//Donation -> -1, Awareness -> 0, Volunteer -> 1
 
-    public CampaignPostData(int campaignId, String campaignTitle, String campaignDescription, String campaignOrganizerName, String campaignOrganizerProfileImagePath,
+    public CampaignPostData(int campaignId, int civicTrustScore,String campaignTitle, String campaignDescription, String campaignOrganizerName, String campaignOrganizerProfileImagePath,
                             short status, long campaignOrganizerContact, String imagePath1, int upVoteCount, int downVoteCount,
                             int campaignReports, LocalDateTime campaignCreationTime, short campaignType) {
         this.campaignId = campaignId;
@@ -29,6 +29,15 @@ public class CampaignPostData {
         this.campaignReports = campaignReports;
         this.campaignCreationTime = campaignCreationTime;
         this.campaignType = campaignType;
+        this.civicTrustScore = civicTrustScore;
+    }
+
+    public int getCivicTrustScore() {
+        return civicTrustScore;
+    }
+
+    public void setCivicTrustScore(int civicTrustScore) {
+        this.civicTrustScore = civicTrustScore;
     }
 
     public int getCampaignId() {

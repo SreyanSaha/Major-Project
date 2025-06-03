@@ -8,6 +8,9 @@ import com.help.model.User;
 import com.help.repository.CampaignRepository;
 import com.help.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -82,12 +85,15 @@ public class CampaignService {
         return campaignRepository.findAllCampaignsOfUser(username);
     }
 
-    public ServiceResponse<List<CampaignPostData>> getLimitedCampaigns() {
-        return new ServiceResponse<List<CampaignPostData>>("Please login to view and access all the campaigns.",campaignRepository.findLimitedCampaigns());
+    public ServiceResponse<CampaignPostData> getLimitedCampaigns(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("campaignCreationTime").descending());
+        List<CampaignPostData> list = campaignRepository.findLimitedCampaigns(pageRequest);
+        return new ServiceResponse<CampaignPostData>(list.isEmpty()?"No campaigns are found.":"Please login to view and access all the campaigns.",list);
     }
 
-    public ServiceResponse<List<CampaignPostData>> getAllCampaigns(int startingId) {
-        List<CampaignPostData> list = campaignRepository.findAllCampaigns(startingId);
-        return new ServiceResponse<List<CampaignPostData>>(list.isEmpty()?"No additional campaigns are found.":"",list);
+    public ServiceResponse<Page<CampaignPostData>> getAllCampaigns(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("campaignCreationTime").descending());
+        Page<CampaignPostData> list = campaignRepository.findAllCampaigns(pageRequest);
+        return new ServiceResponse<Page<CampaignPostData>>(list.getTotalPages()==0?"No additional campaigns are found.":"",list);
     }
 }

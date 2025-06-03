@@ -7,11 +7,11 @@ public class PostData {
     private String authorProfileName, authorProfileImagePath;
     private LocalDateTime postUploadDateTime;
     private String postTitle, postDescription;
-    private int upVoteCount, downVoteCount, commentCount, postReports;
+    private int upVoteCount, downVoteCount, commentCount, postReports, civicTrustScore;
     private String imagePath1;
     private short postStatus;// -1 -> under review, 0 -> work in progress, 1 -> work done
 
-    public PostData(int postId, String authorProfileName, String authorProfileImagePath, LocalDateTime postUploadDateTime, String postTitle,
+    public PostData(int postId, int civicTrustScore, String authorProfileName, String authorProfileImagePath, LocalDateTime postUploadDateTime, String postTitle,
                     String postDescription, int upVoteCount, int downVoteCount, int commentCount, int postReports, String imagePath1, short postStatus) {
         this.postId = postId;
         this.authorProfileName = authorProfileName;
@@ -25,6 +25,15 @@ public class PostData {
         this.postReports = postReports;
         this.imagePath1 = imagePath1;
         this.postStatus = postStatus;
+        this.civicTrustScore = civicTrustScore;
+    }
+
+    public int getCivicTrustScore() {
+        return civicTrustScore;
+    }
+
+    public void setCivicTrustScore(int civicTrustScore) {
+        this.civicTrustScore = civicTrustScore;
     }
 
     public int getPostId() {

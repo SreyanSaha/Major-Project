@@ -7,18 +7,35 @@ import UploadCampaign from "./UploadCampaignComponent";
 import UploadEmergencyPost from "./UploadEmergencyComponent";
 
 export default function UserDashboardLayout({setLayout}) {
+  // system and ui
   const navigate = useNavigate();
   const [msg,updateMsg] = useState(null);
   const [processing, setProcessing] = useState(false);
+  // 
+  // page state of all it type of posts 
+  const [page, setPage] = useState(0);
+  const [campaignPage, setCampaignPage] = useState(0);
+  const [emergencyPage, setEmergencyPage] = useState(0);
+  //
+  // site related state management 
   const [activeTab, setActiveTab] = useState("posts");
   const [showAddPost, setShowAddPost] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedin, setLogin] = useState(false);
+  //
+  // all the types of posts states 
   const [posts, setPost] = useState([]);
   const [campaignPosts, setCampaigns] = useState([]);
   const [emergencyPosts, setEmergencyPost] = useState([]);
-  const [currentPage, setCurrentPage] = useState(0);
+  //
+  // all the types of posts page state management 
+  const [lastPostPage, setLastPostPage] = useState(false);
+  const [lastCampaignPage, setLastCampaignPage] = useState(false);
+  const [lastEmergencyPage, setLastEmergencyPage] = useState(false);
+  //
+  // page size for each type of posts 
   const pageSize = 20;
+  //
 
   useEffect(() => {
     const loadData = async () =>{
@@ -39,7 +56,7 @@ export default function UserDashboardLayout({setLayout}) {
   const handleSearch = () => {
     console.log("Search initiated");
   };
-
+// health check func for the token
   const checkTokenHealth = async() =>{
     try{
       let user = localStorage.getItem("user");
@@ -55,12 +72,16 @@ export default function UserDashboardLayout({setLayout}) {
       );
       if(response.status===200 && response.data==="validated.")return true;
     }catch(exception){
-      if(exception.response && (exception.response.status===401 || exception.response.status===403))
-      updateMsg("Please log in to access updates — your session may have expired or you're not signed in.");
+      if(exception.response && (exception.response.status===401 || exception.response.status===403)){
+        updateMsg("Please log in to access updates — your session may have expired or you're not signed in.");
+        localStorage.removeItem("user");
+      }
     }
     return false;
   } 
-
+//
+// if user is new || token is expired then these funcs will be called to provide
+// only lates ten posts of all the types 
   const fetchPosts = async() =>{
     try{
       if(posts.length===0){
@@ -74,18 +95,16 @@ export default function UserDashboardLayout({setLayout}) {
         );
         if(response.status===200){
           setProcessing(false);
-          setPost(response.data.object===null? 
-                  response.data.objects: 
-                  response.data.object);
-          updateMsg(response.data.object.length===0?"Posts not found.":response.data.msg);
+          setPost(response.data.objects);
+          updateMsg(response.data.objects.length===0?"Posts not found.":response.data.msg);
         }
       }
     }catch(exception){
       console.log(exception);
-      updateMsg(exception);
+      setProcessing(false);
+      updateMsg("Connection with the server failed.");
     }
   }
-
   const fetchCampaignPosts = async() =>{
     try{
       if(campaignPosts.length===0){
@@ -99,62 +118,132 @@ export default function UserDashboardLayout({setLayout}) {
         );
         if(response.status===200){
           setProcessing(false);
-          setCampaigns(response.data.object===null? 
-                      response.data.objects: 
-                      response.data.object);
-          updateMsg(response.data.object.length===0?"Campaigs not found.":response.data.msg);
+          setCampaigns(response.data.objects);
+          updateMsg(response.data.objects.length===0?"Campaigs not found.":response.data.msg);
         }
       }
     }catch(exception){
       console.log(exception);
-      updateMsg(exception);
+      setProcessing(false);
+      updateMsg("Connection with the server failed.");
     }
   }
-
   const fetchEmergencyPosts = async() =>{
     
   }
-
+//
+// if the user is regular one && token is not expired then these funcs will 
+// be called to provide all the posts with in a paged format 20 posts of all types 
+// per request  
   const fetchAllPosts = async()=>{
     try{
-      const user = JSON.parse(localStorage.getItem("user"));
-      setProcessing(true);
-      const response=await axios.get(`http://localhost:8080/all-posts/${currentPage}`,
-        {
-          headers:{
-            "Authorization": "Bearer "+user.token,
-            "Content-Type": "application/json"
+      if(!lastPostPage){
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get(`http://localhost:8080/all-posts/page/${page}/size/${pageSize}`,
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
           }
+        );
+        if(response.status===200){
+          setProcessing(false);
+          if(posts.length===0) setPost(response.data.object.content);
+          else setPost(prevPost=>[...prevPost, ...response.data.object.content]);
+          
+          if(!response.data.object.last)setPage(page+1);
+          else setLastPostPage(true);
+        }else if(response.status===202){
+          setProcessing(false);
+          updateMsg(response.data.msg);
         }
-      );
-      if(response.status===200){
-        setProcessing(false);
-        setPost(response.data.objects);
-        setCurrentPage(currentPage+response.data.objects.length);
-      }else if(response.status===202){
-        setProcessing(false);
-        updateMsg(response.data.msg);
       }
     }catch(exception){
       console.log(exception);
+      setProcessing(false);
       updateMsg(exception?.response?.data?.msg || exception.message );
     }
   }
   const fetchAllCampaignPosts = async()=>{
-
+    try{
+      if(!lastCampaignPage){
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get(`http://localhost:8080/all-campaigns/page/${page}/size/${pageSize}`,
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          setProcessing(false);
+          if(campaignPosts.length===0)setCampaigns(response.data.object.content);
+          else setCampaigns(prevCampaigns=>[...prevCampaigns, ...response.data.object.content]);
+          
+          if(!response.data.object.last)setCampaignPage(campaignPage+1);
+          else setLastCampaignPage(true);
+        }else if(response.status===202){
+          setProcessing(false);
+          updateMsg(response.data.msg);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
   }
   const fetchAllEmergencyPosts = async()=>{
 
   }
-
+//
+// load more will evaluate which one func to call for the next set of posts 
   const loadMore = async (pageCount) =>{
-
   }
+  //
+
+  const getTrustScoreLabel = (score) => {
+  if (score >= 0 && score <= 299) return "Low Trust 🔴";
+  if (score >= 300 && score <= 599) return "Moderate Trust 🟠";
+  if (score >= 600 && score <= 849) return "High Trust 🟡";
+  if (score >= 850 && score <= 1000) return "Trusted Citizen 🟢";
+  return "";
+};
+
+const getTrustScoreStyle = (score) => {
+  if (score >= 0 && score <= 299) return { color: "#f44336" };     // Red
+  if (score >= 300 && score <= 599) return { color: "#ff9800" };   // Orange
+  if (score >= 600 && score <= 849) return { color: "#ffc107" };   // Yellow/Gold
+  if (score >= 850 && score <= 1000) return { color: "#4caf50" };  // Green
+  return {};
+};
 
   const renderCards = () => {
     if (activeTab === "posts") {
-      return posts.map((post, index) => (
-      <div key={post.postId || index} style={styles.card}>
+      return posts.map((post) => (
+      <div key={post.postId} style={styles.card}>
+
+      <div style={styles.uploaderInfo}>
+      <img
+        src={`http://localhost:8080/media${post.authorProfileImagePath.replace("\\", "/")}`}
+        alt={post.uploaderName}
+        style={styles.profileImage}
+      />
+      <div>
+        <span style={styles.uploaderName}>{post.authorProfileName}</span>
+        <span style={{ ...styles.trustScoreLabel, ...getTrustScoreStyle(post.civicTrustScore) }}>
+          {getTrustScoreLabel(post.civicTrustScore)}
+        </span>
+      </div>
+      <div style={styles.uploadDate}>
+      {new Date(post.postUploadDateTime).toLocaleString()}
+      </div>
+      </div>
+
         <div style={styles.imagePlaceholder}><img src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`} 
         style={{
           height: "100%",
@@ -164,15 +253,58 @@ export default function UserDashboardLayout({setLayout}) {
         }}/></div>
         <div style={styles.title}>{post.postTitle}</div>
         <div style={styles.desc}>{post.postDescription}</div>
+
+      <div style={styles.postStats}>
+      <span style={styles.upvote}>⮝ {post.upVoteCount}</span>
+      <span style={styles.downvote}>⮟ {post.downVoteCount}</span>
+      <span style={styles.comments}>✉ {post.commentCount}</span>
+      <span style={styles.reports}>⚠️ {post.postReports}</span>
+      </div>
+
       </div>
     ));
     }
     else if(activeTab === "campaigns") {
-      return campaignPosts.map((campaigns, index)=>(
-        <div key={campaigns.campaignId || index} style={styles.card}>
+      return campaignPosts.map((campaigns)=>(
+        <div key={campaigns.campaignId} style={styles.card}>
+
+        <div style={styles.uploaderInfo}>
+      <img
+        src={`http://localhost:8080/media${campaigns.campaignOrganizerProfileImagePath.replace("\\", "/")}`}
+        alt={campaigns.campaignOrganizerName}
+        style={styles.profileImage}
+      />
+      <div>
+        <span style={styles.uploaderName}>{campaigns.campaignOrganizerName}</span>
+        <span style={{ ...styles.trustScoreLabel, ...getTrustScoreStyle(campaigns.civicTrustScore) }}>
+          {getTrustScoreLabel(campaigns.civicTrustScore)}
+        </span>
+      </div>
+      <div style={styles.uploadDate}>
+      {new Date(campaigns.campaignCreationTime).toLocaleString()}
+      </div>
+      </div>
+
         <div style={styles.imagePlaceholder}><img src={`http://localhost:8080/media${campaigns.imagePath1.replace("\\", "/")}`}/></div>
         <div style={styles.title}>{campaigns.campaignTitle}</div>
         <div style={styles.desc}>{campaigns.campaignDescription}</div>
+
+        <div style={styles.postStats}>
+      <span style={styles.upvote}>⮝ {campaigns.upVoteCount}</span>
+      <span style={styles.downvote}>⮟ {campaigns.downVoteCount}</span>
+      <span style={styles.campaignType}>
+        🎯 {campaigns.campaignType === -1
+          ? "Donation"
+          : campaigns.campaignType === 0
+          ? "Awareness"
+          : "Volunteer"}
+      </span>
+      <span style={styles.status}>
+        🏁 {campaigns.status === 1 ? "Completed" : "Active"}
+      </span>
+      <span style={styles.reports}>⚠️ {campaigns.campaignReports}</span>
+      </div>
+
       </div>
       ));
     }
@@ -180,8 +312,93 @@ export default function UserDashboardLayout({setLayout}) {
   };
 
   const styles = {
+    campaignType: {
+  padding: "2px 8px",
+  backgroundColor: "#e3f2fd",
+  color: "#0d47a1",
+  borderRadius: "6px",
+  fontSize: "0.85rem",
+  fontWeight: "500",
+},
+
+status: {
+  padding: "2px 8px",
+  backgroundColor: "#f1f8e9",
+  color: "#33691e",
+  borderRadius: "6px",
+  fontSize: "0.85rem",
+  fontWeight: "500",
+},
+    trustScoreLabel: {
+    fontWeight: "600",
+    fontSize: "0.75rem",
+    marginLeft: "8px",
+    verticalAlign: "middle",
+    userSelect: "none",
+  },
+    uploaderInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "8px",
+  },
+  uploadDate: {
+    fontSize: "0.8rem",
+    color: "#777",
+  },
+  uploaderImage: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+    objectFit: "cover",
+  },
+  uploaderDetails: {
+    display: "flex",
+    flexDirection: "column",
+  },
+
+    profileImage: {
+      width: "32px",
+      height: "32px",
+      borderRadius: "50%",
+      objectFit: "cover",
+      border: "1.5px solid #11398f",
+    },
+
+    uploaderName: {
+      fontWeight: "600",
+      color: "#11398f",
+      fontSize: "0.9rem",
+    },
+
+    postStats: {
+      display: "flex",
+      justifyContent: "flex-start",
+      gap: "20px",
+      fontSize: "0.85rem",
+      color: "#555",
+      marginTop: "auto", 
+    },
+
+    upvote: {
+      color: "green",
+      cursor: "pointer",
+    },
+
+    downvote: {
+      color: "red",
+      cursor: "pointer",
+    },
+
+    comments: {
+      color: "#333",
+      cursor: "pointer",
+    },
+    reports: {
+      color: "#ff9800",  // orange for reports
+    },
     alertDiv:{
-        textAlign: "center",
+      textAlign: "center",
     },
     alertText: {
         backgroundColor: "rgb(255, 64, 57)",
