@@ -1,6 +1,7 @@
 package com.help.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.help.dto.ServiceResponse;
 import com.help.dto.UserPost;
 import com.help.jwt.service.UserAuthDataService;
 import com.help.model.Post;
@@ -46,9 +47,9 @@ public class PostController {
 
     @GetMapping("/user/all-posts")
     public ResponseEntity<?> getUserAllPosts(){
-        List<UserPost> posts=postService.getAllPostsOfUser();
-        if(posts.isEmpty())return ResponseEntity.status(HttpStatus.OK).body("No posts found.");
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(posts);
+        ServiceResponse<UserPost> response=postService.getAllPostsOfUser();
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 //    @GetMapping("/nearby")

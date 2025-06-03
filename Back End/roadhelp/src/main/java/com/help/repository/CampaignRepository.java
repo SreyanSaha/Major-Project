@@ -19,4 +19,9 @@ public interface CampaignRepository extends JpaRepository<Campaign, Integer> {
             "c.status, c.campaignOrganizerContact, c.imagePath1, c.upVoteCount, c.downVoteCount, c.campaignReports, c.campaignCreationTime, c.campaignType) FROM Campaign c JOIN c.user u " +
             "WHERE c.status != -1 ORDER BY c.campaignCreationTime DESC LIMIT 10")
     List<CampaignPostData> findLimitedCampaigns();
+
+    @Query("SELECT new com.help.dto.CampaignPostData(c.campaignId, c.campaignTitle, c.campaignDescription, c.campaignOrganizerName, u.profileImagePath, " +
+            "c.status, c.campaignOrganizerContact, c.imagePath1, c.upVoteCount, c.downVoteCount, c.campaignReports, c.campaignCreationTime, c.campaignType) " +
+            "FROM Campaign c JOIN c.user u WHERE c.status != -1 AND c.campaignId > :startingId ORDER BY c.campaignCreationTime DESC LIMIT 20")
+    List<CampaignPostData> findAllCampaigns(@Param("startingId") int startingId);
 }

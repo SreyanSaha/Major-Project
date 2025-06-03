@@ -216,16 +216,19 @@ public class PostService {
         return true;
     }
 
-    public ServiceResponse<List<PostData>> getLimitedPosts() {
-        return new ServiceResponse<List<PostData>>("Please login to view and access all the posts.",postRepository.findLimitedPosts());
+    public ServiceResponse<PostData> getLimitedPosts() {
+        List<PostData> list = postRepository.findLimitedPosts();
+        return new ServiceResponse<PostData>(list.isEmpty()?"No posts are found.":"Please login to view and access all the posts.",list);
     }
 
-    public ServiceResponse<List<PostData>> getAllPosts(int startingId) {
-       return new ServiceResponse<List<PostData>>(postRepository.findAllPost(startingId));
+    public ServiceResponse<PostData> getAllPosts(int startingId) {
+        List<PostData> list = postRepository.findAllPost(startingId);
+       return new ServiceResponse<PostData>(list.isEmpty()?"No additional posts are found.":"",list);
     }
 
-    public List<UserPost> getAllPostsOfUser() {
+    public ServiceResponse<UserPost> getAllPostsOfUser() {
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
-        return postRepository.findAllPostsOfUser(username);
+        List<UserPost> list = postRepository.findAllPostsOfUser(username);
+        return new ServiceResponse<UserPost>(list.isEmpty()?"No posts are found.":"",list);
     }
 }

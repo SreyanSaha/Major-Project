@@ -85,4 +85,9 @@ public class CampaignService {
     public ServiceResponse<List<CampaignPostData>> getLimitedCampaigns() {
         return new ServiceResponse<List<CampaignPostData>>("Please login to view and access all the campaigns.",campaignRepository.findLimitedCampaigns());
     }
+
+    public ServiceResponse<List<CampaignPostData>> getAllCampaigns(int startingId) {
+        List<CampaignPostData> list = campaignRepository.findAllCampaigns(startingId);
+        return new ServiceResponse<List<CampaignPostData>>(list.isEmpty()?"No additional campaigns are found.":"",list);
+    }
 }

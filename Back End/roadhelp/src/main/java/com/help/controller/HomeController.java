@@ -43,7 +43,7 @@ public class HomeController {
 
     @GetMapping("posts")
     public ResponseEntity<?> getPosts(){
-        ServiceResponse<List<PostData>> response = postService.getLimitedPosts();
+        ServiceResponse<PostData> response = postService.getLimitedPosts();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -55,8 +55,21 @@ public class HomeController {
 
     @GetMapping("all-posts/{startingId}")
     public ResponseEntity<?> getAllPosts(@PathVariable int startingId){
-        ServiceResponse<List<PostData>> response = postService.getAllPosts(startingId);
+        ServiceResponse<PostData> response = postService.getAllPosts(startingId);
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response.getMsg());
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("all-campaigns/{startingId}")
+    public ResponseEntity<?> getAllCampaigns(@PathVariable int startingId){
+        ServiceResponse<List<CampaignPostData>> response = campaignService.getAllCampaigns(startingId);
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response.getMsg());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("all-emergency-posts/{startingId}")
+    public ResponseEntity<?> getAllEmergencyPosts(@PathVariable int startingId){
+        return ResponseEntity.status(HttpStatus.OK).body("");
     }
 
     @GetMapping("emergency")

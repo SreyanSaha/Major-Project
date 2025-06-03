@@ -116,7 +116,29 @@ export default function UserDashboardLayout({setLayout}) {
   }
 
   const fetchAllPosts = async()=>{
-
+    try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      setProcessing(true);
+      const response=await axios.get(`http://localhost:8080/all-posts/${currentPage}`,
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        setProcessing(false);
+        setPost(response.data.objects);
+        setCurrentPage(currentPage+response.data.objects.length);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
   }
   const fetchAllCampaignPosts = async()=>{
 
@@ -133,7 +155,13 @@ export default function UserDashboardLayout({setLayout}) {
     if (activeTab === "posts") {
       return posts.map((post, index) => (
       <div key={post.postId || index} style={styles.card}>
-        <div style={styles.imagePlaceholder}><img src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`}/></div>
+        <div style={styles.imagePlaceholder}><img src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`} 
+        style={{
+          height: "100%",
+          objectFit: "cover",
+          borderRadius: "8px",
+          flex: 1,
+        }}/></div>
         <div style={styles.title}>{post.postTitle}</div>
         <div style={styles.desc}>{post.postDescription}</div>
       </div>
@@ -274,9 +302,14 @@ export default function UserDashboardLayout({setLayout}) {
       transition: "transform 0.2s",
     },
     imagePlaceholder: {
-      backgroundColor: "#cce0ff",
-      height: "190px",
-      borderRadius: "8px",
+    backgroundColor: "#cce0ff",
+    height: "190px",
+    borderRadius: "8px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "0.5rem",
+    overflow: "hidden",
     },
     title: {
       fontSize: "1rem",

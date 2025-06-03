@@ -43,10 +43,10 @@ export default function UserUploadedPostsComponent() {
         );
         if(response.status===200){
           setProcessing(false);
-          updateMsg(response.data);
+          setPosts(response.data.objects);
         }else if(response.status===202){
           setProcessing(false);
-          setPosts(response.data);
+          updateMsg(response.data.msg);
         }
       }
     }catch(exception){
@@ -69,12 +69,11 @@ export default function UserUploadedPostsComponent() {
       );
       if(response.status===200){
         setProcessing(false);
-        updateMsg(response.data);
+        setPosts(response.data.objects);
       }else if(response.status===202){
         setProcessing(false);
-        setPosts(response.data);
+        updateMsg(response.data.msg);
       }
-    
     }catch(exception){
       console.log(exception);
       navigate("/user/login");
@@ -102,9 +101,14 @@ export default function UserUploadedPostsComponent() {
       boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
     },
     imagePlaceholder: {
-      backgroundColor: "#cce0ff",
-      height: "180px",
-      borderRadius: "8px",
+    backgroundColor: "#cce0ff",
+    height: "190px",
+    borderRadius: "8px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "0.5rem",
+    overflow: "hidden",
     },
     title: {
       fontSize: "1rem",
@@ -214,7 +218,13 @@ export default function UserUploadedPostsComponent() {
                 </div>
               </div>
             )}
-            <div style={styles.imagePlaceholder}><img style={{ width: "100%", height: "180px", objectFit: "contain" }} src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`}/></div>
+            <div style={styles.imagePlaceholder}><img src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`}
+            style={{
+            height: "100%",
+            objectFit: "cover",
+            borderRadius: "8px",
+            flex: 1,
+          }}/></div>
             <div style={styles.title}>{post.postTitle}</div>
             <div style={styles.desc}>{post.postDescription}</div>
             <div
