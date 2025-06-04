@@ -1,5 +1,6 @@
 package com.help.service;
 
+import com.help.dto.FullPostData;
 import com.help.dto.PostData;
 import com.help.dto.ServiceResponse;
 import com.help.dto.UserPost;
@@ -235,5 +236,11 @@ public class PostService {
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
         List<UserPost> list = postRepository.findAllPostsOfUser(username);
         return new ServiceResponse<UserPost>(list.isEmpty()?"No posts are found.":"",list);
+    }
+
+    public ServiceResponse<Optional<FullPostData>> getPostById(int postId) {
+        if(!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Invalid post id.");
+        Optional<FullPostData> response = postRepository.findFullPostById(postId);
+        return new ServiceResponse<Optional<FullPostData>>(response.isPresent() ? "" : "No post found.", response);
     }
 }

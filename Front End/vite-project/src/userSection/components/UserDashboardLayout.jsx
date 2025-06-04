@@ -229,7 +229,7 @@ const getTrustScoreStyle = (score) => {
 
       <div style={styles.uploaderInfo}>
       <img
-        src={`http://localhost:8080/media${post.authorProfileImagePath.replace("\\", "/")}`}
+        src={post.authorProfileImagePath!==null?`http://localhost:8080/media${post.authorProfileImagePath.replace("\\", "/")}`:""}
         alt={post.uploaderName}
         style={styles.profileImage}
       />

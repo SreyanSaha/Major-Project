@@ -1,6 +1,7 @@
 package com.help.controller;
 
 import com.help.dto.CampaignPostData;
+import com.help.dto.FullPostData;
 import com.help.dto.PostData;
 import com.help.dto.ServiceResponse;
 import com.help.jwt.service.CustomUserDetailsService;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/")
@@ -59,7 +61,24 @@ public class HomeController {
     @GetMapping("emergency")
     public ResponseEntity<?> getEmergency(){
         final int page=0,size=10;
+        return ResponseEntity.status(HttpStatus.OK).body("");
+    }
 
+    @GetMapping("posts/{postId}")
+    public ResponseEntity<?> getPostById(@PathVariable int postId){
+        ServiceResponse<Optional<FullPostData>> response = postService.getPostById(postId);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("campaigns/{CampaignId}")
+    public ResponseEntity<?> getCampaignById(@PathVariable int campaignId){
+        return ResponseEntity.status(HttpStatus.OK).body("");
+    }
+
+    // to be implemented
+    @GetMapping("emergency/{emergencyPostId}")
+    public ResponseEntity<?> getEmergencyPostById(@PathVariable int postId){
         return ResponseEntity.status(HttpStatus.OK).body("");
     }
 
