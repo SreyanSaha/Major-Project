@@ -34,6 +34,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     @Query("SELECT new com.help.dto.FullPostData(p.id, p.authorProfileName, p.postUploadDateTime, p.postTitle, p.postDescription, p.upVoteCount, p.downVoteCount, p.commentCount, " +
             "p.imagePath1, p.imagePath2, p.imagePath3, p.imagePath4, p.imagePath5, p.afterWorkImagePath1, p.afterWorkImagePath2, p.afterWorkImagePath3, p.afterWorkImagePath4, p.afterWorkImagePath5, " +
-            "p.latitude, p.longitude, p.street, p.city, p.state, p.country, p.postalCode, p.postReports, p.postStatus, u.userId) FROM Post p JOIN p.user u WHERE p.id = :postId")
+            "p.latitude, p.longitude, p.street, p.city, p.state, p.country, p.postalCode, p.postReports, p.postStatus, u.userId, u.profileImagePath, u.civicTrustScore) FROM Post p JOIN p.user u WHERE p.id = :postId")
     Optional<FullPostData> findFullPostById(@Param("postId") int postId);
+
 }

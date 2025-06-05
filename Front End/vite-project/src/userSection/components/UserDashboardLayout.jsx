@@ -6,7 +6,7 @@ import UploadPost from "./UploadPostComponent";
 import UploadCampaign from "./UploadCampaignComponent";
 import UploadEmergencyPost from "./UploadEmergencyComponent";
 
-export default function UserDashboardLayout({setLayout}) {
+export default function UserDashboardLayout() {
   // system and ui
   const navigate = useNavigate();
   const [msg,updateMsg] = useState(null);
@@ -206,6 +206,14 @@ export default function UserDashboardLayout({setLayout}) {
   }
   //
 
+  const loadPost = (postId)=>{
+    navigate(`/post/${postId}`);
+  }
+
+  const loadCampaign = (campaignId)=>{
+    navigate(`/campaign/${campaignId}`);
+  }
+
   const getTrustScoreLabel = (score) => {
   if (score >= 0 && score <= 299) return "Low Trust 🔴";
   if (score >= 300 && score <= 599) return "Moderate Trust 🟠";
@@ -225,11 +233,11 @@ const getTrustScoreStyle = (score) => {
   const renderCards = () => {
     if (activeTab === "posts") {
       return posts.map((post) => (
-      <div key={post.postId} style={styles.card}>
+      <div key={post.postId} style={styles.card} onClick={()=>navigate(`/post/${post.postId}`)}>
 
       <div style={styles.uploaderInfo}>
       <img
-        src={post.authorProfileImagePath!==null?`http://localhost:8080/media${post.authorProfileImagePath.replace("\\", "/")}`:""}
+        src={post.authorProfileImagePath!==null?`http://localhost:8080/media${post.authorProfileImagePath.replace("\\", "/")}`:"post image"}
         alt={post.uploaderName}
         style={styles.profileImage}
       />
@@ -266,7 +274,7 @@ const getTrustScoreStyle = (score) => {
     }
     else if(activeTab === "campaigns") {
       return campaignPosts.map((campaigns)=>(
-        <div key={campaigns.campaignId} style={styles.card}>
+        <div key={campaigns.campaignId} style={styles.card} onClick={()=>navigate(`/campaign/${campaigns.campaignId}`)}>
 
         <div style={styles.uploaderInfo}>
       <img
@@ -517,6 +525,7 @@ status: {
       gap: "0.75rem",
       boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
       transition: "transform 0.2s",
+      cursor: "pointer"
     },
     imagePlaceholder: {
     backgroundColor: "#cce0ff",

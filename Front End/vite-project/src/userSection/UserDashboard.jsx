@@ -4,7 +4,6 @@ import UserUploadedPostsComponent from "./components/UserPosts";
 import UserCampaignPostsComponent from "./components/UserCampaign";
 import UserEmergencyPostsComponent from "./components/UserEmergencyPosts";
 import UserProfile from "./components/UserProfile";
-import CampaignPostCard from "./components/CampaignFullPostComponent";
 import { useNavigate } from "react-router-dom";
 
 export default function UserDashboard(props) {
@@ -136,7 +135,7 @@ export default function UserDashboard(props) {
     switch(component){
       case "posts".toLowerCase():setLayout(<UserUploadedPostsComponent/>);
       break;
-      case "dashboard".toLowerCase():setLayout(<UserDashboardLayout />);
+      case "dashboard".toLowerCase():setLayout(<UserDashboardLayout/>);
       break;
       case "campaigns".toLowerCase():setLayout(<UserCampaignPostsComponent/>);
       break;
@@ -149,7 +148,7 @@ export default function UserDashboard(props) {
   
   return (
     <div style={styles.container}>
-<div style={styles.sidebar}>
+    <div style={styles.sidebar}>
   <div
     style={{
       ...styles.sidebarItem,

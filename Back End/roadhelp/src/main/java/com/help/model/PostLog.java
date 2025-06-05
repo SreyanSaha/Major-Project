@@ -12,11 +12,6 @@ public class PostLog {
 
     public PostLog() {}
 
-    @PrePersist
-    protected void onCreate(){
-        this.log=(short)-1;
-    }
-
     public long getUserId() {
         return userId;
     }

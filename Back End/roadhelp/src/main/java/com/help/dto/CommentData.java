@@ -1,49 +1,24 @@
-package com.help.model;
+package com.help.dto;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Entity
-public class PostComment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class CommentData {
     private int postCommentId;
-    @Column(nullable = false)
-    private String authorProfileName;
+    private String authorProfileName, authorProfileImagePath;
     private LocalDateTime commentDateTime;
-    @Column(nullable = false)
     private String commentDescription;
     private int likeCount, disLikeCount;
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    private int userId;
 
-    public PostComment() {}
-
-    @PrePersist
-    protected void onCreate(){
-        this.commentDateTime = LocalDateTime.now();
-        this.likeCount=this.disLikeCount=0;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Post getPost() {
-        return post;
-    }
-
-    public void setPost(Post post) {
-        this.post = post;
+    public CommentData(int postCommentId, String authorProfileName, String authorProfileImagePath, LocalDateTime commentDateTime, String commentDescription, int likeCount, int disLikeCount, int userId) {
+        this.postCommentId = postCommentId;
+        this.authorProfileName = authorProfileName;
+        this.authorProfileImagePath = authorProfileImagePath;
+        this.commentDateTime = commentDateTime;
+        this.commentDescription = commentDescription;
+        this.likeCount = likeCount;
+        this.disLikeCount = disLikeCount;
+        this.userId = userId;
     }
 
     public int getPostCommentId() {
@@ -60,6 +35,14 @@ public class PostComment {
 
     public void setAuthorProfileName(String authorProfileName) {
         this.authorProfileName = authorProfileName;
+    }
+
+    public String getAuthorProfileImagePath() {
+        return authorProfileImagePath;
+    }
+
+    public void setAuthorProfileImagePath(String authorProfileImagePath) {
+        this.authorProfileImagePath = authorProfileImagePath;
     }
 
     public LocalDateTime getCommentDateTime() {
@@ -92,5 +75,13 @@ public class PostComment {
 
     public void setDisLikeCount(int disLikeCount) {
         this.disLikeCount = disLikeCount;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 }

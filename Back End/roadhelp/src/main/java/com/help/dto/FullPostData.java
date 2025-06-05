@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public class FullPostData {
     private int postId;
-    private String authorProfileName;
+    private String authorProfileName, profileImagePath;
     private LocalDateTime postUploadDateTime;
     private String postTitle, postDescription;
     private int upVoteCount, downVoteCount, commentCount;
@@ -15,14 +15,14 @@ public class FullPostData {
     private Double latitude;
     private Double longitude;
     private String street, city, state, country, postalCode;
-    private int postReports;
+    private int postReports, civicTrustScore;
     private short postStatus;// -1 -> under review, 0 -> work in progress, 1 -> work done
     private int userId;
 
     public FullPostData(int postId, String authorProfileName, LocalDateTime postUploadDateTime, String postTitle, String postDescription, int upVoteCount,
                         int downVoteCount, int commentCount, String imagePath1, String imagePath2, String imagePath3, String imagePath4, String imagePath5, String afterWorkImagePath1,
                         String afterWorkImagePath2, String afterWorkImagePath3, String afterWorkImagePath4, String afterWorkImagePath5, Double latitude, Double longitude, String street, String city,
-                        String state, String country, String postalCode, int postReports, short postStatus, int userId) {
+                        String state, String country, String postalCode, int postReports, short postStatus, int userId, String profileImagePath, int civicTrustScore) {
         this.postId = postId;
         this.authorProfileName = authorProfileName;
         this.postUploadDateTime = postUploadDateTime;
@@ -51,6 +51,24 @@ public class FullPostData {
         this.postReports = postReports;
         this.postStatus = postStatus;
         this.userId = userId;
+        this.profileImagePath = profileImagePath;
+        this.civicTrustScore = civicTrustScore;
+    }
+
+    public int getCivicTrustScore() {
+        return civicTrustScore;
+    }
+
+    public void setCivicTrustScore(int civicTrustScore) {
+        this.civicTrustScore = civicTrustScore;
+    }
+
+    public String getProfileImagePath() {
+        return profileImagePath;
+    }
+
+    public void setProfileImagePath(String profileImagePath) {
+        this.profileImagePath = profileImagePath;
     }
 
     public int getUserId() {

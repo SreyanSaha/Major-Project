@@ -1,9 +1,6 @@
 package com.help.service;
 
-import com.help.dto.FullPostData;
-import com.help.dto.PostData;
-import com.help.dto.ServiceResponse;
-import com.help.dto.UserPost;
+import com.help.dto.*;
 import com.help.model.*;
 import com.help.repository.*;
 import com.help.validation.PostValidation;
@@ -87,7 +84,10 @@ public class PostService {
         return postRepository.findByLatitudeBetweenAndLongitudeBetween( - radius, lat + radius, lon - radius, lon + radius);
     }
 
-    public void upVotePost(int postId, int userId) {
+    public ServiceResponse<FullPostData> upVotePost(int postId) {
+        if(!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Failed to up vote the post.");
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        int userId = userRepository.findByUsername(username).get().getUserId();
         Optional<PostLog> existingLogOpt = postLogRepository.findByUserIdAndPostId(userId, postId);
         Post post = postRepository.findById(postId).orElseThrow();
         if (existingLogOpt.isPresent()) {
@@ -96,6 +96,7 @@ public class PostService {
                 // Already upVoted, remove upvote (toggle off)
                 post.setUpVoteCount(post.getUpVoteCount() - 1);
                 postLogRepository.delete(existingLog);
+                return new ServiceResponse<>("Vote removed.",postRepository.findFullPostById(postId).get());
             } else if (existingLog.getLog() == 0) {
                 // Was downVoted, change to upvote
                 post.setDownVoteCount(post.getDownVoteCount() - 1);
@@ -112,11 +113,13 @@ public class PostService {
             log.setLog((short) 1);
             postLogRepository.save(log);
         }
-
-        postRepository.save(post);
+        return new ServiceResponse<>("Post up voted.",postRepository.findFullPostById(postId).get());
     }
 
-    public void downVotePost(int postId, int userId) {
+    public ServiceResponse<FullPostData> downVotePost(int postId) {
+        if(!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Failed to down vote the post.");
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        int userId = userRepository.findByUsername(username).get().getUserId();
         Optional<PostLog> existingLogOpt = postLogRepository.findByUserIdAndPostId(userId, postId);
         Post post = postRepository.findById(postId).orElseThrow();
         if (existingLogOpt.isPresent()) {
@@ -125,6 +128,7 @@ public class PostService {
                 // Already downVoted, remove downVote (toggle off)
                 post.setDownVoteCount(post.getDownVoteCount() - 1);
                 postLogRepository.delete(existingLog);
+                return new ServiceResponse<>("Vote removed.",postRepository.findFullPostById(postId).get());
             } else if (existingLog.getLog() == 1) {
                 // Was upVoted, change to downVote
                 post.setUpVoteCount(post.getUpVoteCount() - 1);
@@ -142,16 +146,32 @@ public class PostService {
             postLogRepository.save(log);
         }
 
-        postRepository.save(post);
+        return new ServiceResponse<>("Post down voted.",postRepository.findFullPostById(postId).get());
     }
 
 
-    public PostComment addComment(int postId, PostComment comment) {
-        Post post = postRepository.findById(postId).orElseThrow();
-        comment.setPost(post);
+    public ServiceResponse<Optional<CommentData>> addComment(CommentWrapper commentWrapper) {
+        if(!postValidation.isValidComment(commentWrapper.getCommentDescription()))return new ServiceResponse<>("Failed to create comment.");
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        if(!username.equals(commentWrapper.getUname()))return new ServiceResponse<>("Failed to create comment.");
+        Post post = postRepository.findById(commentWrapper.getPostId()).get();
+        User user = userRepository.findByUsername(username).get();
+        PostComment postComment=new PostComment();
+        postComment.setCommentDescription(commentWrapper.getCommentDescription());
+        postComment.setPost(post);
+        postComment.setUser(user);
+        postComment.setAuthorProfileName(user.getUserFirstName()+" "+user.getUserLastName());
         post.setCommentCount(post.getCommentCount() + 1);
         postRepository.save(post);
-        return postCommentRepository.save(comment);
+        int postCommentId = postCommentRepository.save(postComment).getPostCommentId();
+        return new ServiceResponse<>("Commented.",postCommentRepository.findCommentById(postCommentId));
+    }
+
+    public ServiceResponse<CommentData> findAllCommentsByPostId(int postId){
+        if(!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Failed to fetch the comments.");
+        List<CommentData> response = postCommentRepository.findAllCommentsByPostId(postId);
+        if(response.isEmpty())return new ServiceResponse<>("No comments yet.");
+        return new ServiceResponse<>(response);
     }
 
     public void upVoteComment(int commentId, int userId) {

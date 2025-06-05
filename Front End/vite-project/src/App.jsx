@@ -13,6 +13,7 @@ function App() {
       <Route path="/emergency-posts" element={<UserDashboard activeTab="emergency"/>} />
       <Route path="/user/login" element={<UserAuth status="false"/>} />
       <Route path="/user/signup" element={<UserAuth />} />
+      
       <Route path="/admin/login" element={<AdminAuth status="false"/>} />
       <Route path="/admin/signup" element={<AdminAuth />} />
       <Route path="/admin/dashboard" element={<AdminDashboard />} />

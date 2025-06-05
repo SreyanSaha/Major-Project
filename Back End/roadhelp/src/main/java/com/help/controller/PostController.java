@@ -1,8 +1,7 @@
 package com.help.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.help.dto.ServiceResponse;
-import com.help.dto.UserPost;
+import com.help.dto.*;
 import com.help.jwt.service.UserAuthDataService;
 import com.help.model.Post;
 import com.help.model.PostComment;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/post")
@@ -61,22 +61,32 @@ public class PostController {
 //        return ResponseEntity.ok().body(postService.getNearbyPosts(lat, lon, radius));
 //    }
 
-    @PostMapping("/upVote/{postId}")
-    public ResponseEntity<?> upVote(@PathVariable int postId,
-                                    @RequestHeader("Username") String username) {
-        postService.upVotePost(postId, userService.getUserByAuthId(userAuthDataService.getAuthId(username)).getUserId());
-        return ResponseEntity.ok().body("Up Voted");
+    @PostMapping("/upVote")
+    public ResponseEntity<?> upVote(@RequestBody int postId) {
+        ServiceResponse<FullPostData> response = postService.upVotePost(postId);
+        if(response.getObject()==null)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("/downVote/{postId}")
-    public ResponseEntity<?> downVote(@PathVariable int postId, @RequestHeader("Username") String username) {
-        postService.downVotePost(postId, userService.getUserByAuthId(userAuthDataService.getAuthId(username)).getUserId());
-        return ResponseEntity.ok().body("Down Voted");
+    @PostMapping("/downVote")
+    public ResponseEntity<?> downVote(@RequestBody int postId) {
+        ServiceResponse<FullPostData> response = postService.downVotePost(postId);
+        if(response.getObject()==null)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("/comment/{postId}")
-    public ResponseEntity<?> addComment(@PathVariable int postId, @RequestBody PostComment comment, @RequestHeader("Username") String username) {
-        return ResponseEntity.ok().body(postService.addComment(postId, comment));
+    @PostMapping("add/comment")
+    public ResponseEntity<?> addComment(@RequestBody CommentWrapper commentWrapper) {
+        ServiceResponse<Optional<CommentData>> response = postService.addComment(commentWrapper);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("all/comments/{postId}")
+    public ResponseEntity<?> addComment(@PathVariable int postId) {
+        ServiceResponse<CommentData> response = postService.findAllCommentsByPostId(postId);
+        if(response.getObjects()==null)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/comment/upVote/{commentId}")

@@ -11,6 +11,7 @@ public class PostValidation {
     private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s]*$");
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s,'./#\\-()&@]+$");
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("^\\d+$");
+    private static final Pattern DESCRIPTION_PATTERN = Pattern.compile("(?s)^(?!\\s*$).{1,500}$");
 
     public String isValidPostDetails(Post post){
         if(!isValidAlphanumeric(post.getPostTitle()))return "Invalid post title.";
@@ -20,6 +21,11 @@ public class PostValidation {
         if(!isValidName(post.getState()))return "Post state is invalid.";
         if(!isValidZipCode(post.getPostalCode())) return "Post zip code is invalid.";
         return "Validated";
+    }
+
+    public boolean isValidComment(String description){
+        if(description==null || description.trim().isEmpty())return false;
+        return DESCRIPTION_PATTERN.matcher(description.trim()).matches();
     }
 
     public boolean isValidNumeric(String numeric){
