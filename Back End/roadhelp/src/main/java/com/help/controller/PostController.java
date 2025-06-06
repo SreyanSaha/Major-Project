@@ -90,28 +90,38 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("/comment/upVote/{commentId}")
-    public ResponseEntity<?> upVoteComment(@PathVariable int commentId,@RequestHeader("Username") String username) {
-        postService.upVoteComment(commentId, userService.getUserByAuthId(userAuthDataService.getAuthId(username)).getUserId());
-        return ResponseEntity.ok().body("Comment Up Voted");
+    @PostMapping("/comment/upVote")
+    public ResponseEntity<?> upVoteComment(@RequestBody int commentId) {
+        ServiceResponse<Optional<CommentData>> response = postService.upVoteComment(commentId);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("/comment/downVote/{commentId}")
-    public ResponseEntity<?> downVoteComment(@PathVariable int commentId, @RequestHeader("Username") String username) {
-        postService.downVoteComment(commentId, userService.getUserByAuthId(userAuthDataService.getAuthId(username)).getUserId());
-        return ResponseEntity.ok().body("Comment Up Voted");
+    @PostMapping("/comment/downVote")
+    public ResponseEntity<?> downVoteComment(@RequestBody int commentId) {
+        ServiceResponse<Optional<CommentData>> response = postService.downVoteComment(commentId);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/report")
+    public ResponseEntity<?> reportPost(@RequestBody int postId){
+        ServiceResponse<Optional<FullPostData>> response = postService.reportPost(postId);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/delete/{postId}")
-    public ResponseEntity<?> deletePost(@PathVariable int postId, @RequestHeader("Username") String username){
+    public ResponseEntity<?> deletePost(@PathVariable int postId){
 
         return ResponseEntity.ok().body("");
     }
 
     @DeleteMapping("/delete/comment/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable int commentId, @RequestHeader("Username") String username){
-
-        return ResponseEntity.ok().body("");
+    public ResponseEntity<?> deleteComment(@PathVariable int commentId){
+        ServiceResponse<Boolean> response = postService.deleteComment(commentId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/search/post")

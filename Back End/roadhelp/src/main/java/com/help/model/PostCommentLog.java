@@ -18,12 +18,7 @@ public class PostCommentLog {
         this.log = log;
     }
 
-    @PrePersist
-    public void onCreate(){
-        this.log=(short)-1;
-    }
-
-    public long getPostCommentLogId() {
+    public int getPostCommentLogId() {
         return postCommentLogId;
     }
 

@@ -4,6 +4,7 @@ import com.help.dto.*;
 import com.help.model.*;
 import com.help.repository.*;
 import com.help.validation.PostValidation;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,9 +25,10 @@ public class PostService {
     private final PostCommentLogRepository postCommentLogRepository;
     private final PostValidation postValidation;
     private final UserRepository userRepository;
+    private final PostReportLogRepository postReportLogRepository;
 
     @Autowired
-    public PostService(PostRepository postRepository, PostLogRepository postLogRepository, PostCommentRepository postCommentRepository,
+    public PostService(PostRepository postRepository, PostLogRepository postLogRepository, PostCommentRepository postCommentRepository, PostReportLogRepository postReportLogRepository,
                        PostCommentLogRepository postCommentLogRepository, PostValidation postValidation, UserRepository userRepository) {
         this.postRepository = postRepository;
         this.postLogRepository = postLogRepository;
@@ -34,6 +36,7 @@ public class PostService {
         this.postCommentLogRepository = postCommentLogRepository;
         this.postValidation = postValidation;
         this.userRepository = userRepository;
+        this.postReportLogRepository = postReportLogRepository;
     }
 
     public String createPost(List<MultipartFile> images, Post post, String uname) {
@@ -175,54 +178,62 @@ public class PostService {
         return new ServiceResponse<>(response.getTotalPages()==0?"No additional comments found.":"",response);
     }
 
-    public void upVoteComment(int commentId, int userId) {
-        PostComment comment = postCommentRepository.findById(commentId).orElseThrow();
+    public ServiceResponse<Optional<CommentData>> upVoteComment(int commentId) {
+        if(!postValidation.isValidNumeric(Integer.toString(commentId)))return new ServiceResponse<>("Failed to up vote the comment.");
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        int userId = userRepository.findByUsername(username).get().getUserId();
+        PostComment comment = postCommentRepository.findById(commentId).get();
         Optional<PostCommentLog> existingLog = postCommentLogRepository.findByUserIdAndPostCommentId(userId, comment.getPostCommentId());
+
         if (existingLog.isEmpty()){
             PostCommentLog postCommentLog=new PostCommentLog(userId, commentId,(short)1);
             comment.setLikeCount(comment.getLikeCount()+1);
             postCommentLogRepository.save(postCommentLog);
             postCommentRepository.save(comment);
-        }else if(!existingLog.isEmpty()){
-            if(existingLog.get().getLog()==(short)1){
-                existingLog.get().setLog((short)-1);
+        }else{
+            if(existingLog.get().getLog()==(short)1){// removing the like
+                postCommentLogRepository.deleteById(existingLog.get().getPostCommentLogId());
                 comment.setLikeCount(comment.getLikeCount()-1);
-            }else if(existingLog.get().getLog()==(short)0){
+                postCommentRepository.save(comment);
+                return new ServiceResponse<>("Voted removed.",postCommentRepository.findCommentById(commentId, userId));
+            }else if(existingLog.get().getLog()==(short)0){// removing dislike and adding like
                 existingLog.get().setLog((short)1);
                 comment.setDisLikeCount(comment.getDisLikeCount()-1);
                 comment.setLikeCount(comment.getLikeCount()+1);
-            }else {
-                existingLog.get().setLog((short)1);
-                comment.setLikeCount(comment.getLikeCount()+1);
+                postCommentRepository.save(comment);
+                postCommentLogRepository.save(existingLog.get());
             }
-            postCommentLogRepository.save(existingLog.get());
-            postCommentRepository.save(comment);
         }
+        return new ServiceResponse<>("Comment up voted.",postCommentRepository.findCommentById(commentId, userId));
     }
 
-    public void downVoteComment(int commentId, int userId) {
+    public ServiceResponse<Optional<CommentData>> downVoteComment(int commentId) {
+        if(!postValidation.isValidNumeric(Integer.toString(commentId)))return new ServiceResponse<>("Failed to down vote the comment.");
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        int userId = userRepository.findByUsername(username).get().getUserId();
         PostComment comment = postCommentRepository.findById(commentId).orElseThrow();
         Optional<PostCommentLog> existingLog = postCommentLogRepository.findByUserIdAndPostCommentId(userId, comment.getPostCommentId());
+
         if (existingLog.isEmpty()){
             PostCommentLog postCommentLog=new PostCommentLog(userId, commentId,(short)0);
             comment.setDisLikeCount(comment.getDisLikeCount()+1);
             postCommentLogRepository.save(postCommentLog);
             postCommentRepository.save(comment);
-        }else if(!existingLog.isEmpty()){
-            if(existingLog.get().getLog()==(short)1){
+        }else{
+            if(existingLog.get().getLog()==(short)1){// removing like adding dislike
                 existingLog.get().setLog((short)0);
                 comment.setLikeCount(comment.getLikeCount()-1);
                 comment.setDisLikeCount(comment.getDisLikeCount()+1);
-            }else if(existingLog.get().getLog()==(short)0){
-                existingLog.get().setLog((short)-1);
+                postCommentLogRepository.save(existingLog.get());
+                postCommentRepository.save(comment);
+            }else if(existingLog.get().getLog()==(short)0){// removing dislike
+                postCommentLogRepository.deleteById(existingLog.get().getPostCommentLogId());
                 comment.setDisLikeCount(comment.getDisLikeCount()-1);
-            }else {
-                existingLog.get().setLog((short)0);
-                comment.setDisLikeCount(comment.getDisLikeCount()+1);
+                postCommentRepository.save(comment);
+                return new ServiceResponse<>("Vote removed.", postCommentRepository.findCommentById(commentId, userId));
             }
-            postCommentLogRepository.save(existingLog.get());
-            postCommentRepository.save(comment);
         }
+        return new ServiceResponse<>("Comment down voted.", postCommentRepository.findCommentById(commentId, userId));
     }
 
     public boolean deletePost(int postId, String username){
@@ -235,10 +246,39 @@ public class PostService {
         return postRepository.findPostByPostTitle(search);
     }
 
-    public boolean deleteComment(int commentId, String username) {
-        if(userRepository.findByUsername(username).get().getUserId()!=postCommentRepository.findById(commentId).get().getUser().getUserId())return false;
+    public ServiceResponse<Optional<FullPostData>> reportPost(int postId){
+        if(!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Failed to report the post.");
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        Post post = postRepository.findById(postId).get();
+        User user = userRepository.findByUsername(username).get();
+        Optional<PostReportLog> postReportLog = postReportLogRepository.findByUserIdAndPostId(user.getUserId(), postId);
+        if(postReportLog.isPresent()){// removing the report
+            post.setPostReports(post.getPostReports()-1);
+            postReportLogRepository.deleteById(postReportLog.get().getPostReportLogId());
+            postRepository.save(post);
+        }else{
+            PostReportLog reportLog=new PostReportLog(user.getUserId(), post.getPostId(), (short)1);
+            post.setPostReports(post.getPostReports()+1);
+            postReportLogRepository.save(reportLog);
+            postRepository.save(post);
+        }
+        return new ServiceResponse<>("Post reported.", postRepository.findFullPostById(postId));
+    }
+
+    @Transactional
+    public ServiceResponse<Boolean> deleteComment(int commentId) {
+        if(!postValidation.isValidNumeric(Integer.toString(commentId)))return new ServiceResponse<>("Failed to delete the comment.",false);
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username).get();
+        if(user.getUserId()!=postCommentRepository.findById(commentId).get().getUser().getUserId())
+            return new ServiceResponse<>("User is not authorised to delete the comment.",false);
+        Post post = postCommentRepository.findById(commentId).get().getPost();
+        Optional<PostCommentLog> postCommentLog = postCommentLogRepository.findByUserIdAndPostCommentId(commentId, user.getUserId());
+        post.setCommentCount(post.getCommentCount()-1);
         postCommentRepository.deleteById(commentId);
-        return true;
+        postCommentLog.ifPresent(commentLog -> postCommentLogRepository.deleteById(commentLog.getPostCommentLogId()));
+        postRepository.save(post);
+        return new ServiceResponse<>("Comment successfully deleted.", true);
     }
 
     public ServiceResponse<PostData> getLimitedPosts(int page, int size) {

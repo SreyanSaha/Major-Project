@@ -37,7 +37,6 @@ const [lastComment, setLastComment] = useState(false);
 const [commentPage, setCommentPage] = useState(0);
 const commentPageSize = 25;
 
-
 const checkTokenHealth = async() =>{
     try{
       let user = localStorage.getItem("user");
@@ -60,9 +59,8 @@ const checkTokenHealth = async() =>{
     }
     return false;
   }
-
 useEffect(() => {
-    if (checkTokenHealth()){
+    if (checkTokenHealth() && localStorage.getItem("user")!==null){
       setAuthenticated(true);
       loadPost();
     } else{
@@ -70,7 +68,8 @@ useEffect(() => {
       navigate("/user/login");
     }
   }, [navigate]);
-
+// post related functions
+//
   const loadPost = async () =>{
     try{
       const user = JSON.parse(localStorage.getItem("user"));
@@ -109,112 +108,9 @@ useEffect(() => {
       console.log(exception);
       setProcessing(false);
       updateMsg(exception?.response?.data?.msg || exception.message );
+      navigate("/user/login");
     }
   };
-
-  const loadComments = async (id)=>{
-    try{
-      if(postComments.length===0 && !lastComment){
-        const user = JSON.parse(localStorage.getItem("user"));
-        setProcessing(true);
-        const response=await axios.get(`http://localhost:8080/post/all/comments/${id}/page/${commentPage}/size/${commentPageSize}`,
-          {
-            headers:{
-              "Authorization": "Bearer "+user.token,
-              "Content-Type": "application/json"
-            }
-          }
-        );
-        if(response.status===200){
-          if(postComments.length===0)setComments(response.data.object.content);
-          else setComments(prevComments=>[...prevComments, ...response.data.object.content]);
-          updateMsg(response.data.msg);
-          setLastComment(response.data.object.last);
-          if(!response.data.object.last) setCommentPage(commentPage+1);
-          else updateMsg("No more comments are available.");
-          setProcessing(false);
-        }else if(response.status===202){
-          setProcessing(false);
-          updateMsg(response.data.msg);
-        }
-      }
-    }catch(exception){
-      console.log(exception);
-      setProcessing(false);
-      updateMsg(exception?.response?.data?.msg || exception.message );
-    }
-  };
-
-  const loadMoreComments = async (id)=>{
-      try{
-      if(!lastComment){
-        const user = JSON.parse(localStorage.getItem("user"));
-        setProcessing(true);
-        const response=await axios.get(`http://localhost:8080/post/all/comments/${id}/page/${commentPage}/size/${commentPageSize}`,
-          {
-            headers:{
-              "Authorization": "Bearer "+user.token,
-              "Content-Type": "application/json"
-            }
-          }
-        );
-        if(response.status===200){
-          if(postComments.length===0)setComments(response.data.object.content);
-          else setComments(prevComments=>[...prevComments, ...response.data.object.content]);
-          updateMsg(response.data.msg);
-          setLastComment(response.data.object.last);
-          if(!response.data.object.last) setCommentPage(commentPage+1);
-          else updateMsg("No more comments are available.");
-          setProcessing(false);
-        }else if(response.status===202){
-          setProcessing(false);
-          updateMsg(response.data.msg);
-        }
-      }
-    }catch(exception){
-      console.log(exception);
-      setProcessing(false);
-      updateMsg(exception?.response?.data?.msg || exception.message );
-    }
-  }
-
-  const addComment = async (id) => {
-    try{
-      setProcessing(true);
-      const user = JSON.parse(localStorage.getItem("user"));
-      const response=await axios.post("http://localhost:8080/post/add/comment",
-        {
-          "postId":postId,
-          "commentDescription":newComment,
-          "uname":user.username,
-        },
-        {
-          headers:{
-            "Authorization": "Bearer "+user.token,
-            "Content-Type": "application/json"
-          }
-        }
-      );
-      if(response.status===200){
-        updateMsg(response.data.msg);
-        setProcessing(false);
-        if(postComments.length===0)setComments(response.data.object);
-        else setComments(prevComments=>[...prevComments, response.data.object]);
-      }else if(response.status===202){
-        setProcessing(false);
-        updateMsg(response.data.msg);
-      }
-    }catch(exception){
-      console.log(exception);
-      setProcessing(false);
-      updateMsg(exception?.response?.data?.msg || exception.message );
-    }
-  };
-
-  const deleteComment = async (id) => {
-      
-  };
-
   const upVotePost = async (id) =>{
     try{
       setProcessing(true);
@@ -256,7 +152,6 @@ useEffect(() => {
       updateMsg(exception?.response?.data?.msg || exception.message );
     }
   };
-
   const downVotePost = async (id) =>{
     try{
       setProcessing(true);
@@ -298,10 +193,222 @@ useEffect(() => {
       updateMsg(exception?.response?.data?.msg || exception.message );
     }
   };
-
   const reportPost = async (id) =>{
-
+    try{
+      setProcessing(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const response=await axios.post("http://localhost:8080/post/report",id,
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        setPost(response.data.object);
+        updateMsg(response.data.msg);
+        setProcessing(false);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
   };
+//
+// comment related functions
+  const loadComments = async (id)=>{
+    try{
+      if(postComments.length===0 && !lastComment){
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get(`http://localhost:8080/post/all/comments/${id}/page/${commentPage}/size/${commentPageSize}`,
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          if(postComments.length===0 && response.data.object.content.length!==0)
+            setComments(response.data.object.content);
+          else setComments(prevComments=>[...prevComments, ...response.data.object.content]);
+          updateMsg(response.data.msg);
+          setLastComment(response.data.object.last);
+          if(!response.data.object.last) setCommentPage(commentPage+1);
+          else updateMsg("No more comments are available.");
+          setProcessing(false);
+        }else if(response.status===202){
+          setProcessing(false);
+          updateMsg(response.data.msg);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+  };
+  const loadMoreComments = async (id)=>{
+      try{
+      if(!lastComment){
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get(`http://localhost:8080/post/all/comments/${id}/page/${commentPage}/size/${commentPageSize}`,
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          if(postComments.length===0)setComments(response.data.object.content);
+          else setComments(prevComments=>[...prevComments, ...response.data.object.content]);
+          updateMsg(response.data.msg);
+          setLastComment(response.data.object.last);
+          if(!response.data.object.last) setCommentPage(commentPage+1);
+          else updateMsg("No more comments are available.");
+          setProcessing(false);
+        }else if(response.status===202){
+          setProcessing(false);
+          updateMsg(response.data.msg);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+  };
+  const addComment = async () => {
+    try{
+      setProcessing(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const response=await axios.post("http://localhost:8080/post/add/comment",
+        {
+          "postId":postId,
+          "commentDescription":newComment,
+          "uname":user.username,
+        },
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        updateMsg(response.data.msg);
+        setNewComment("");
+        setComments(prevComments=>[...prevComments, response.data.object]);
+        setProcessing(false);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+  };
+  const deleteComment = async (id) => {
+      try{
+      setProcessing(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const response=await axios.delete(`http://localhost:8080/post/delete/comment/${id}`,
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200 && response.data.object){
+        updateMsg(response.data.msg);
+        setComments(prevComments =>
+          prevComments.filter(comment => comment.postCommentId !== id)
+        );
+        setProcessing(false);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+  };
+  const upVoteComment = async (id) =>{
+    try{
+      setProcessing(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const response=await axios.post("http://localhost:8080/post/comment/upVote",id,
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        updateMsg(response.data.msg);
+        if(postComments.length===0)setComments(response.data.object);
+        else setComments(prevComments =>
+          prevComments.map(comment =>
+          comment.postCommentId === response.data.object.postCommentId?
+          response.data.object:comment
+        ));
+        setProcessing(false);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+  };
+  const downVoteComment = async (id) =>{
+    try{
+      setProcessing(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const response=await axios.post("http://localhost:8080/post/comment/downVote",id,
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        updateMsg(response.data.msg);
+        if(postComments.length===0)setComments(response.data.object);
+        else setComments(prevComments =>
+          prevComments.map(comment =>
+          comment.postCommentId === response.data.object.postCommentId?
+          response.data.object:comment
+        ));
+        setProcessing(false);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+  };
+//
 
   const styles = {
   card: {
@@ -551,9 +658,7 @@ useEffect(() => {
     margin: "auto",
     marginBottom: "15px",
   },
-};
-
-  
+  };  
   if (!authenticated) return null;
   return (
     <>
@@ -576,7 +681,7 @@ useEffect(() => {
             style={styles.profileImage}
           />
           <div>
-            <div style={{ fontWeight: "bold" }}>{post.authorProfileName}</div>
+            <div style={{ fontWeight: "bold", cursor:"pointer" }} onClick={()=>""}>{post.authorProfileName}</div>
             <div style={{ fontSize: "0.85rem", color: "#666" }}>
               {new Date(post.postUploadDateTime).toLocaleString()}
             </div>
@@ -632,7 +737,7 @@ useEffect(() => {
       {showComments?(
         <div style={styles.commentSection}>
         <div style={styles.commentList}>
-          {postComments.map((comment) => (
+  {postComments.length>0?postComments.map((comment) => (
   <div key={comment.postCommentId} style={styles.commentItem}>
     <div style={styles.commentHeader}>
       <img
@@ -653,10 +758,10 @@ useEffect(() => {
     </div>
 
     <div style={styles.commentActions}>
-      <button onClick={() => ""} style={styles.upvote}>
+      <button onClick={() => upVoteComment(comment.postCommentId)} style={styles.upvote}>
         ⬆ {comment.likeCount}
       </button>
-      <button onClick={() => ""} style={styles.downvote}>
+      <button onClick={() => downVoteComment(comment.postCommentId)} style={styles.downvote}>
         ⬇ {comment.disLikeCount}
       </button>
       {comment.deletable?(
@@ -666,7 +771,7 @@ useEffect(() => {
       ):""}
     </div>
   </div>
-))}
+)):""}
       <button style={styles.addCommentBtn1} onClick={()=>loadMoreComments(post.postId)}>
           Load more 
       </button>

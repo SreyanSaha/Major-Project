@@ -20,4 +20,5 @@ public interface PostCommentRepository extends JpaRepository<PostComment, Intege
             " pc.disLikeCount, u.userId, CASE WHEN pc.user.userId = :currentUserId THEN TRUE ELSE FALSE END) FROM PostComment pc JOIN pc.user u WHERE pc.post.postId = :postId " +
             "ORDER BY pc.commentDateTime DESC")
     Page<CommentData> findAllCommentsByPostId(int postId, Pageable pageable, int currentUserId);
+
 }
