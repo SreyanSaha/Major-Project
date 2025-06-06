@@ -256,7 +256,8 @@ public class PostService {
             post.setPostReports(post.getPostReports()-1);
             postReportLogRepository.deleteById(postReportLog.get().getPostReportLogId());
             postRepository.save(post);
-        }else{
+            new ServiceResponse<>("Report removed.", postRepository.findFullPostById(postId));
+        }else{// reporting the post 
             PostReportLog reportLog=new PostReportLog(user.getUserId(), post.getPostId(), (short)1);
             post.setPostReports(post.getPostReports()+1);
             postReportLogRepository.save(reportLog);
