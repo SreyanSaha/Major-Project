@@ -9,8 +9,10 @@ public class CommentData {
     private String commentDescription;
     private int likeCount, disLikeCount;
     private int userId;
+    private boolean deletable;
 
-    public CommentData(int postCommentId, String authorProfileName, String authorProfileImagePath, LocalDateTime commentDateTime, String commentDescription, int likeCount, int disLikeCount, int userId) {
+    public CommentData(int postCommentId, String authorProfileName, String authorProfileImagePath, LocalDateTime commentDateTime, String commentDescription,
+                       int likeCount, int disLikeCount, int userId, boolean deletable) {
         this.postCommentId = postCommentId;
         this.authorProfileName = authorProfileName;
         this.authorProfileImagePath = authorProfileImagePath;
@@ -19,6 +21,15 @@ public class CommentData {
         this.likeCount = likeCount;
         this.disLikeCount = disLikeCount;
         this.userId = userId;
+        this.deletable = deletable;
+    }
+
+    public boolean getDeletable() {
+        return deletable;
+    }
+
+    public void setDeletable(boolean deletable) {
+        this.deletable = deletable;
     }
 
     public int getPostCommentId() {

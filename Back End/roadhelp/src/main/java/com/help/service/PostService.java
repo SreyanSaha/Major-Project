@@ -164,14 +164,15 @@ public class PostService {
         post.setCommentCount(post.getCommentCount() + 1);
         postRepository.save(post);
         int postCommentId = postCommentRepository.save(postComment).getPostCommentId();
-        return new ServiceResponse<>("Commented.",postCommentRepository.findCommentById(postCommentId));
+        return new ServiceResponse<>("Commented.",postCommentRepository.findCommentById(postCommentId, user.getUserId()));
     }
 
-    public ServiceResponse<CommentData> findAllCommentsByPostId(int postId){
+    public ServiceResponse<Page<CommentData>> findAllCommentsByPostId(int postId, int page, int size){
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("commentDateTime").descending());
         if(!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Failed to fetch the comments.");
-        List<CommentData> response = postCommentRepository.findAllCommentsByPostId(postId);
-        if(response.isEmpty())return new ServiceResponse<>("No comments yet.");
-        return new ServiceResponse<>(response);
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        Page<CommentData> response = postCommentRepository.findAllCommentsByPostId(postId, pageRequest, userRepository.findByUsername(username).get().getUserId());
+        return new ServiceResponse<>(response.getTotalPages()==0?"No additional comments found.":"",response);
     }
 
     public void upVoteComment(int commentId, int userId) {

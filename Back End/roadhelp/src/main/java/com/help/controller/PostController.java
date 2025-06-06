@@ -8,6 +8,7 @@ import com.help.model.PostComment;
 import com.help.service.PostService;
 import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -82,10 +83,10 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("all/comments/{postId}")
-    public ResponseEntity<?> addComment(@PathVariable int postId) {
-        ServiceResponse<CommentData> response = postService.findAllCommentsByPostId(postId);
-        if(response.getObjects()==null)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    @GetMapping("all/comments/{postId}/page/{page}/size/{size}")
+    public ResponseEntity<?> addComment(@PathVariable int postId, @PathVariable int page, @PathVariable int size) {
+        ServiceResponse<Page<CommentData>> response = postService.findAllCommentsByPostId(postId, page, size);
+        if(response.getObject().getTotalPages()==0)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

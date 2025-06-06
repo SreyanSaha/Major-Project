@@ -33,6 +33,10 @@ const [processing, setProcessing] = useState(false);
 const [postImages, setImages] = useState([]);
 const [imagesAfterWork, setAfterWorkImages] = useState([]);
 const [showComments, setShowComments] = useState(false);
+const [lastComment, setLastComment] = useState(false);
+const [commentPage, setCommentPage] = useState(0);
+const commentPageSize = 25;
+
 
 const checkTokenHealth = async() =>{
     try{
@@ -110,23 +114,29 @@ useEffect(() => {
 
   const loadComments = async (id)=>{
     try{
-      const user = JSON.parse(localStorage.getItem("user"));
-      setProcessing(true);
-      const response=await axios.get(`http://localhost:8080/post/all/comments/${postId}`,
-        {
-          headers:{
-            "Authorization": "Bearer "+user.token,
-            "Content-Type": "application/json"
+      if(postComments.length===0 && !lastComment){
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get(`http://localhost:8080/post/all/comments/${id}/page/${commentPage}/size/${commentPageSize}`,
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
           }
+        );
+        if(response.status===200){
+          if(postComments.length===0)setComments(response.data.object.content);
+          else setComments(prevComments=>[...prevComments, ...response.data.object.content]);
+          updateMsg(response.data.msg);
+          setLastComment(response.data.object.last);
+          if(!response.data.object.last) setCommentPage(commentPage+1);
+          else updateMsg("No more comments are available.");
+          setProcessing(false);
+        }else if(response.status===202){
+          setProcessing(false);
+          updateMsg(response.data.msg);
         }
-      );
-      if(response.status===200){
-        setComments(response.data.objects);
-        updateMsg(response.data.msg);
-        setProcessing(false);
-      }else if(response.status===202){
-        setProcessing(false);
-        updateMsg(response.data.msg);
       }
     }catch(exception){
       console.log(exception);
@@ -135,8 +145,37 @@ useEffect(() => {
     }
   };
 
-  const loadMoreComments = async ()=>{
-
+  const loadMoreComments = async (id)=>{
+      try{
+      if(!lastComment){
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get(`http://localhost:8080/post/all/comments/${id}/page/${commentPage}/size/${commentPageSize}`,
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          if(postComments.length===0)setComments(response.data.object.content);
+          else setComments(prevComments=>[...prevComments, ...response.data.object.content]);
+          updateMsg(response.data.msg);
+          setLastComment(response.data.object.last);
+          if(!response.data.object.last) setCommentPage(commentPage+1);
+          else updateMsg("No more comments are available.");
+          setProcessing(false);
+        }else if(response.status===202){
+          setProcessing(false);
+          updateMsg(response.data.msg);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
   }
 
   const addComment = async (id) => {
@@ -173,7 +212,7 @@ useEffect(() => {
   };
 
   const deleteComment = async (id) => {
-    
+      
   };
 
   const upVotePost = async (id) =>{
@@ -597,7 +636,7 @@ useEffect(() => {
   <div key={comment.postCommentId} style={styles.commentItem}>
     <div style={styles.commentHeader}>
       <img
-        src={comment.authorProfileImagePath!==undefined || comment.authorProfileImagePath!==null ?`{http://localhost:8080/media${path.replace("\\", "/")}`:"Profile image"}
+        src={comment.authorProfileImagePath!==undefined && comment.authorProfileImagePath!==null ?`{http://localhost:8080/media${path.replace("\\", "/")}`:"Profile image"}
         alt="Profile"
         style={styles.commentAuthorImage}
       />
@@ -620,13 +659,15 @@ useEffect(() => {
       <button onClick={() => ""} style={styles.downvote}>
         ⬇ {comment.disLikeCount}
       </button>
-      <button onClick={() => deleteComment(comment.postCommentId)} style={styles.deleteBtn}>
+      {comment.deletable?(
+        <button onClick={() => deleteComment(comment.postCommentId)} style={styles.deleteBtn}>
         Delete
       </button>
+      ):""}
     </div>
   </div>
 ))}
-      <button style={styles.addCommentBtn1} onClick={()=>""}>
+      <button style={styles.addCommentBtn1} onClick={()=>loadMoreComments(post.postId)}>
           Load more 
       </button>
         </div>
