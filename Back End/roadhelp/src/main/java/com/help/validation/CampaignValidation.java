@@ -5,14 +5,13 @@ import org.springframework.stereotype.Component;
 import java.util.regex.Pattern;
 
 @Component
-public class CampaignValidator {
+public class CampaignValidation {
 
     private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z]+(?:\\s[A-Za-z]+)*$");
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^[6-9]\\d{9}$");
     private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s.,!?\"'()\\-]*$");
     private static final Pattern ZIP_PATTERN = Pattern.compile("^\\d{5,6}$");
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s,'./#\\-()&@]+$");
+    private static final Pattern NUMERIC_PATTERN = Pattern.compile("^\\d+$");
 
     public String isValidCampaign(Campaign campaign) {
         if (!isValidText(campaign.getCampaignTitle())) return "Campaign title is invalid.";
@@ -23,6 +22,11 @@ public class CampaignValidator {
         if (!isValidName(campaign.getCountry())) return "Country is invalid.";
         if (!isValidZip(campaign.getPostalCode())) return "Postal code is invalid.";
         return "Validated.";
+    }
+
+    public boolean isValidNumeric(String numeric){
+        if(numeric==null || numeric.trim().isEmpty())return false;
+        return NUMERIC_PATTERN.matcher(numeric.trim()).matches();
     }
 
     public boolean isValidAddress(String address){

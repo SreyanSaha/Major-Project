@@ -132,7 +132,7 @@ export default function UserDashboard(props) {
   };
 
   const updatelayout=(component)=>{
-    switch(component){
+    switch(component.toLowerCase()){
       case "posts".toLowerCase():setLayout(<UserUploadedPostsComponent/>);
       break;
       case "dashboard".toLowerCase():setLayout(<UserDashboardLayout/>);
@@ -142,6 +142,8 @@ export default function UserDashboard(props) {
       case "e-posts".toLocaleLowerCase():setLayout(<UserEmergencyPostsComponent/>);
       break;
       case "profile":setLayout(<UserProfile/>);
+      break;
+      case "searchUser".toLocaleLowerCase():setLayout();
       break;
     }
   };
@@ -175,12 +177,12 @@ export default function UserDashboard(props) {
   value={searchTerm}
   onChange={(e) => setSearchTerm(e.target.value)}
   onKeyDown={(e) => {
-    if (e.key === "Enter") handleSearch();
+    if (e.key === "Enter") {()=>{updatelayout("searchuser");handleSearch();}}
   }}
   style={styles.searchInput}
 />
 
-<button onClick={handleSearch} style={styles.searchButton}>
+<button onClick={()=>{updatelayout("searchuser"); handleSearch();}} style={styles.searchButton}>
   Search
 </button>
 

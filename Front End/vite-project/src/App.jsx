@@ -5,6 +5,7 @@ import { Routes, Route } from 'react-router-dom';
 import UserDashboard from './userSection/UserDashboard'
 import CampaignPostCard from './userSection/components/CampaignFullPostComponent'
 import PostView from './userSection/components/PostFullPostComponent'
+import AllUserProfile from './userSection/components/AllUserFullProfileComponent';
 function App() {
   return (
     <Routes>
@@ -20,7 +21,8 @@ function App() {
 
       <Route path="/campaign/:campaignId" element={<CampaignPostCard/>}/>
       <Route path="/post/:postId" element={<PostView/>}/>
-    
+      <Route path="/profile/:userId" element={<AllUserProfile/>}/>
+  
     </Routes>
   )
 }

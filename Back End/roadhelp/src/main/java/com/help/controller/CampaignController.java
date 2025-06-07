@@ -1,6 +1,8 @@
 package com.help.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.help.dto.FullCampaignData;
+import com.help.dto.ServiceResponse;
 import com.help.dto.UserCampaign;
 import com.help.model.Campaign;
 import com.help.service.CampaignService;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/campaign")
@@ -38,5 +41,26 @@ public class CampaignController {
         List<UserCampaign> campaigns=campaignService.getAllCampaignsOfUser();
         if(campaigns.isEmpty())return ResponseEntity.status(HttpStatus.OK).body("No campaign pots found.");
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(campaigns);
+    }
+
+    @PostMapping("/upVote")
+    public ResponseEntity<?> upVoteCampaign(@RequestBody int campaignId){
+        ServiceResponse<Optional<FullCampaignData>> response = campaignService.upVoteCampaign(campaignId);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/downVote")
+    public ResponseEntity<?> downVoteCampaign(@RequestBody int campaignId){
+        ServiceResponse<Optional<FullCampaignData>> response = campaignService.downVoteCampaign(campaignId);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/report")
+    public ResponseEntity<?> reportCampaign(@RequestBody int campaignId){
+        ServiceResponse<Optional<FullCampaignData>> response = campaignService.reportCampaign(campaignId);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

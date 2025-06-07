@@ -1,9 +1,6 @@
 package com.help.controller;
 
-import com.help.dto.CampaignPostData;
-import com.help.dto.FullPostData;
-import com.help.dto.PostData;
-import com.help.dto.ServiceResponse;
+import com.help.dto.*;
 import com.help.jwt.service.CustomUserDetailsService;
 import com.help.jwt.service.JwtService;
 import com.help.model.Post;
@@ -71,9 +68,11 @@ public class HomeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("campaigns/{CampaignId}")
+    @GetMapping("campaigns/{campaignId}")
     public ResponseEntity<?> getCampaignById(@PathVariable int campaignId){
-        return ResponseEntity.status(HttpStatus.OK).body("");
+        ServiceResponse<Optional<FullCampaignData>> response = campaignService.getCampaignById(campaignId);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // to be implemented

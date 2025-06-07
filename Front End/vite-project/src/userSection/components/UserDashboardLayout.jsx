@@ -278,7 +278,8 @@ const getTrustScoreStyle = (score) => {
 
         <div style={styles.uploaderInfo}>
       <img
-        src={`http://localhost:8080/media${campaigns.campaignOrganizerProfileImagePath.replace("\\", "/")}`}
+        src={campaigns.campaignOrganizerProfileImagePath!==null && campaigns.campaignOrganizerProfileImagePath!==undefined?
+          `http://localhost:8080/media${campaigns.campaignOrganizerProfileImagePath.replace("\\", "/")}`:"profile image"}
         alt={campaigns.campaignOrganizerName}
         style={styles.profileImage}
       />
@@ -316,7 +317,12 @@ const getTrustScoreStyle = (score) => {
       </div>
       ));
     }
-    else fetchAllEmergencyPosts();
+    else if(activeTab === "emergency"){
+
+    }
+    else{
+      
+    }
   };
 
   const styles = {

@@ -411,6 +411,25 @@ useEffect(() => {
 //
 
   const styles = {
+    addressSection: {
+  backgroundColor: "#f1f5f9",
+  borderRadius: "8px",
+  padding: "1rem",
+  marginBottom: "1rem",
+  fontSize: "0.95rem",
+  color: "#444",
+  boxShadow: "inset 0 0 5px rgba(0,0,0,0.05)",
+},
+
+addressLabel: {
+  fontWeight: "600",
+  marginBottom: "0.4rem",
+  color: "#11398f",
+},
+
+addressLine: {
+  marginBottom: "0.3rem",
+},
   card: {
     backgroundColor: "#ffffff",
     border: "1px solid #d0e3ff",
@@ -527,10 +546,10 @@ useEffect(() => {
     fontWeight: "500",
   },
 
-  upvote: { color: "green", cursor: "pointer" },
-  downvote: { color: "red", cursor: "pointer" },
-  comments: { color: "#007bff", cursor: "pointer" },
-  reports: { color: "#ff9800", cursor: "pointer" },
+  upvote: { color: "green", cursor: "pointer" , fontSize:"20px"},
+  downvote: { color: "red", cursor: "pointer" , fontSize:"20px"},
+  comments: { color: "#007bff", cursor: "pointer" , fontSize:"20px"},
+  reports: { color: "#ff9800", cursor: "pointer" , fontSize:"20px"},
 
   commentSection: {
     marginTop: "1rem",
@@ -710,7 +729,7 @@ useEffect(() => {
 
       {imagesAfterWork[0] === null?(
       <div style={styles.dividerSlide}>
-        🔧After work images are not available.🔧
+        🔧After work images are not available yet.🔧
       </div>
       ):(<div style={styles.dividerSlide}>
         🔧Work After Completion.🔧
@@ -726,6 +745,21 @@ useEffect(() => {
         />
       })}
       </div>
+
+      <div style={styles.addressSection}>
+  <div style={styles.addressLabel}>Address</div>
+  <div style={styles.addressLine}>
+    <strong>Street:</strong> {post.street+",\t" || "N/A"+",\t"}
+    <strong>Pin Code:</strong> {post.postalCode || "N/A"}
+  </div>
+  <div style={styles.addressLine}>
+    <strong>City:</strong> {post.city+",\t" || "N/A"}
+    <strong>State:</strong> {post.state || "N/A"}
+  </div>
+  <div style={styles.addressLine}>
+    <strong>Country:</strong> {post.country || "N/A"}
+  </div>
+</div>
 
       <div style={styles.actionRow}>
         <span style={styles.upvote} onClick={()=>{upVotePost(post.postId)}}>⬆ {post.upVoteCount}</span>
