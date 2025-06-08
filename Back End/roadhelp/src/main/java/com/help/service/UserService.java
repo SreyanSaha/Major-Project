@@ -3,6 +3,7 @@ package com.help.service;
 import com.help.dto.OtpForVerification;
 import com.help.dto.ServiceResponse;
 import com.help.dto.UserProfile;
+import com.help.dto.UserSearchData;
 import com.help.email.EmailService;
 import com.help.email.GetMailText;
 import com.help.model.OtpDetails;
@@ -12,6 +13,9 @@ import com.help.repository.UserRepository;
 import com.help.validation.UserValidation;
 import jakarta.mail.Multipart;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -128,12 +132,18 @@ public class UserService {
         return new ServiceResponse<>("Found user.", userRepository.findUserById(userId).get());
     }
 
-    public List<User> getUserByName(String name) {
-        return userRepository.findByUserFirstNameContainingIgnoreCase(name);
-    }
-
-    public List<User> getUserByFirstNameLastName(String firstName, String lastName) {
-        return userRepository.findByUserFirstNameAndUserLastNameIgnoreCase(firstName, lastName);
+    public ServiceResponse<Page<UserSearchData>> searchUser(String searchString, int page, int size) {
+        if(!userValidation.isValidName(searchString))return new ServiceResponse<>("Invalid searching.");
+        PageRequest pageRequest = PageRequest.of(page, size);
+        searchString = searchString.trim();
+        String firstName, lastName;
+        Page<UserSearchData> response=null;
+        if(searchString.contains(" ")){
+            firstName=searchString.substring(0, searchString.lastIndexOf(" "));
+            lastName=searchString.substring(searchString.lastIndexOf(" "));
+            response = userRepository.searchUser(pageRequest, firstName, lastName);
+        }else response = userRepository.searchUser(pageRequest, searchString);
+        return new ServiceResponse<>(response.getTotalPages()==0?"No such user found.":"", response);
     }
 
     public ServiceResponse<UserProfile> getUserProfile(String uname) {

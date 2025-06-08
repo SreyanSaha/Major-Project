@@ -3,12 +3,14 @@ package com.help.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.help.dto.ServiceResponse;
 import com.help.dto.UserProfile;
+import com.help.dto.UserSearchData;
 import com.help.jwt.service.CustomUserDetailsService;
 import com.help.jwt.service.JwtService;
 import com.help.model.Post;
 import com.help.model.User;
 import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,17 +45,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(response.getObject());
     }
 
-    @GetMapping("/search/name")// /search/name?name=search_string
-    public ResponseEntity<?> getAllUserByName(@RequestParam("name") String name, @RequestHeader("uname") String uname){
-
-        return ResponseEntity.ok().body(userService.getUserByName(name));
-    }
-
-    @GetMapping("/search/full-name")// /search/fullname?fname=search_string&lname=search_string
-    public ResponseEntity<?> getAllUserByFirstAndLastName(@RequestParam("fname") String fname,
-                                                          @RequestParam("lname") String lname, @RequestHeader("uname") String uname){
-
-        return ResponseEntity.ok().body(userService.getUserByFirstNameLastName(fname, lname));
+    @GetMapping("/search/{searchString}/page/{page}/size/{size}")
+    public ResponseEntity<?> getAllUserByName(@PathVariable String searchString, @PathVariable int page, @PathVariable int size){
+        ServiceResponse<Page<UserSearchData>> response = userService.searchUser(searchString, page, size);
+        if(response.getObject().getTotalPages()==0)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping(value = "/update-user", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

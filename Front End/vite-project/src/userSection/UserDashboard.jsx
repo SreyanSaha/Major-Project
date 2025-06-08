@@ -4,15 +4,14 @@ import UserUploadedPostsComponent from "./components/UserPosts";
 import UserCampaignPostsComponent from "./components/UserCampaign";
 import UserEmergencyPostsComponent from "./components/UserEmergencyPosts";
 import UserProfile from "./components/UserProfile";
+import UserProfileCard from "./components/UsersProfileRenderingComponent";
 import { useNavigate } from "react-router-dom";
 
 export default function UserDashboard(props) {
   const navigate = useNavigate();
   const [authenticated, setAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState(props.activeTab);
-  const [showAddPost, setShowAddPost] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoggedin, setLogin] = useState(false);
+  const [searchingUser, setSearchingUser] = useState(false);
   const [layout, setLayout] = useState(<UserDashboardLayout/>);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -127,23 +126,20 @@ export default function UserDashboard(props) {
     else navigate("/user/login");
   }
 
-  const handleSearch = () => {
-    
-  };
-
   const updatelayout=(component)=>{
     switch(component.toLowerCase()){
-      case "posts".toLowerCase():setLayout(<UserUploadedPostsComponent/>);
+      case "posts".toLowerCase():setLayout(<UserUploadedPostsComponent/>);setSearchingUser(false);
       break;
-      case "dashboard".toLowerCase():setLayout(<UserDashboardLayout/>);
+      case "dashboard".toLowerCase():setLayout(<UserDashboardLayout/>);setSearchingUser(false);
       break;
-      case "campaigns".toLowerCase():setLayout(<UserCampaignPostsComponent/>);
+      case "campaigns".toLowerCase():setLayout(<UserCampaignPostsComponent/>);setSearchingUser(false);
       break;
-      case "e-posts".toLocaleLowerCase():setLayout(<UserEmergencyPostsComponent/>);
+      case "e-posts".toLocaleLowerCase():setLayout(<UserEmergencyPostsComponent/>);setSearchingUser(false);
       break;
-      case "profile":setLayout(<UserProfile/>);
+      case "profile":setLayout(<UserProfile/>);setSearchingUser(false);
       break;
-      case "searchUser".toLocaleLowerCase():setLayout();
+      case "searchUser".toLocaleLowerCase():setSearchingUser(true);
+      setLayout(<UserProfileCard onBack={()=>{setLayout(<UserDashboardLayout/>);setSearchingUser(false);}} searchString={searchTerm}/>);
       break;
     }
   };
@@ -171,20 +167,23 @@ export default function UserDashboard(props) {
     Manage your posts, campaigns, profile, and more from here.
   </div>
 
-  <input
+  {!searchingUser?(<>
+    <input
   type="text"
   placeholder="Search users..."
   value={searchTerm}
   onChange={(e) => setSearchTerm(e.target.value)}
   onKeyDown={(e) => {
-    if (e.key === "Enter") {()=>{updatelayout("searchuser");handleSearch();}}
+    if (e.key === "Enter") {()=>{setIsSidebarOpen(false);updatelayout("searchuser");}}
   }}
   style={styles.searchInput}
 />
 
-<button onClick={()=>{updatelayout("searchuser"); handleSearch();}} style={styles.searchButton}>
+<button onClick={()=>{setIsSidebarOpen(false); updatelayout("searchuser");}} style={styles.searchButton}>
   Search
 </button>
+</>
+  ):""}
 
   <div
     style={styles.sidebarItem}

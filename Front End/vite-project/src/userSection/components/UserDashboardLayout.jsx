@@ -206,13 +206,13 @@ export default function UserDashboardLayout() {
   }
   //
 
-  const loadPost = (postId)=>{
-    navigate(`/post/${postId}`);
-  }
+  // const loadPost = (postId)=>{
+  //   navigate(`/post/${postId}`);
+  // }
 
-  const loadCampaign = (campaignId)=>{
-    navigate(`/campaign/${campaignId}`);
-  }
+  // const loadCampaign = (campaignId)=>{
+  //   navigate(`/campaign/${campaignId}`);
+  // }
 
   const getTrustScoreLabel = (score) => {
   if (score >= 0 && score <= 299) return "Low Trust 🔴";
