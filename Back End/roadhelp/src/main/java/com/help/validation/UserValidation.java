@@ -14,6 +14,7 @@ public class UserValidation {
     private static final Pattern ZIP_PATTERN = Pattern.compile("^\\d{5,6}$");
     private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s]*$");
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s,'./#\\-()&@]+$");
+    private static final Pattern NUMERIC_PATTERN = Pattern.compile("^\\d+$");
 
     public String isValidUserDetails(User user) {
         if(!isValidName(user.getUserFirstName())) return "User first name is invalid.";
@@ -25,6 +26,11 @@ public class UserValidation {
         if(!isValidName(user.getState()))return "User state is invalid.";
         if(!isValidZipCode(user.getZipCode())) return "User zip code is invalid.";
         return "Validated.";
+    }
+
+    public boolean isValidNumeric(String numeric){
+        if(numeric==null || numeric.trim().isEmpty())return false;
+        return NUMERIC_PATTERN.matcher(numeric.trim()).matches();
     }
 
     public boolean isValidAddress(String address){

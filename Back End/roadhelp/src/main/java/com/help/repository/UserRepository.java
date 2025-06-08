@@ -23,11 +23,15 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByUsername(@Param("username") String username);
 
     @Query("SELECT new com.help.dto.UserProfile(u.userId, u.userFirstName, u.userLastName, u.userEmailId, u.userPhoneNumber, u.profileImagePath, u.civicTrustScore, u.userStatus, " +
-            "u.timeOutEndTime, u.street, u.city, u.state, u.zipCode, u.country) FROM User u WHERE u.userId = :userId")
+            "u.timeOutEndTime, u.street, u.city, u.state, u.zipCode, u.country, u.signupDateTime) FROM User u WHERE u.userId = :userId")
     Optional<UserProfile> findUserById(@Param("userId")int userId);
 
+    @Query("SELECT new com.help.dto.UserProfile(u.userId, u.userFirstName, u.userLastName, u.profileImagePath, u.civicTrustScore, u.userStatus, " +
+            "u.timeOutEndTime, u.city, u.state, u.country, u.signupDateTime) FROM User u WHERE u.userId = :userId")
+    Optional<UserProfile> findUserProfileForSearchById(@Param("userId")int userId);
+
     @Query("SELECT new com.help.dto.UserProfile(u.userId, u.userFirstName, u.userLastName, u.userEmailId, u.userPhoneNumber, u.profileImagePath, u.civicTrustScore, u.userStatus, " +
-            "u.timeOutEndTime, u.street, u.city, u.state, u.zipCode, u.country) FROM User u JOIN u.authData a WHERE a.username = :username")
+            "u.timeOutEndTime, u.street, u.city, u.state, u.zipCode, u.country, u.signupDateTime) FROM User u JOIN u.authData a WHERE a.username = :username")
     Optional<UserProfile> findUserProfile(@Param("username")String username);
 
     @Query("""

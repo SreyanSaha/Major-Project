@@ -10,11 +10,12 @@ public class UserProfile {
     private int civicTrustScore;
     private short userStatus;// 0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
     private LocalDateTime timeOutEndTime;
+    private LocalDateTime signupDateTime;
     private String street,city,state,zipCode,country;
 
     public UserProfile(int userId, String userFirstName, String userLastName, String userEmailId, Long userPhoneNumber,
                        String profileImagePath, int civicTrustScore, short userStatus, LocalDateTime timeOutEndTime, String street,
-                       String city, String state, String zipCode, String country) {
+                       String city, String state, String zipCode, String country, LocalDateTime signupDateTime) {
         this.userId = userId;
         this.userFirstName = userFirstName;
         this.userLastName = userLastName;
@@ -29,6 +30,30 @@ public class UserProfile {
         this.state = state;
         this.zipCode = zipCode;
         this.country = country;
+        this.signupDateTime = signupDateTime;
+    }
+
+    public UserProfile(int userId, String userFirstName, String userLastName, String profileImagePath,
+                       int civicTrustScore, short userStatus, LocalDateTime timeOutEndTime, String city, String state, String country, LocalDateTime signupDateTime) {
+        this.userId = userId;
+        this.userFirstName = userFirstName;
+        this.userLastName = userLastName;
+        this.profileImagePath = profileImagePath;
+        this.civicTrustScore = civicTrustScore;
+        this.userStatus = userStatus;
+        this.timeOutEndTime = timeOutEndTime;
+        this.city = city;
+        this.state = state;
+        this.country = country;
+        this.signupDateTime = signupDateTime;
+    }
+
+    public LocalDateTime getSignupDateTime() {
+        return signupDateTime;
+    }
+
+    public void setSignupDateTime(LocalDateTime signupDateTime) {
+        this.signupDateTime = signupDateTime;
     }
 
     public String getCountry() {

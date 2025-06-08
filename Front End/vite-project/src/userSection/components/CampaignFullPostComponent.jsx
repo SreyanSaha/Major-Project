@@ -491,7 +491,7 @@ status: {
     )}
 
     <div style={styles.header}>
-      <div style={styles.profile}>
+      <div style={styles.profile} onClick={()=>navigate(`/profile/${campaign.userId}`)}>
         <img
           src={
             campaign.campaignOrganizerProfileImagePath!==null && campaign.campaignOrganizerProfileImagePath!=undefined

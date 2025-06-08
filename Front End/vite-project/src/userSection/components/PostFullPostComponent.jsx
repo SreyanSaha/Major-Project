@@ -618,6 +618,7 @@ addressLine: {
     display: "flex",
     alignItems: "center",
     marginBottom: "0.5rem",
+    cursor:"pointer"
   },
 
   commentAuthorImage: {
@@ -700,7 +701,7 @@ addressLine: {
             style={styles.profileImage}
           />
           <div>
-            <div style={{ fontWeight: "bold", cursor:"pointer" }} onClick={()=>""}>{post.authorProfileName}</div>
+            <div style={{ fontWeight: "bold", cursor:"pointer" }} onClick={()=>navigate(`/profile/${userId}`)}>{post.authorProfileName}</div>
             <div style={{ fontSize: "0.85rem", color: "#666" }}>
               {new Date(post.postUploadDateTime).toLocaleString()}
             </div>
@@ -773,7 +774,7 @@ addressLine: {
         <div style={styles.commentList}>
   {postComments.length>0?postComments.map((comment) => (
   <div key={comment.postCommentId} style={styles.commentItem}>
-    <div style={styles.commentHeader}>
+    <div style={styles.commentHeader} onClick={()=>navigate(`/profile/${comment.userId}`)} >
       <img
         src={comment.authorProfileImagePath!==undefined && comment.authorProfileImagePath!==null ?`{http://localhost:8080/media${path.replace("\\", "/")}`:"Profile image"}
         alt="Profile"

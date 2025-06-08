@@ -308,7 +308,7 @@ export default function UserProfileCard({onBack, searchString}) {
           </div>
       <div style={styles.grid}>
         {users.map((user) => (
-          <div key={user.userId} style={styles.card}>
+          <div key={user.userId} style={styles.card} onClick={()=>navigate(`/profile/${user.userId}`)}>
             <div style={styles.header}>
               <img
                 src={user.profileImagePath!==null && user.profileImagePath!==undefined 

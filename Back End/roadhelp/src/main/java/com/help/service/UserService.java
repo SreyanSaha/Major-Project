@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -150,5 +151,11 @@ public class UserService {
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
         if(!uname.trim().replace("\"","").equals(username))return new ServiceResponse<>("Invalid username!", null);
         return new ServiceResponse<>("Found user.", userRepository.findUserProfile(username).get());
+    }
+
+    public ServiceResponse<Optional<UserProfile>> findOtherUsers(int userId) {
+        if(!userValidation.isValidNumeric(Integer.toString(userId)))return new ServiceResponse<>("Invalid user ID.");
+        Optional<UserProfile> response = userRepository.findUserProfileForSearchById(userId);
+        return new ServiceResponse<>(response.isEmpty()?"No such user found.":"",response);
     }
 }

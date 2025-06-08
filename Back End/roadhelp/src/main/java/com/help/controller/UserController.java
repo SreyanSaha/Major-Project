@@ -6,7 +6,6 @@ import com.help.dto.UserProfile;
 import com.help.dto.UserSearchData;
 import com.help.jwt.service.CustomUserDetailsService;
 import com.help.jwt.service.JwtService;
-import com.help.model.Post;
 import com.help.model.User;
 import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
@@ -29,6 +30,13 @@ public class UserController {
         this.userService = userService;
         this.jwtService = jwtService;
         this.customUserDetailsService = customUserDetailsService;
+    }
+
+    @GetMapping("/other-users/{userId}")
+    public ResponseEntity<?> getOtherUser(@PathVariable int userId){
+        ServiceResponse<Optional<UserProfile>> response = userService.findOtherUsers(userId);
+        if(response.getObject().isEmpty())ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/{userId}")

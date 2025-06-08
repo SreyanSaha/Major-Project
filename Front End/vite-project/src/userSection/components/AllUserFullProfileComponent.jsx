@@ -1,4 +1,8 @@
-import React from "react";
+import React, { useState , useEffect} from "react";
+import { useParams } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import LoadingOverlay from "../../loadingComponents/Loading";
 
 const userStatusLabels = {
   0: "Inactive / Timeout",
@@ -16,54 +20,118 @@ const getTrustColor = (score) => {
   return "#3366ff"; // Default Blue if outside range
 };
 
-const AllUserProfile = ({ onBack }) => {
-  const user = {
-    userId: 101,
-    userFirstName: "Alice",
-    userLastName: "Smith",
-    userEmailId: "alice.smith@example.com",
-    userPhoneNumber: 9876543210,
-    profileImagePath: "https://randomuser.me/api/portraits/women/44.jpg",
-    civicTrustScore: 920,
-    userStatus: 1,
-    signupDateTime: "2024-06-01T14:20:00",
-    timeOutEndTime: null,
-    country: "Canada",
-    zipCode: "M5V 3L9",
-    userRole: "Community Member",
-  };
+const AllUserProfile = () => {
+  const { userId } = useParams();
+  const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(false);
+  const [msg,updateMsg] = useState(null);
+  const [processing, setProcessing] = useState(false);
+  const [user, setUser] = useState({});
 
+  // const user = {
+  //   userId: 101,
+  //   userFirstName: "Alice",
+  //   userLastName: "Smith",
+  //   userEmailId: "alice.smith@example.com",
+  //   userPhoneNumber: 9876543210,
+  //   profileImagePath: "https://randomuser.me/api/portraits/women/44.jpg",
+  //   civicTrustScore: 920,
+  //   userStatus: 1,
+  //   signupDateTime: "2024-06-01T14:20:00",
+  //   timeOutEndTime: null,
+  //   country: "Canada",
+  //   zipCode: "M5V 3L9",
+  //   userRole: "Community Member",
+  // };
+  
+  const checkTokenHealth = async() =>{
+    try{
+      let user = localStorage.getItem("user");
+      if(user===null)return false;
+      else user = JSON.parse(user);
+      const response = await axios.post("http://localhost:8080/token/health",{},
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200 && response.data==="validated.")return true;
+    }catch(exception){
+      if(exception.response && (exception.response.status===401 || exception.response.status===403)){
+        updateMsg("Please log in to access updates — your session may have expired or you're not signed in.");
+        localStorage.removeItem("user");
+      }
+    }
+    return false;
+  }
+useEffect(() => {
+    if (checkTokenHealth() && localStorage.getItem("user")!==null){
+      setAuthenticated(true);
+      loadUserProfile();
+    } else{
+      setAuthenticated(false);
+      navigate("/user/login");
+    }
+  }, [navigate]);
+
+  const loadUserProfile = async ()=>{
+    try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      setProcessing(true);
+      const response=await axios.get(`http://localhost:8080/user/other-users/${userId}`,
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        setUser(response.data.object);
+        setProcessing(false);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+      navigate("/user/login");
+    }
+  };
+  
   const trustPercent = Math.min((user.civicTrustScore / 1000) * 100, 100);
   const trustColor = getTrustColor(user.civicTrustScore);
 
   return (<>
     <div style={styles.header1}>User Dashboard</div>
+    {processing?<LoadingOverlay/>:""}
+      {msg!=null?(<div style={styles.alertDiv}>
+            <h3 style={styles.alertText}>{msg}</h3>
+          </div>):""}
     <div style={styles.pageContainer}>
-      <button onClick={onBack} style={styles.backButton} aria-label="Go Back">
+      <button onClick={()=>{navigate(-1);}} style={styles.backButton} aria-label="Go Back">
         ← Back
       </button>
 
       <div style={styles.profileCard}>
         <div style={styles.headerSection}>
-          {user.profileImagePath ? (
             <img
-              src={user.profileImagePath}
+              src={user.profileImagePath!==null && user.profileImagePath!==undefined?
+                  `http://localhost:8080/media${user.profileImagePath.replace("\\", "/")}`:
+                "profile image"}
               alt={`${user.userFirstName} ${user.userLastName}`}
               style={styles.profileImage}
               loading="lazy"
             />
-          ) : (
-            <div style={styles.profilePlaceholder}>
-              {user.userFirstName.charAt(0).toUpperCase()}{" "}
-              {user.userLastName.charAt(0).toUpperCase()}
-            </div>
-          )}
-
           <div>
             <h1 style={styles.name}>
               {user.userFirstName} {user.userLastName}
             </h1>
-            <p style={styles.userRole}>{user.userRole}</p>
+            {/* <p style={styles.userRole}>{user.userRole}</p> */}
           </div>
         </div>
 
@@ -86,25 +154,25 @@ const AllUserProfile = ({ onBack }) => {
         <section style={styles.section}>
           <h2 style={styles.sectionTitle}>Personal Info</h2>
           <div style={styles.infoRow}>
-            <span style={styles.icon}>📧</span>
-            <span style={styles.label}>Email</span>
-            <span style={styles.value}>{user.userEmailId}</span>
+            <span style={styles.icon}>🏙️</span>
+            <span style={styles.label}>City</span>
+            <span style={styles.value}>{user.city}</span>
           </div>
           <div style={styles.infoRow}>
-            <span style={styles.icon}>📞</span>
-            <span style={styles.label}>Phone</span>
-            <span style={styles.value}>{user.userPhoneNumber}</span>
+            <span style={styles.icon}>🗺️</span>
+            <span style={styles.label}>State</span>
+            <span style={styles.value}>{user.state}</span>
           </div>
           <div style={styles.infoRow}>
             <span style={styles.icon}>🌍</span>
             <span style={styles.label}>Country</span>
             <span style={styles.value}>{user.country}</span>
           </div>
-          <div style={styles.infoRow}>
+          {/* <div style={styles.infoRow}>
             <span style={styles.icon}>🏷️</span>
             <span style={styles.label}>Zip Code</span>
             <span style={styles.value}>{user.zipCode}</span>
-          </div>
+          </div> */}
         </section>
 
         <section style={styles.section}>
@@ -126,18 +194,21 @@ const AllUserProfile = ({ onBack }) => {
               })}
             </span>
           </div>
-          {user.timeOutEndTime && (
+          {user.timeOutEndTime!==null && user.timeOutEndTime!==undefined?(
             <div style={styles.infoRow}>
               <span style={styles.icon}>⏳</span>
               <span style={styles.label}>Timeout End</span>
-              <span style={styles.value}>
-                {new Date(user.timeOutEndTime).toLocaleString(undefined, {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })}
+                <span style={styles.value}>
+                {new Date(user.timeOutEndTime).toLocaleString()}
               </span>
-            </div>
-          )}
+              </div>
+              ):(
+                <div style={styles.infoRow}>
+                <span style={styles.icon}>⏳</span>
+                <span style={styles.label}>Timeout End</span>
+                <span style={styles.value}>Not in Time Out</span>
+                </div>
+              )}
         </section>
       </div>
     </div>
