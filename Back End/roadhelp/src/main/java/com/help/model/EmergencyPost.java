@@ -8,10 +8,9 @@ public class EmergencyPost {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int emergencyPostId;
-    @Column(nullable = false)
-    private String authorProfileName;
     private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;
     private String audioFilePath;
+    @Column(nullable = false)
     private String emergencyPostTitle, emergencyPostDescription;
     @Column(nullable = false)
     private LocalDateTime emergencyPostUploadDateTime;
@@ -19,17 +18,12 @@ public class EmergencyPost {
     private Double latitude;
     @Column(nullable = false)
     private Double longitude;
-    @Column(nullable = false)
     private String street;
-    @Column(nullable = false)
     private String city;
-    @Column(nullable = false)
     private String state;
-    @Column(nullable = false)
     private String country;
-    @Column(nullable = false)
     private String zipCode;
-    private short emergencyPostStatus;// -1 -> Unresolved, 0 -> work in progress, 1 -> resolved
+    private short emergencyPostStatus;// 0 -> Unresolved, 1 -> resolved
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -39,7 +33,8 @@ public class EmergencyPost {
     @PrePersist
     protected void onCreate(){
         this.emergencyPostUploadDateTime=LocalDateTime.now();
-        this.emergencyPostStatus=(short)-1;
+        this.emergencyPostStatus=(short)0;
+        this.country="India";
     }
 
     public String getEmergencyPostTitle() {
@@ -72,14 +67,6 @@ public class EmergencyPost {
 
     public void setEmergencyPostId(int emergencyPostId) {
         this.emergencyPostId = emergencyPostId;
-    }
-
-    public String getAuthorProfileName() {
-        return authorProfileName;
-    }
-
-    public void setAuthorProfileName(String authorProfileName) {
-        this.authorProfileName = authorProfileName;
     }
 
     public String getImagePath1() {

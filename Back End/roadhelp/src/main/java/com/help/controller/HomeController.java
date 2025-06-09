@@ -54,11 +54,11 @@ public class HomeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    // to be implemented
     @GetMapping("emergency")
     public ResponseEntity<?> getEmergency(){
         final int page=0,size=10;
-        return ResponseEntity.status(HttpStatus.OK).body("");
+        ServiceResponse<EmergencyPostData> response = emergencyPostService.getLimitedEmergencyPosts(page, size);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("posts/{postId}")
@@ -95,10 +95,11 @@ public class HomeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    // to be implemented
     @GetMapping("all-emergency/page/{page}/size/{size}")
-    public ResponseEntity<?> getAllEmergencyPosts(@PathVariable int startingId){
-        return ResponseEntity.status(HttpStatus.OK).body("");
+    public ResponseEntity<?> getAllEmergencyPosts(@PathVariable int page, @PathVariable int size){
+        ServiceResponse<Page<EmergencyPostData>> response = emergencyPostService.getAllEmergencyPosts(page, size);
+        if(response.getObject().getTotalPages()==0)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 }

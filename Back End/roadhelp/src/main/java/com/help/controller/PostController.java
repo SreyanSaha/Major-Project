@@ -40,7 +40,7 @@ public class PostController {
                                         @RequestPart("uname")String uname){
         Post post=null;
         try{post=new ObjectMapper().readValue(postJson, Post.class);}
-        catch(Exception e){e.printStackTrace();return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create post.");}
+        catch(Exception e){e.fillInStackTrace();return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create post.");}
         String response=postService.createPost(images,post,uname);
         if(!response.equals("created")) return ResponseEntity.status(HttpStatus.OK).body(response);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

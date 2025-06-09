@@ -10,7 +10,7 @@ public class Campaign {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int campaignId;
     @Column(nullable = false)
-    private String campaignTitle, campaignDescription, campaignOrganizerName,
+    private String campaignTitle, campaignDescription,
             campaignOrganizerEmail;
     private short status; // -1 = Inactive, 0 = Active, 1 = Completed
     @Column(nullable = false)
@@ -108,14 +108,6 @@ public class Campaign {
 
     public void setCampaignDescription(String campaignDescription) {
         this.campaignDescription = campaignDescription;
-    }
-
-    public String getCampaignOrganizerName() {
-        return campaignOrganizerName;
-    }
-
-    public void setCampaignOrganizerName(String campaignOrganizerName) {
-        this.campaignOrganizerName = campaignOrganizerName;
     }
 
     public long getCampaignOrganizerContact() {

@@ -20,7 +20,6 @@ export default function UserDashboardLayout() {
   // site related state management 
   const [activeTab, setActiveTab] = useState("posts");
   const [showAddPost, setShowAddPost] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedin, setLogin] = useState(false);
   //
   // all the types of posts states 
@@ -129,7 +128,27 @@ export default function UserDashboardLayout() {
     }
   }
   const fetchEmergencyPosts = async() =>{
-    
+    try{
+      if(emergencyPosts.length===0){
+        setProcessing(true);
+        const response=await axios.get("http://localhost:8080/emergency",
+          {
+            headers:{
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          setProcessing(false);
+          setEmergencyPost(response.data.objects);
+          updateMsg(response.data.objects.length===0?"Emergency posts not found.":response.data.msg);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg("Connection with the server failed.");
+    }
   }
 //
 // if the user is regular one && token is not expired then these funcs will 
@@ -171,7 +190,7 @@ export default function UserDashboardLayout() {
       if(!lastCampaignPage){
         const user = JSON.parse(localStorage.getItem("user"));
         setProcessing(true);
-        const response=await axios.get(`http://localhost:8080/all-campaigns/page/${page}/size/${pageSize}`,
+        const response=await axios.get(`http://localhost:8080/all-campaigns/page/${campaignPage}/size/${pageSize}`,
           {
             headers:{
               "Authorization": "Bearer "+user.token,
@@ -198,7 +217,35 @@ export default function UserDashboardLayout() {
     }
   }
   const fetchAllEmergencyPosts = async()=>{
-
+    try{
+      if(!lastEmergencyPage){
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get(`http://localhost:8080/all-emergency/page/${emergencyPage}/size/${pageSize}`,
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          if(emergencyPosts.length===0) setEmergencyPost(response.data.object.content);
+          else setEmergencyPost(prevEmergencyPost=>[...prevEmergencyPost, ...response.data.object.content]);
+          
+          if(!response.data.object.last)setEmergencyPage(page+1);
+          else setLastEmergencyPage(true);
+          setProcessing(false);
+        }else if(response.status===202){
+          setProcessing(false);
+          updateMsg(response.data.msg);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
   }
 //
 // load more will evaluate which one func to call for the next set of posts 
@@ -318,14 +365,68 @@ const getTrustScoreStyle = (score) => {
       ));
     }
     else if(activeTab === "emergency"){
+      return emergencyPosts.map((post) => (
+  <div
+    key={post.emergencyPostId}
+    style={styles.card}
+    onClick={() => navigate(`/emergency/${post.emergencyPostId}`)}
+  >
+    {/* Uploader Info */}
+    <div style={styles.uploaderInfo}>
+      <img
+        src={
+          post.profileImagePath
+            ? `http://localhost:8080/media${post.profileImagePath.replace("\\", "/")}`
+            : "profile image"
+        }
+        alt={post.authorName}
+        style={styles.profileImage}
+      />
+      <div>
+        <span style={styles.uploaderName}>{post.authorName}</span>
+        <span style={{ ...styles.trustScoreLabel, ...getTrustScoreStyle(post.civicTrustScore) }}>
+          {getTrustScoreLabel(post.civicTrustScore)}
+        </span>
+      </div>
+      <div style={styles.uploadDate}>
+        {new Date(post.emergencyPostUploadDateTime).toLocaleString()}
+      </div>
+    </div>
 
-    }
-    else{
-      
+    {/* Emergency Image */}
+    <div style={styles.imagePlaceholder}>
+      <img
+        src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`}
+        style={{
+          height: "100%",
+          objectFit: "cover",
+          borderRadius: "8px",
+          flex: 1,
+        }}
+        alt="Emergency"
+      />
+    </div>
+
+    {/* Title and Description */}
+    <div style={styles.title}>{post.emergencyPostTitle}</div>
+    <div style={styles.desc}>{post.emergencyPostDescription}</div>
+
+    {/* Address Info */}
+    <div style={styles.address}>
+      📍 {post.street || ""}, {post.city || ""}, {post.state || ""} {post.zip || ""}
+    </div>
+  </div>
+  ))
     }
   };
 
   const styles = {
+    address: {
+  marginTop: "8px",
+  fontSize: "14px",
+  color: "#666",
+  fontStyle: "italic",
+},
     campaignType: {
   padding: "2px 8px",
   backgroundColor: "#e3f2fd",

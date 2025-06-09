@@ -10,8 +10,6 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int postId;
     @Column(nullable = false)
-    private String authorProfileName;
-    @Column(nullable = false)
     private LocalDateTime postUploadDateTime;
     @Column(nullable = false)
     private String postTitle, postDescription;
@@ -120,14 +118,6 @@ public class Post {
 
     public void setPostId(int postId) {
         this.postId = postId;
-    }
-
-    public String getAuthorProfileName() {
-        return authorProfileName;
-    }
-
-    public void setAuthorProfileName(String authorProfileName) {
-        this.authorProfileName = authorProfileName;
     }
 
     public LocalDateTime getPostUploadDateTime() {

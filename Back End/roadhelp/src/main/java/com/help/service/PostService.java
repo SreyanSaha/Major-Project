@@ -46,7 +46,6 @@ public class PostService {
         if(!uname.equals(username))return "Invalid username!";
         Optional<User> user=userRepository.findByUsername(username);
         post.setUser(user.get());
-        post.setAuthorProfileName(user.get().getUserFirstName()+" "+user.get().getUserLastName());
         String []postImagePaths=savePostImages(images, root);
         if(postImagePaths==null)return "Failed to create post.";
         post.setImagePath1(postImagePaths[0].replace(root+"\\allMedia",""));

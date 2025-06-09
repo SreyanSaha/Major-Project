@@ -51,7 +51,6 @@ public class CampaignService {
         System.out.println("Username:"+username);
         Optional<User> user=userRepository.findByUsername(username);
         campaign.setUser(user.get());
-        campaign.setCampaignOrganizerName(user.get().getUserFirstName()+" "+user.get().getUserLastName());
         campaign.setCampaignOrganizerEmail(user.get().getUserEmailId());
         campaign.setCampaignOrganizerContact(user.get().getUserPhoneNumber());
         String []campaignPaths=saveCampaignImages(images, upiQRImage, root);

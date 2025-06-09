@@ -2,6 +2,7 @@ import React, { useState , useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingOverlay from "../../loadingComponents/Loading";
 import axios from "axios";
+import UpdatePostForm from "./EditPostComponent";
 
 export default function UserUploadedPostsComponent() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ export default function UserUploadedPostsComponent() {
   const [posts, setPosts] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     try {
@@ -172,7 +174,8 @@ export default function UserUploadedPostsComponent() {
   };
   if (!authenticated) return null;
   return (
-    <div>
+    !editing?(
+      <div>
       {processing?<LoadingOverlay/>:""}
       <h2 style={{ textAlign: "center", color: "#11398f", marginBottom: "1rem" }}>
         Your Uploaded Posts
@@ -255,7 +258,7 @@ export default function UserUploadedPostsComponent() {
                 : "Under Review"}
             </div>
             <div style={styles.actions}>
-              <button style={{ ...styles.button, ...styles.editBtn }}>Edit</button>
+              <button style={{ ...styles.button, ...styles.editBtn }} onClick={()=>setEditing(true)}>Edit</button>
               <button
                 style={{ ...styles.button, ...styles.deleteBtn }}
                 onClick={() => setDeleteConfirmId(post.id)}
@@ -267,5 +270,6 @@ export default function UserUploadedPostsComponent() {
         ))}
       </div>
     </div>
+    ):(<UpdatePostForm onBack={()=>{setEditing(false); refreshPosts();}}/>)
   );
 }

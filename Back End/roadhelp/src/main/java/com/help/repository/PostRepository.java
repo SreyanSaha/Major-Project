@@ -21,18 +21,18 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "LOWER(post_description) LIKE LOWER(CONCAT('%', :search, '%')) ORDER BY post_upload_date_time DESC", nativeQuery = true)
     Post findPostByPostTitle(@Param("search") String search);
 
-    @Query("SELECT new com.help.dto.PostData(p.postId, u.civicTrustScore, p.authorProfileName, u.profileImagePath, p.postUploadDateTime, p.postTitle, p.postDescription, p.upVoteCount, " +
+    @Query("SELECT new com.help.dto.PostData(p.postId, u.civicTrustScore, CONCAT(u.userFirstName, ' ', u.userLastName), u.profileImagePath, p.postUploadDateTime, p.postTitle, p.postDescription, p.upVoteCount, " +
             "p.downVoteCount, p.commentCount, p.postReports, p.imagePath1, p.postStatus) FROM Post p JOIN p.user u ORDER BY p.postUploadDateTime DESC")
     List<PostData> findLimitedPosts(Pageable pageable);
 
-    @Query("SELECT new com.help.dto.PostData(p.postId, u.civicTrustScore, p.authorProfileName, u.profileImagePath, p.postUploadDateTime, p.postTitle, p.postDescription, p.upVoteCount, " +
+    @Query("SELECT new com.help.dto.PostData(p.postId, u.civicTrustScore, CONCAT(u.userFirstName, ' ', u.userLastName), u.profileImagePath, p.postUploadDateTime, p.postTitle, p.postDescription, p.upVoteCount, " +
             "p.downVoteCount, p.commentCount, p.postReports, p.imagePath1, p.postStatus) FROM Post p JOIN p.user u ORDER BY p.postUploadDateTime DESC")
     Page<PostData> findAllByOrderByPostUploadDateTimeDesc(Pageable pageable);
 
     @Query("SELECT new com.help.dto.UserPost(p.postId, p.postTitle, p.postDescription, p.imagePath1, p.postStatus) FROM Post p JOIN p.user.authData a WHERE a.username = :username")
     List<UserPost> findAllPostsOfUser(@Param("username")String username);
 
-    @Query("SELECT new com.help.dto.FullPostData(p.id, p.authorProfileName, p.postUploadDateTime, p.postTitle, p.postDescription, p.upVoteCount, p.downVoteCount, p.commentCount, " +
+    @Query("SELECT new com.help.dto.FullPostData(p.id, CONCAT(u.userFirstName, ' ', u.userLastName), p.postUploadDateTime, p.postTitle, p.postDescription, p.upVoteCount, p.downVoteCount, p.commentCount, " +
             "p.imagePath1, p.imagePath2, p.imagePath3, p.imagePath4, p.imagePath5, p.afterWorkImagePath1, p.afterWorkImagePath2, p.afterWorkImagePath3, p.afterWorkImagePath4, p.afterWorkImagePath5, " +
             "p.latitude, p.longitude, p.street, p.city, p.state, p.country, p.postalCode, p.postReports, p.postStatus, u.userId, u.profileImagePath, u.civicTrustScore) FROM Post p JOIN p.user u WHERE p.id = :postId")
     Optional<FullPostData> findFullPostById(@Param("postId") int postId);

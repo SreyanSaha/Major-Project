@@ -1,17 +1,24 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "../../loadingComponents/Loading";
+import axios from "axios";
 
 function UploadEmergencyPost() {
   const navigate = useNavigate();
+  const [msg,updateMsg] = useState(null);
+  const [processing, setProcessing] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([null, null, null, null, null]);
   const [audioURL, setAudioURL] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const [location, setLocation] = useState("");
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const [audioFile, setAudioFile] = useState(null);
 
   useEffect(() => {
       try {
@@ -43,6 +50,11 @@ function UploadEmergencyPost() {
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         const url = URL.createObjectURL(audioBlob);
         setAudioURL(url);
+        const file = new File([audioBlob], "recorded_audio.webm", {
+          type: "audio/webm",
+          lastModified: Date.now(),
+        });
+        setAudioFile(file);
       });
     } catch (error) {
       console.error("Error accessing microphone:", error);
@@ -62,6 +74,8 @@ function UploadEmergencyPost() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setLocation(`Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`);
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude);
         },
         (error) => {
           console.error("Error fetching location:", error);
@@ -73,19 +87,43 @@ function UploadEmergencyPost() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!location) {
-      alert("Location is mandatory for emergency posts!");
-      return;
+  const handleSubmit = async() => {
+    setProcessing(true);
+    try{
+      const user=JSON.parse(localStorage.getItem("user"));
+      const formData=new FormData();
+      const emergencyPost={
+        "emergencyPostTitle":title,
+        "emergencyPostDescription":description,
+        "latitude":latitude,
+        "longitude":longitude,
+      };
+      formData.append("emergencyPost", JSON.stringify(emergencyPost));
+      images.forEach((image)=>{
+        formData.append("images", image);
+      });
+      formData.append("audio", audioFile);
+      formData.append("uname",user.username);
+      const response = await axios.post("http://localhost:8080/emergency-post/create",formData,{
+        headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "multipart/form-data"
+          }
+      });
+      if(response.status===201){
+        setProcessing(false);
+        updateMsg("Emergency Post created.");
+      }else if(response.status===200){
+        setProcessing(false);
+        updateMsg(response.data);
+      }
+    }catch(exception){
+      setProcessing(false);
+      console.log(exception);
+      updateMsg(response.data);
+      //updateMsg("Token expired login again!");
+      //if(exception.response && (exception.response.status===401 || exception.response.status===403))navigate("/user/login");
     }
-    if (!title && !description && !audioURL) {
-      alert("Please provide at least Title or Description or Audio for emergency post.");
-      return;
-    }
-
-    console.log("Uploading Emergency Post:", { title, description, images, audioURL, location });
-    alert("Emergency Post uploaded successfully!");
   };
 
   const handleImageChange = (index, file) => {
@@ -97,9 +135,12 @@ function UploadEmergencyPost() {
   if (!authenticated) return null;
   return (
     <div style={styles.container}>
+      {processing?<LoadingOverlay/>:""}
       <h2 style={styles.heading}>Upload Emergency Post</h2>
-
-      <form onSubmit={handleSubmit} style={styles.form}>
+      {msg!=null?(<div style={styles.alertDiv}>
+              <h3 style={styles.alertText}>{msg}</h3>
+            </div>):""}
+      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} style={styles.form}>
         <input
           type="text"
           placeholder="Enter Title (Optional)"
@@ -172,7 +213,7 @@ function UploadEmergencyPost() {
           />
         </div>
 
-        <button type="submit" style={styles.submitButton}>
+        <button style={styles.submitButton} >
           Upload Emergency Post
         </button>
       </form>
@@ -181,6 +222,19 @@ function UploadEmergencyPost() {
 }
 
 const styles = {
+  alertDiv:{
+        textAlign: "center",
+    },
+    alertText: {
+        backgroundColor: "rgb(255, 64, 57)",
+        padding: "2px",
+        color: "white",
+        borderRadius: "8px",
+        width: "100%",
+        marginBottom: "15px",
+        margin: "auto",
+        marginTop:"-10px",
+    },
   container: {
     backgroundColor: "#f0f8ff",
     minHeight: "100vh",
