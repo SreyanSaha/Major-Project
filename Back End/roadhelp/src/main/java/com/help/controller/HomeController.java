@@ -75,10 +75,11 @@ public class HomeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    // to be implemented
     @GetMapping("emergency/{emergencyPostId}")
-    public ResponseEntity<?> getEmergencyPostById(@PathVariable int postId){
-        return ResponseEntity.status(HttpStatus.OK).body("");
+    public ResponseEntity<?> getEmergencyPostById(@PathVariable int emergencyPostId){
+        ServiceResponse<Optional<FullEmergencyPostData>> response = emergencyPostService.getEmergencyPostById(emergencyPostId);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("all-posts/page/{page}/size/{size}")

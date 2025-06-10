@@ -396,7 +396,9 @@ const getTrustScoreStyle = (score) => {
     {/* Emergency Image */}
     <div style={styles.imagePlaceholder}>
       <img
-        src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`}
+        src={post.imagePath1!==null && post.imagePath1!==undefined?
+          `http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`:
+        "Image"}
         style={{
           height: "100%",
           objectFit: "cover",

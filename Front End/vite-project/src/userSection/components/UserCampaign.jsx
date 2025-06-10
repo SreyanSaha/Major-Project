@@ -67,7 +67,6 @@ export default function UserCampaignPostsComponent() {
   useEffect(() => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
-        console.log("Fetched user:", user);
         if (user?.username && user?.role === 0) {setAuthenticated(true);fetchUserCampaigns();}
         else navigate("/user/login");
       } catch (err) {
@@ -214,9 +213,9 @@ export default function UserCampaignPostsComponent() {
                 </div>
               </div>
             )}
-            <div style={styles.imagePlaceholder}><img style={{ width: "100%", height: "180px", objectFit: "contain" }} src={`http://localhost:8080/media${item.imagePath1.replace("\\", "/")}`}/></div>
-            <div style={styles.title}>{item.campaignTitle}</div>
-            <div style={styles.desc}>{item.campaignDescription}</div>
+            <div style={styles.imagePlaceholder} onClick={()=>navigate(`/campaign/${item.campaignId}`)}><img style={{ width: "100%", height: "180px", objectFit: "contain" }} src={`http://localhost:8080/media${item.imagePath1.replace("\\", "/")}`}/></div>
+            <div style={styles.title} onClick={()=>navigate(`/campaign/${item.campaignId}`)}>{item.campaignTitle}</div>
+            <div style={styles.desc} onClick={()=>navigate(`/campaign/${item.campaignId}`)}>{item.campaignDescription}</div>
 
             <div
               style={{

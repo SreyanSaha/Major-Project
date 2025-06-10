@@ -102,6 +102,34 @@ useEffect(() => {
       navigate("/user/login");
     }
   };
+
+  const reportUser = async()=>{
+    try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      setProcessing(true);
+      const response=await axios.post("http://localhost:8080/user/report",userId,
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        setUser(response.data.object);
+        updateMsg(response.data.msg);
+        setProcessing(false);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+      navigate("/user/login");
+    }
+  };
   
   const trustPercent = Math.min((user.civicTrustScore / 1000) * 100, 100);
   const trustColor = getTrustColor(user.civicTrustScore);
@@ -210,6 +238,7 @@ useEffect(() => {
                 </div>
               )}
         </section>
+        <span style={styles.reports} onClick={()=>{reportUser();}}>🚩</span>
       </div>
     </div>
     </>
@@ -217,6 +246,21 @@ useEffect(() => {
 };
 
 const styles = {
+  alertDiv: {
+    textAlign: "center",
+  },
+
+  alertText: {
+    backgroundColor: "rgb(255, 64, 57)",
+    padding: "2px",
+    color: "white",
+    borderRadius: "8px",
+    width: "50%",
+    maxWidth: "80%",
+    margin: "auto",
+    marginBottom: "15px",
+  },
+  reports: { color: "#ff9800", cursor: "pointer" , fontSize:"20px"},
     header1: {
     backgroundColor: "#11398f",
     color: "#ffffff",

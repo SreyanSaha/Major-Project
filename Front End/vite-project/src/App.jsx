@@ -6,6 +6,8 @@ import UserDashboard from './userSection/UserDashboard'
 import CampaignPostCard from './userSection/components/CampaignFullPostComponent'
 import PostView from './userSection/components/PostFullPostComponent'
 import AllUserProfile from './userSection/components/AllUserFullProfileComponent';
+import EmergencyPostView from './userSection/components/EmergencyPostView';
+
 function App() {
   return (
     <Routes>
@@ -22,7 +24,7 @@ function App() {
       <Route path="/campaign/:campaignId" element={<CampaignPostCard/>}/>
       <Route path="/post/:postId" element={<PostView/>}/>
       <Route path="/profile/:userId" element={<AllUserProfile/>}/>
-  
+      <Route path="/emergency/:emergencyPostId" element={<EmergencyPostView/>}/>
     </Routes>
   )
 }

@@ -33,6 +33,15 @@ public class EmergencyPostData {
         this.zipCode = zipCode;
     }
 
+    public EmergencyPostData(int emergencyPostId, String imagePath1, String emergencyPostTitle,
+                             String emergencyPostDescription, short emergencyPostStatus){
+        this.emergencyPostId = emergencyPostId;
+        this.imagePath1 = imagePath1;
+        this.emergencyPostTitle = emergencyPostTitle;
+        this.emergencyPostDescription = emergencyPostDescription;
+        this.emergencyPostStatus = emergencyPostStatus;
+    }
+
     public String getStreet() {
         return street;
     }

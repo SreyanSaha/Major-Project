@@ -5,6 +5,7 @@ import UserCampaignPostsComponent from "./components/UserCampaign";
 import UserEmergencyPostsComponent from "./components/UserEmergencyPosts";
 import UserProfile from "./components/UserProfile";
 import UserProfileCard from "./components/UsersProfileRenderingComponent";
+import AISubscriptionCard from "./components/AiSubscription";
 import { useNavigate } from "react-router-dom";
 
 export default function UserDashboard(props) {
@@ -141,6 +142,7 @@ export default function UserDashboard(props) {
       case "searchUser".toLocaleLowerCase():setSearchingUser(true);
       setLayout(<UserProfileCard onBack={()=>{setLayout(<UserDashboardLayout/>);setSearchingUser(false);}} searchString={searchTerm}/>);
       break;
+      case "subscription":setLayout(<AISubscriptionCard/>);
     }
   };
   
@@ -229,17 +231,9 @@ export default function UserDashboard(props) {
     style={styles.sidebarItem}
     onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1a4bc3")}
     onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-    onClick={() => setIsSidebarOpen(false)}
+    onClick={() => {setIsSidebarOpen(false); updatelayout("subscription");}}
   >
-    Settings
-  </div>
-  <div
-    style={styles.sidebarItem}
-    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#1a4bc3")}
-    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-    onClick={() => setIsSidebarOpen(false)}
-  >
-    Help
+    Subscription
   </div>
   
   <div

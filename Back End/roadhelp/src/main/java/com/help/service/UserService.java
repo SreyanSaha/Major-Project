@@ -8,10 +8,14 @@ import com.help.email.EmailService;
 import com.help.email.GetMailText;
 import com.help.model.OtpDetails;
 import com.help.model.User;
+import com.help.model.UserReportLog;
 import com.help.repository.UserAuthDataRepository;
+import com.help.repository.UserReportLogRepository;
 import com.help.repository.UserRepository;
+import com.help.repository.UserSubscriptionLogRepository;
 import com.help.validation.UserValidation;
 import jakarta.mail.Multipart;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,16 +40,21 @@ public class UserService {
     private final UserValidation userValidation;
     private final EmailService emailService;
     private final GeoService geoService;
+    private final UserReportLogRepository userReportLogRepository;
+    private final UserSubscriptionLogRepository userSubscriptionLogRepository;
     private final ConcurrentHashMap<String, OtpDetails> otpStorage = new ConcurrentHashMap<String, OtpDetails>();
 
     @Autowired
     public UserService(UserRepository userRepository, UserAuthDataRepository userAuthDataRepository,
-                       UserValidation userValidation, EmailService emailService, GeoService geoService) {
+                       UserValidation userValidation, EmailService emailService, GeoService geoService,
+                       UserReportLogRepository userReportLogRepository, UserSubscriptionLogRepository userSubscriptionLogRepository){
         this.userRepository = userRepository;
         this.userAuthDataRepository = userAuthDataRepository;
         this.userValidation=userValidation;
         this.emailService=emailService;
         this.geoService=geoService;
+        this.userReportLogRepository=userReportLogRepository;
+        this.userSubscriptionLogRepository=userSubscriptionLogRepository;
     }
 
     public boolean sendRegistrationEmailOTP(String email){
@@ -158,4 +167,31 @@ public class UserService {
         Optional<UserProfile> response = userRepository.findUserProfileForSearchById(userId);
         return new ServiceResponse<>(response.isEmpty()?"No such user found.":"",response);
     }
+
+    @Transactional
+    public ServiceResponse<Optional<UserProfile>> reportUser(int userId) {
+        if(!userValidation.isValidNumeric(Integer.toString(userId)))return new ServiceResponse<>("Invalid user Id.");
+        Optional<User> reportedUser = userRepository.findById(userId);
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> reporterUser = userRepository.findByUsername(username);
+        if(reportedUser.isEmpty() || reporterUser.isEmpty())return new ServiceResponse<>("User not found.");
+        if(reporterUser.get().getUserId()==reportedUser.get().getUserId())return new ServiceResponse<>("Cannot report yourself.");
+        Optional<UserReportLog> reportLog = userReportLogRepository.findByUserIds(reporterUser.get().getUserId(), reportedUser.get().getUserId());
+        if(reportLog.isPresent()) {
+            userReportLogRepository.deleteById(reportLog.get().getUserReportLogId());
+            reportedUser.get().setUserReports(reportedUser.get().getUserReports()-1);
+            userRepository.save(reportedUser.get());
+            return new ServiceResponse<>("Report removed.");
+        }else{
+            UserReportLog log=new UserReportLog(reporterUser.get().getUserId(), reportedUser.get().getUserId(),(short) 1);
+            reportedUser.get().setUserReports(reportedUser.get().getUserReports()+1);
+            userReportLogRepository.save(log);
+            userRepository.save(reportedUser.get());
+        }
+        return new ServiceResponse<>("User reported.", userRepository.findUserProfileForSearchById(userId));
+    }
+
+//    public ServiceResponse<Boolean> takeSubscriptionForAi(){
+//
+//    }
 }

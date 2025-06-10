@@ -32,6 +32,11 @@ public class UserController {
         this.customUserDetailsService = customUserDetailsService;
     }
 
+    @GetMapping("/subscription/details")
+    public ResponseEntity<?> getSubscriptionDetails(){
+        return ResponseEntity.status(HttpStatus.OK).body("");
+    }
+
     @GetMapping("/other-users/{userId}")
     public ResponseEntity<?> getOtherUser(@PathVariable int userId){
         ServiceResponse<Optional<UserProfile>> response = userService.findOtherUsers(userId);
@@ -71,6 +76,19 @@ public class UserController {
 
         if(response.getObject()==null && !response.getMsg().equals("updated."))return ResponseEntity.status(HttpStatus.ACCEPTED).body(response.getMsg());
         return ResponseEntity.status(HttpStatus.OK).body(response.getObject());
+    }
+
+    @PostMapping("/report")
+    public ResponseEntity<?> reportUser(@RequestBody int userId){
+        ServiceResponse<Optional<UserProfile>> response = userService.reportUser(userId);
+        if(response.getObject()==null || response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/subscription/new")
+    public ResponseEntity<?> subscriptionForAi(){
+
+        return ResponseEntity.status(HttpStatus.OK).body("response");
     }
 
     @DeleteMapping("/delete-user")

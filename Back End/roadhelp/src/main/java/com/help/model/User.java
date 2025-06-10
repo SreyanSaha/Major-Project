@@ -34,6 +34,7 @@ public class User {
     private String country;
     @Column(nullable = false)
     private String zipCode;
+    private int userReports;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Post> postList;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -61,6 +62,15 @@ public class User {
         this.userStatus=1;// 0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
         this.signupDateTime=LocalDateTime.now();
         this.country="India";
+        this.userReports=0;
+    }
+
+    public int getUserReports() {
+        return userReports;
+    }
+
+    public void setUserReports(int userReports) {
+        this.userReports = userReports;
     }
 
     public int getCivicTrustScore() {

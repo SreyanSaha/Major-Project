@@ -1,6 +1,9 @@
 package com.help.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.help.dto.EmergencyPostData;
+import com.help.dto.ServiceResponse;
+import com.help.dto.UserPost;
 import com.help.model.EmergencyPost;
 import com.help.model.Post;
 import com.help.service.EmergencyPostService;
@@ -35,9 +38,26 @@ public class EmergencyPostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping("delete/{postId}")
-    public ResponseEntity<?> deleteEmergencyPost(@PathVariable int postId, @RequestHeader("Username") String username){
-        return ResponseEntity.ok().body("");
+    @GetMapping("/user/all")
+    public ResponseEntity<?> getUserAllPosts(){
+        ServiceResponse<EmergencyPostData> response=emergencyPostService.getAllPostsOfUser();
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/user/resolve")
+    public ResponseEntity<?> resolveEmergency(@RequestBody int emergencyPostId){
+        ServiceResponse<EmergencyPostData> response = emergencyPostService.resolveEmergency(emergencyPostId);
+        if(response.getObject()==null)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+    @DeleteMapping("/delete/{emergencyPostId}")
+    public ResponseEntity<?> deleteEmergencyPost(@PathVariable("emergencyPostId") int emergencyPostId){
+        ServiceResponse<Boolean> response = emergencyPostService.deleteEmergencyPost(emergencyPostId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/search")

@@ -1,9 +1,6 @@
 package com.help.service;
 
-import com.help.dto.CampaignPostData;
-import com.help.dto.EmergencyPostData;
-import com.help.dto.PostData;
-import com.help.dto.ServiceResponse;
+import com.help.dto.*;
 import com.help.model.AddressDetails;
 import com.help.model.EmergencyPost;
 import com.help.model.Post;
@@ -11,14 +8,17 @@ import com.help.model.User;
 import com.help.repository.EmergencyPostRepository;
 import com.help.repository.UserRepository;
 import com.help.validation.EmergencyPostValidation;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,12 +40,6 @@ public class EmergencyPostService {
         this.geoService = geoService;
     }
 
-    public boolean deletePost(int postId, String username) {
-        if(emergencyPostRepository.findById(postId).get().getUser().getUserId()!=userRepository.findByUsername(username).get().getUserId())return false;
-        emergencyPostRepository.deleteById(postId);
-        return true;
-    }
-
 //    public List<EmergencyPost> getAllEmergencyPosts() {
 //           return emergencyPostRepository.findAllEmergencyPostForHome();
 //    }
@@ -64,6 +58,7 @@ public class EmergencyPostService {
         return new ServiceResponse<>(list.isEmpty()?"No emergency posts are found.":"Please login to view and access all the emergency posts.",list);
     }
 
+    @Transactional
     public String createEmergencyPost(List<MultipartFile> images, MultipartFile audio, EmergencyPost emergencyPost, String uname) {
         if(emergencyPost.getLatitude()==null || emergencyPost.getLongitude()==null) return "Invalid location.";
         AddressDetails addressDetails=geoService.getAddressFromLatLng(emergencyPost.getLatitude(), emergencyPost.getLongitude());
@@ -146,15 +141,75 @@ public class EmergencyPostService {
         return new ServiceResponse<>(list.getTotalPages()==0?"No additional emergency posts are found.":"", list);
     }
 
-    public ServiceResponse<EmergencyPost> getEmergencyPostById(int id) {
-        Optional<EmergencyPost> post = emergencyPostRepository.findById(id);
-        return post.map(value -> new ServiceResponse<>("", List.of(value)))
-                .orElseGet(() -> new ServiceResponse<>("Emergency post not found.", new ArrayList<>()));
+//    public ServiceResponse<EmergencyPost> getEmergencyPostById(int id) {
+//        Optional<EmergencyPost> post = emergencyPostRepository.findById(id);
+//        return post.map(value -> new ServiceResponse<>("", List.of(value)))
+//                .orElseGet(() -> new ServiceResponse<>("Emergency post not found.", new ArrayList<>()));
+//    }
+
+//    public ServiceResponse<EmergencyPost> searchEmergencyPost(String search) {
+//        List<EmergencyPost> posts = emergencyPostRepository.searchAllEmergencyPost(search);
+//        return new ServiceResponse<>(posts.isEmpty() ? "No emergency posts found for search: " + search : "", posts);
+//    }
+
+    public ServiceResponse<EmergencyPostData> getAllPostsOfUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<EmergencyPostData> list = emergencyPostRepository.findAllPostsOfUser(username);
+        return new ServiceResponse<>(list.isEmpty()?"No emergency posts are found.":"",list);
     }
 
-    public ServiceResponse<EmergencyPost> searchEmergencyPost(String search) {
-        List<EmergencyPost> posts = emergencyPostRepository.searchAllEmergencyPost(search);
-        return new ServiceResponse<>(posts.isEmpty() ? "No emergency posts found for search: " + search : "", posts);
+    @Transactional
+    public ServiceResponse<EmergencyPostData> resolveEmergency(int emergencyPostId) {
+        if(!emergencyPostValidation.isValidNumeric(Integer.toString(emergencyPostId)))return new ServiceResponse<>("Invalid emergency post Id.");
+        Optional<EmergencyPost> emergencyPost = emergencyPostRepository.findById(emergencyPostId);
+        if(emergencyPost.isEmpty())return new ServiceResponse<>("Emergency post not found.");
+        emergencyPost.get().setEmergencyPostStatus((short) 1);
+        emergencyPostRepository.save(emergencyPost.get());
+        return new ServiceResponse<>("Emergency resolved.", emergencyPostRepository.findEmergencyPostById(emergencyPostId).get());
+    }
+
+    @Transactional
+    public ServiceResponse<Boolean> deleteEmergencyPost(int emergencyPostId) {
+        if(!emergencyPostValidation.isValidNumeric(Integer.toString(emergencyPostId)))return new ServiceResponse<>("Invalid emergency post Id.", false);
+        Optional<EmergencyPost> emergencyPost = emergencyPostRepository.findById(emergencyPostId);
+        if(emergencyPost.isEmpty())return new ServiceResponse<>("Emergency post not found.", false);
+        if(!removeEmergencyPostImages(emergencyPost.get()) || !removeEmergencyPostAudio(emergencyPost.get())) return new ServiceResponse<>("Failed to delete emergency post.", false);
+        emergencyPostRepository.deleteById(emergencyPostId);
+        return new ServiceResponse<>("Emergency post deleted.", false);
+    }
+
+    private Boolean removeEmergencyPostImages(EmergencyPost emergencyPost){
+        String []images={
+                emergencyPost.getImagePath1(),
+                emergencyPost.getImagePath2(),
+                emergencyPost.getImagePath3(),
+                emergencyPost.getImagePath4(),
+                emergencyPost.getImagePath5(),
+        };
+        String root=Paths.get("").toAbsolutePath().toString();
+        for(String image:images){
+            if(image!=null && !image.isEmpty())
+                try{
+                    Path path=Paths.get(root+"/allMedia"+image);
+                    Files.delete(path);
+                }catch (Exception e){e.fillInStackTrace();return false;}
+        }
+        return true;
+    }
+    private Boolean removeEmergencyPostAudio(EmergencyPost emergencyPost){
+        String root=Paths.get("").toAbsolutePath().toString();
+        if(emergencyPost.getAudioFilePath()!=null && !emergencyPost.getAudioFilePath().isEmpty())
+            try{
+                Path path=Paths.get(root+"/allMedia"+emergencyPost.getAudioFilePath());
+                Files.delete(path);
+            }catch (Exception e){e.fillInStackTrace(); return false;}
+        return true;
+    }
+
+    public ServiceResponse<Optional<FullEmergencyPostData>> getEmergencyPostById(int emergencyPostId) {
+        if(!emergencyPostValidation.isValidNumeric(Integer.toString(emergencyPostId)))return new ServiceResponse<>("Invalid emergency post id.");
+        Optional<FullEmergencyPostData> response = emergencyPostRepository.getFullEmergencyPostDataById(emergencyPostId);
+        return new ServiceResponse<>(response.isPresent() ? "" : "No emergency post found.", response);
     }
 
 //    public ServiceResponse<String> deleteEmergencyPost(int id, String username) {

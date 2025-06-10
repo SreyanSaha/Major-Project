@@ -32,6 +32,7 @@ export default function UserUploadedPostsComponent() {
 
   const fetchUserPosts=async()=>{
     try{
+      setProcessing(true);
       const user = JSON.parse(localStorage.getItem("user"));
       if(posts.length===0){
         setProcessing(true);
@@ -221,15 +222,15 @@ export default function UserUploadedPostsComponent() {
                 </div>
               </div>
             )}
-            <div style={styles.imagePlaceholder}><img src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`}
+            <div style={styles.imagePlaceholder} onClick={()=>navigate(`/post/${post.postId}`)}><img src={`http://localhost:8080/media${post.imagePath1.replace("\\", "/")}`}
             style={{
             height: "100%",
             objectFit: "cover",
             borderRadius: "8px",
             flex: 1,
           }}/></div>
-            <div style={styles.title}>{post.postTitle}</div>
-            <div style={styles.desc}>{post.postDescription}</div>
+            <div style={styles.title} onClick={()=>navigate(`/post/${post.postId}`)}>{post.postTitle}</div>
+            <div style={styles.desc} onClick={()=>navigate(`/post/${post.postId}`)}>{post.postDescription}</div>
             <div
               style={{
                 fontWeight: "bold",
