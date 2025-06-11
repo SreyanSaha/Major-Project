@@ -2,11 +2,13 @@ package com.help.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.help.dto.ServiceResponse;
+import com.help.dto.SubscriptionDetails;
 import com.help.dto.UserProfile;
 import com.help.dto.UserSearchData;
 import com.help.jwt.service.CustomUserDetailsService;
 import com.help.jwt.service.JwtService;
 import com.help.model.User;
+import com.help.model.UserSubscriptionLog;
 import com.help.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,7 +36,9 @@ public class UserController {
 
     @GetMapping("/subscription/details")
     public ResponseEntity<?> getSubscriptionDetails(){
-        return ResponseEntity.status(HttpStatus.OK).body("");
+        ServiceResponse<SubscriptionDetails> response=userService.getUserSubscriptionDetails();
+        if(response.getObject()==null) return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/other-users/{userId}")

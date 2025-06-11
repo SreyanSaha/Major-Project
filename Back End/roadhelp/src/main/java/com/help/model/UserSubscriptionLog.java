@@ -13,6 +13,9 @@ public class UserSubscriptionLog {
     private short log;// 1 for AI
     private String paymentId, paymentOrderId;
 
+    public UserSubscriptionLog() {
+    }
+
     public UserSubscriptionLog(int userId, short log, String paymentId, String paymentOrderId) {
         this.userId = userId;
         this.log = log;

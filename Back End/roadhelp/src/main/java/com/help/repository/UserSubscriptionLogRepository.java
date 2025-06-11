@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface UserSubscriptionLogRepository extends JpaRepository<UserSubscriptionLog, Integer> {
     Optional<UserSubscriptionLog> findByUserId(int userId);
+
 }

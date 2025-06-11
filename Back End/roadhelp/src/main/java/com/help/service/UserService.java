@@ -1,14 +1,12 @@
 package com.help.service;
 
-import com.help.dto.OtpForVerification;
-import com.help.dto.ServiceResponse;
-import com.help.dto.UserProfile;
-import com.help.dto.UserSearchData;
+import com.help.dto.*;
 import com.help.email.EmailService;
 import com.help.email.GetMailText;
 import com.help.model.OtpDetails;
 import com.help.model.User;
 import com.help.model.UserReportLog;
+import com.help.model.UserSubscriptionLog;
 import com.help.repository.UserAuthDataRepository;
 import com.help.repository.UserReportLogRepository;
 import com.help.repository.UserRepository;
@@ -56,6 +54,36 @@ public class UserService {
         this.userReportLogRepository=userReportLogRepository;
         this.userSubscriptionLogRepository=userSubscriptionLogRepository;
     }
+
+    public ServiceResponse<SubscriptionDetails> getUserSubscriptionDetails(){
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> user = userRepository.findByUsername(username);
+        if(user.isEmpty())return new ServiceResponse<>("No user found.");
+        Optional<UserSubscriptionLog> userSubscriptionLog = userSubscriptionLogRepository.findByUserId(user.get().getUserId());
+        if(userSubscriptionLog.isEmpty())return new ServiceResponse<>("No active subscription found.");
+
+        else if(userSubscriptionLog.get().getEndDate().isBefore(LocalDateTime.now())){
+            SubscriptionDetails details=new SubscriptionDetails(userSubscriptionLog.get().getUserSubscriptionId(),
+                                                                userSubscriptionLog.get().getUserId(),
+                                                                userSubscriptionLog.get().getStartDate(),
+                                                                userSubscriptionLog.get().getEndDate(),
+                                                                userSubscriptionLog.get().getLog());
+
+            return new ServiceResponse<>("Subscription expired.", details);
+        }
+
+        SubscriptionDetails details=new SubscriptionDetails(userSubscriptionLog.get().getUserSubscriptionId(),
+                                                            userSubscriptionLog.get().getUserId(),
+                                                            userSubscriptionLog.get().getStartDate(),
+                                                            userSubscriptionLog.get().getEndDate(),
+                                                            userSubscriptionLog.get().getLog());
+        return new ServiceResponse<>(details);
+    }
+
+//    public ServiceResponse<UserSubscriptionLog> createSubscription(){
+//
+//    }
+
 
     public boolean sendRegistrationEmailOTP(String email){
         String updatedEmail=email.replace("\""," ").trim();

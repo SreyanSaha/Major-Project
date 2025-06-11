@@ -2,12 +2,14 @@ import React, { useState , useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingOverlay from "../../loadingComponents/Loading";
 import axios from "axios";
+import UpdatePostForm from "./EditPostComponent";
 
 const AISubscriptionCard = ({ subscription }) => {
     const navigate = useNavigate();
     const [msg,updateMsg] = useState(null);
     const [processing, setProcessing] = useState(false);
     const [userSubscriptionDetails, setUserSubscription] = useState({});
+    const amount=299;
 
   const cardStyle = {
     backgroundColor: '#ffffff',
@@ -92,8 +94,9 @@ const AISubscriptionCard = ({ subscription }) => {
 
 const loadUserSubscriptionDetails= async()=>{
     try{
+        const user = JSON.parse(localStorage.getItem("user"));
         setProcessing(true);
-        const response=await axios.get("http://localhost:8080/user/subscription/details",{},
+        const response=await axios.get("http://localhost:8080/user/subscription/details",
           {
             headers:{
               "Authorization": "Bearer "+user.token,
@@ -102,7 +105,13 @@ const loadUserSubscriptionDetails= async()=>{
           }
         );
         if(response.status===200){
-            
+          setUserSubscription(response.data.object);
+          updateMsg(response.data.msg);
+          setProcessing(false);
+        }
+        else if(response.status===202){
+          updateMsg(response.data.msg);
+          setUserSubscription(response.data.object);
           setProcessing(false);
         }
     }catch(exception){
@@ -112,53 +121,84 @@ const loadUserSubscriptionDetails= async()=>{
     }
 }
 
+const getOrderId= async()=>{
+  try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      setProcessing(true);
+      const response = await axios.post("http://localhost:8080/payment/create-order",{},
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){setProcessing(false);return response.data;}
+      else {updateMsg("payment system error."); setProcessing(false); return null;}
+    }catch(exception){
+      console.log(exception);
+    }
+};
+
   const handleSubscription= async()=>{
-    
-    const options = {
-      key: "YOUR_KEY_ID", // Replace with your Razorpay Key ID
-      amount: order.amount,
+    const oId = await getOrderId();
+    if(oId!==null){
+      const options = {
+      key: "rzp_test_Xq2JJkU6biRFF2", 
+      amount: amount,
       currency: "INR",
-      name: "Your App",
+      name: "Road Help",
       description: "AI Subscription",
-      order_id: order.id,
+      order_id: oId,
       handler: function (response) {
-        axios.post('/api/payment/verify', {
+        const PaymentVerificationData={
           razorpay_payment_id: response.razorpay_payment_id,
           razorpay_order_id: response.razorpay_order_id,
           razorpay_signature: response.razorpay_signature,
-        })
-        .then(res => alert("Payment Verified!"))
-        .catch(err => alert("Verification Failed"));
+        };
+        try{
+          const user = JSON.parse(localStorage.getItem("user"));
+          axios.post('http://localhost:8080/payment/verify-start-subscription', PaymentVerificationData, 
+            {
+              headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+              }
+            }
+          );
+          if(response.status===200 && response.data)loadUserSubscriptionDetails();
+          else updateMsg("We couldn’t complete your subscription. A refund of ₹299 has been initiated.");
+        }catch(exception){
+          console.log(exception);
+        }
       },
       theme: { color: "#007bff" }
     };
 
     const rzp = new window.Razorpay(options);
     rzp.open();
- 
+    }
+    
   };
 
-const dummyInactiveSubscription = {
-  isActive: true,
-};
   return (
   <>
   {processing?<LoadingOverlay/>:""}
     <div style={cardStyle}>
-        {msg!=null?(<div style={styles.alertDiv}>
-            <h3 style={styles.alertText}>{msg}</h3>
+        {msg!=null?(<div style={alertDiv}>
+            <h3 style={alertText}>{msg}</h3>
           </div>):""}
       <h2 style={headingStyle}>AI Subscription</h2>
-      {subscription && dummyInactiveSubscription.isActive ? (
+      {userSubscriptionDetails!==null? (
         <>
           <p style={detailStyle}>
             <strong>Subscription Status:</strong> Active ✅
           </p>
           <p style={detailStyle}>
-            <strong>Start Date:</strong> {subscription.startDate}
+            <strong>Start Date:</strong> {new Date(userSubscriptionDetails.startDate).toLocaleString()}
           </p>
           <p style={detailStyle}>
-            <strong>End Date:</strong> {subscription.endDate}
+            <strong>End Date:</strong> {new Date(userSubscriptionDetails.endDate).toLocaleString()}
           </p>
         </>
       ) : (

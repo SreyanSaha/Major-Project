@@ -16,12 +16,42 @@ function UploadPost() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [zip, setZip] = useState("");
+  const [aiAvailable, setAi] = useState(false);
+
+  const loadSubscriptionDetails = async()=>{
+    try{
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get("http://localhost:8080/user/subscription/details",
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          setAi(response.data.log===1?true:false);
+          updateMsg(response.data.msg);
+          setProcessing(false);
+        }
+        else if(response.status===202){
+          setAi(false);
+          updateMsg(response.data.msg);
+          setProcessing(false);
+        }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg("Connection with the server failed.");
+    }
+  };
 
   useEffect(() => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
         console.log("Fetched user's username:", user.username);
-        if (user?.username && user?.token && user?.role === 0) setAuthenticated(true);
+        if (user?.username && user?.token && user?.role === 0) {setAuthenticated(true); loadSubscriptionDetails();}
         else navigate("/user/login");
       } catch (err) {
         console.error("Error parsing user from localStorage:", err);
@@ -90,6 +120,33 @@ function UploadPost() {
     }
   };
 
+  const postDetailsCreationByAI = async ()=>{
+    setProcessing(true);
+    try{
+      const user=JSON.parse(localStorage.getItem("user"));
+      const formData=new FormData();
+      formData.append("image", images[0]);
+      const response = await axios.post("http://localhost:8080/ai/generate",formData,{
+        headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "multipart/form-data"
+          }
+      });
+      if(response.status===201){
+        setTitle(response.data.object.title);
+        setDescription(response.data.object.description);
+        setProcessing(false);
+      }else if(response.status===200){
+        setProcessing(false);
+        updateMsg(response.data);
+      }
+    }catch(exception){
+      setProcessing(false);
+      console.log(exception);
+      updateMsg("Token expired login again!");
+    }
+  };
+
   if (!authenticated) return null;
   return (
     <div style={styles.container}>
@@ -141,10 +198,18 @@ function UploadPost() {
           ))}
         </div>
 
+        <p style={styles.aiNote}>
+  To generate title and description from AI, please select 1st image above.
+</p>
+<button
+  type="button"
+  style={styles.aiGenerateButton}
+  onClick={()=>postDetailsCreationByAI()}
+>
+  Generate Title & Description using AI
+</button>
+
         <div style={styles.locationSection}>
-          <button type="button" onClick={handleGetLocation} style={styles.locationButton}>
-            Add Current Location
-          </button>
           <input
             type="text"
             value={location}
@@ -153,6 +218,9 @@ function UploadPost() {
             style={styles.input}
             readOnly
           />
+          <button type="button" onClick={handleGetLocation} style={styles.locationButton}>
+            Add Current Location
+          </button>
         </div>
 
         <div style={styles.addressSection}>
@@ -199,6 +267,27 @@ function UploadPost() {
 }
 
 const styles = {
+  aiNote: {
+  fontSize: "0.95rem",
+  color: "#333",
+  textAlign: "center",
+  marginTop: "-10px",
+  marginBottom: "-10px",
+  fontStyle: "italic",
+},
+aiGenerateButton: {
+  backgroundColor: "#007bff",
+  color: "#ffffff",
+  padding: "0.7rem 1.2rem",
+  border: "none",
+  borderRadius: "8px",
+  fontSize: "1rem",
+  cursor: "pointer",
+  fontWeight: "bold",
+  transition: "background-color 0.3s",
+  width: "fit-content",
+  alignSelf: "center",
+},
   alertDiv:{
         textAlign: "center",
     },
