@@ -1,18 +1,13 @@
 package com.help.service;
 
-import com.help.dto.CampaignPostData;
-import com.help.dto.FullCampaignData;
-import com.help.dto.ServiceResponse;
-import com.help.dto.UserCampaign;
-import com.help.model.Campaign;
-import com.help.model.CampaignLog;
-import com.help.model.CampaignReportLog;
-import com.help.model.User;
+import com.help.dto.*;
+import com.help.model.*;
 import com.help.repository.CampaignLogRepository;
 import com.help.repository.CampaignReportLogRepository;
 import com.help.repository.CampaignRepository;
 import com.help.repository.UserRepository;
 import com.help.validation.CampaignValidation;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -45,6 +40,7 @@ public class CampaignService {
         this.campaignReportLogRepository=campaignReportLogRepository;
     }
 
+    @Transactional
     public String createCampaign(Campaign campaign, List<MultipartFile> images, MultipartFile upiQRImage, String uname){
         String username=SecurityContextHolder.getContext().getAuthentication().getName();String root=Paths.get("").toAbsolutePath().toString();
         if(!uname.equals(username))return "Invalid username!";
@@ -115,6 +111,13 @@ public class CampaignService {
         return new ServiceResponse<>(response.isPresent() ? "" : "No campaign found.", response);
     }
 
+    public ServiceResponse<Optional<FullCampaignData>> getCampaignToEdit(int campaignId) {
+        if(!campaignValidation.isValidNumeric(Integer.toString(campaignId)))return new ServiceResponse<>("Invalid campaign id.");
+        Optional<FullCampaignData> response = campaignRepository.findCampaignByIdToEdit(campaignId);
+        return new ServiceResponse<>(response.isPresent() ? "" : "No campaign found.", response);
+    }
+
+    @Transactional
     public ServiceResponse<Optional<FullCampaignData>> upVoteCampaign(int campaignId){
         if(!campaignValidation.isValidNumeric(Integer.toString(campaignId)))return new ServiceResponse<>("Failed to up vote the campaign.");
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
@@ -145,6 +148,7 @@ public class CampaignService {
         return new ServiceResponse<>("Campaign up voted.",campaignRepository.findCampaignById(campaignId));
     }
 
+    @Transactional
     public ServiceResponse<Optional<FullCampaignData>> downVoteCampaign(int campaignId) {
         if(!campaignValidation.isValidNumeric(Integer.toString(campaignId)))return new ServiceResponse<>("Failed to down vote the campaign.");
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
@@ -175,6 +179,7 @@ public class CampaignService {
         return new ServiceResponse<>("Campaign down voted.",campaignRepository.findCampaignById(campaignId));
     }
 
+    @Transactional
     public ServiceResponse<Optional<FullCampaignData>> reportCampaign(int campaignId) {
         if(!campaignValidation.isValidNumeric(Integer.toString(campaignId)))return new ServiceResponse<>("Failed to report the campaign.");
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
@@ -196,13 +201,60 @@ public class CampaignService {
         return new ServiceResponse<>("Campaign reported.",campaignRepository.findCampaignById(campaignId));
     }
 
-//    public ServiceResponse<Boolean> deleteCampaign(int campaignId) {
-//        if(!campaignValidation.isValidNumeric(Integer.toString(campaignId)))return new ServiceResponse<>("Invalid campaign id.", false);
-//        Optional<Campaign> campaign = campaignRepository.findById(campaignId);
-//        if(campaign.isEmpty())return new ServiceResponse<>("Campaign not found.");
-//    }
-//
-//    private boolean deleteCampaignImages(String []imagePaths){
-//
-//    }
+    @Transactional
+    public ServiceResponse<Boolean> editCampaign(EditCampaignData campaignData, int campaignId) {
+        String msg=campaignValidation.isValidCampaign(campaignData);boolean msg2=campaignValidation.isValidNumeric(Integer.toString(campaignId));
+        if(!msg.equals("Validated.") || !msg2)return new ServiceResponse<>(msg, false);
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> user=userRepository.findByUsername(username);
+        Optional<Campaign> existingCampaign=campaignRepository.findById(campaignId);
+
+        if(existingCampaign.isEmpty() || existingCampaign.get().getUser().getUserId()!=user.get().getUserId())
+            return new ServiceResponse<>("Invalid user or campaign.", false);
+
+        existingCampaign.get().setCity(campaignData.getCity());
+        existingCampaign.get().setState(campaignData.getState());
+        existingCampaign.get().setStreet(campaignData.getStreet());
+        existingCampaign.get().setCampaignTitle(campaignData.getCampaignTitle());
+        existingCampaign.get().setCampaignDescription(campaignData.getCampaignDescription());
+        campaignRepository.save(existingCampaign.get());
+        return new ServiceResponse<>("updated.",true);
+    }
+
+    @Transactional
+    public ServiceResponse<Boolean> deleteCampaign(int campaignId) {
+        if(!campaignValidation.isValidNumeric(Integer.toString(campaignId)))return new ServiceResponse<>("Invalid campaign id.", false);
+        Optional<Campaign> campaign = campaignRepository.findById(campaignId);
+        if(campaign.isEmpty())return new ServiceResponse<>("Campaign not found.",false);
+        else{
+            String []imagePath={
+                    campaign.get().getImagePath1(),
+                    campaign.get().getImagePath2(),
+                    campaign.get().getImagePath3(),
+                    campaign.get().getImagePath4(),
+                    campaign.get().getImagePath5(),
+                    campaign.get().getUpiImage()
+            };
+            if(!deleteCampaignImages(imagePath))return new ServiceResponse<>("Failed to delete the campaign.",false);
+        }
+        campaignLogRepository.deleteByCampaignId(campaignId);
+        campaignReportLogRepository.deleteByCampaignId(campaignId);
+        campaignRepository.deleteById(campaign.get().getCampaignId());
+        return new ServiceResponse<>("Campaign deleted.", true);
+    }
+
+    private boolean deleteCampaignImages(String []imagePaths){
+        String root=Paths.get("").toAbsolutePath().toString();
+        for(String path:imagePaths){
+            if(path==null || path.isEmpty())continue;
+            try{Files.delete(Paths.get(root+"/allMedia"+path));}catch (Exception e){e.printStackTrace();return false;}
+        }
+        return true;
+    }
+
+    public ServiceResponse<Page<CampaignPostData>> getSearchedCampaigns(int page, int size, String searchString) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<CampaignPostData> list = campaignRepository.findAllBySearchString(searchString, pageRequest);
+        return new ServiceResponse<>(list.getTotalPages()==0?"No campaigns are found.":"", list);
+    }
 }

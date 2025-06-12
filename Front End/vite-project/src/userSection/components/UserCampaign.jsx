@@ -2,6 +2,7 @@ import React, { useState , useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingOverlay from "../../loadingComponents/Loading";
 import axios from "axios";
+import EditCampaign from "./EditCampaignComponent";
 
 export default function UserCampaignPostsComponent() {
   const navigate = useNavigate();
@@ -10,6 +11,8 @@ export default function UserCampaignPostsComponent() {
   const [campaigns, setCampaigns] = useState([]);
   const [msg,updateMsg] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [campaignId, setCampaignId] = useState(-1);
 
   const fetchUserCampaigns=async()=>{
     try{
@@ -75,9 +78,32 @@ export default function UserCampaignPostsComponent() {
       }
     }, [navigate]);
 
-  const handleDelete = (id) => {
-    setCampaigns(campaigns.filter((item) => item.id !== id));
-    setDeleteConfirmId(null);
+  const handleDelete = async (id) => {
+    try{
+      setProcessing(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+        const response=await axios.delete(`http://localhost:8080/campaign/delete/${id}`,
+          {
+            headers:{
+                "Authorization": "Bearer "+user.token,
+                "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200 && response.data.object){
+        const newPosts = campaigns.filter(
+          (item) => item.campaignId !== Number(id));
+        setCampaigns([...newPosts]);
+        updateMsg(response.data.msg);
+        setProcessing(false);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      navigate("/user/login");
+    }
   };
 
   const styles = {
@@ -167,7 +193,8 @@ export default function UserCampaignPostsComponent() {
   };
 
   return (
-    <div>
+    !editing?(
+      <div>
       {processing?<LoadingOverlay/>:""}
       <h2 style={{ textAlign: "center", color: "#2d7a2d", marginBottom: "1rem" }}>
         Your Campaign Posts
@@ -246,7 +273,7 @@ export default function UserCampaignPostsComponent() {
             </div>
 
             <div style={styles.actions}>
-              <button style={{ ...styles.button, ...styles.editBtn }}>Edit</button>
+              <button style={{ ...styles.button, ...styles.editBtn }} onClick={()=>{setEditing(true); setCampaignId(item.campaignId);}}>Edit</button>
               <button
                 style={{ ...styles.button, ...styles.deleteBtn }}
                 onClick={() => setDeleteConfirmId(item.campaignId)}
@@ -258,5 +285,6 @@ export default function UserCampaignPostsComponent() {
         ))}
       </div>
     </div>
+    ):(<EditCampaign onBack={()=>{setEditing(false); refreshCampaigns();}} campaignId={campaignId}/>)
   );
 }

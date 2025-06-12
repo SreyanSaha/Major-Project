@@ -212,18 +212,10 @@ public class EmergencyPostService {
         return new ServiceResponse<>(response.isPresent() ? "" : "No emergency post found.", response);
     }
 
-//    public ServiceResponse<String> deleteEmergencyPost(int id, String username) {
-//        Optional<EmergencyPost> postOpt = emergencyPostRepository.findById(id);
-//        if (postOpt.isEmpty()) return new ServiceResponse<>("Post not found.", List.of());
-//        EmergencyPost post = postOpt.get();
-//        if (!post.getUser().getUsername().equals(username)) return new ServiceResponse<>("You are not authorized to delete this post.", List.of());
-//        emergencyPostRepository.delete(post);
-//        return new ServiceResponse<>("Deleted successfully.", List.of());
-//    }
+    public ServiceResponse<Page<EmergencyPostData>> getSearchedEmergencyPosts(int page, int size, String searchString) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<EmergencyPostData> list = emergencyPostRepository.findAllBySearchString(searchString, pageRequest);
+        return new ServiceResponse<>(list.getTotalPages()==0?"No emergency posts are found.":"", list);
+    }
 
-//    public ServiceResponse<EmergencyPost> getAllPostsOfUser() {
-//        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-//        List<EmergencyPost> list = emergencyPostRepository.findAllByUserUsername(username);
-//        return new ServiceResponse<>(list.isEmpty() ? "No posts are found." : "", list);
-//    }
 }

@@ -11,6 +11,7 @@ export default function UserDashboardLayout() {
   const navigate = useNavigate();
   const [msg,updateMsg] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [search, setSearch] = useState("");
   // 
   // page state of all it type of posts 
   const [page, setPage] = useState(0);
@@ -50,11 +51,94 @@ export default function UserDashboardLayout() {
       }
     }
     loadData();
-}, [activeTab]);
-  
-  const handleSearch = () => {
-    console.log("Search initiated");
+  },[activeTab]);
+//
+// Search functions for the 3 types of posts
+  const handleSearch = async() => {
+    if(activeTab==="posts"){
+      setPage(0);
+      try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      setProcessing(true);
+      const response=await axios.get(`http://localhost:8080/post/search/page/${0}/size/${pageSize}/${search}`,
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        setPost(response.data.object.content);
+        if(!response.data.object.last)setPage(page+1);
+        else setLastPostPage(true);
+        setProcessing(false);
+      }else if(response.status===202){
+        updateMsg(response.data.msg);
+        setProcessing(false);
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+    }else if(activeTab==="campaigns"){
+      setCampaignPage(0);
+      try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      setProcessing(true);
+      const response=await axios.get(`http://localhost:8080/campaign/search/page/${0}/size/${pageSize}/${search}`,
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        setCampaigns(response.data.object.content);
+        if(!response.data.object.last)setCampaignPage(page+1);
+        else setLastCampaignPage(true);
+        setProcessing(false);
+      }else if(response.status===202){
+        updateMsg(response.data.msg);
+        setProcessing(false);
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+    }else if(activeTab==="emergency"){
+      setEmergencyPage(0);
+      try{
+      const user = JSON.parse(localStorage.getItem("user"));
+      setProcessing(true);
+      const response=await axios.get(`http://localhost:8080/emergency-post/search/page/${0}/size/${pageSize}/${search}`,
+        {
+          headers:{
+            "Authorization": "Bearer "+user.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if(response.status===200){
+        setEmergencyPost(response.data.object.content);
+        if(!response.data.object.last)setEmergencyPage(page+1);
+        else setLastEmergencyPage(true);
+        setProcessing(false);
+      }else if(response.status===202){
+        updateMsg(response.data.msg);
+        setProcessing(false);
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+    }
   };
+//
 // health check func for the token
   const checkTokenHealth = async() =>{
     try{
@@ -249,17 +333,101 @@ export default function UserDashboardLayout() {
   }
 //
 // load more will evaluate which one func to call for the next set of posts 
-  const loadMore = async (pageCount) =>{
+  const loadMore = async () =>{
+    if(activeTab==="posts"){
+      try{
+      if(!lastPostPage){
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get(`http://localhost:8080/all-posts/page/${page}/size/${pageSize}`,
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          if(posts.length===0) setPost(response.data.object.content);
+          else setPost(prevPost=>[...prevPost, ...response.data.object.content]);
+          
+          if(!response.data.object.last)setPage(page+1);
+          else setLastPostPage(true);
+          setProcessing(false);
+        }else if(response.status===202){
+          updateMsg(response.data.msg);
+          setProcessing(false);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+    }else if(activeTab==="campaigns"){
+      try{
+      if(!lastCampaignPage){
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get(`http://localhost:8080/all-campaigns/page/${campaignPage}/size/${pageSize}`,
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          setProcessing(false);
+          if(campaignPosts.length===0)setCampaigns(response.data.object.content);
+          else setCampaigns(prevCampaigns=>[...prevCampaigns, ...response.data.object.content]);
+          
+          if(!response.data.object.last)setCampaignPage(campaignPage+1);
+          else setLastCampaignPage(true);
+        }else if(response.status===202){
+          setProcessing(false);
+          updateMsg(response.data.msg);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+    }else if(activeTab==="emergency"){
+      try{
+      if(!lastEmergencyPage){
+        const user = JSON.parse(localStorage.getItem("user"));
+        setProcessing(true);
+        const response=await axios.get(`http://localhost:8080/all-emergency/page/${emergencyPage}/size/${pageSize}`,
+          {
+            headers:{
+              "Authorization": "Bearer "+user.token,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200){
+          if(emergencyPosts.length===0) setEmergencyPost(response.data.object.content);
+          else setEmergencyPost(prevEmergencyPost=>[...prevEmergencyPost, ...response.data.object.content]);
+          
+          if(!response.data.object.last)setEmergencyPage(page+1);
+          else setLastEmergencyPage(true);
+          setProcessing(false);
+        }else if(response.status===202){
+          setProcessing(false);
+          updateMsg(response.data.msg);
+        }
+      }
+    }catch(exception){
+      console.log(exception);
+      setProcessing(false);
+      updateMsg(exception?.response?.data?.msg || exception.message );
+    }
+    }
   }
-  //
+//
 
-  // const loadPost = (postId)=>{
-  //   navigate(`/post/${postId}`);
-  // }
-
-  // const loadCampaign = (campaignId)=>{
-  //   navigate(`/campaign/${campaignId}`);
-  // }
 
   const getTrustScoreLabel = (score) => {
   if (score >= 0 && score <= 299) return "Low Trust 🔴";
@@ -731,9 +899,10 @@ status: {
                   ? "Search for campaigns..."
                   : "Search for Emergency Posts..."
               }
+              onChange={(e)=>setSearch(e.target.value)}
               style={styles.searchBox}
             />
-            <button style={styles.searchButton} onClick={handleSearch}>
+            <button style={styles.searchButton} onClick={()=>handleSearch()}>
               Search
             </button>
           </div>
@@ -785,7 +954,7 @@ status: {
           zIndex: 1000,
           left: "30px",
         }}
-        onClick={loadMore}
+        onClick={()=>loadMore()}
       >
         Load More
       </button>

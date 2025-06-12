@@ -117,19 +117,17 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(value = "/edit/{postId}",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> editPost(@RequestPart("post") String postJson,
-                                      @RequestPart("images") List<MultipartFile> images){
-        Post post=null;
-        try{post=new ObjectMapper().readValue(postJson, Post.class);}
-        catch(Exception e){e.fillInStackTrace();return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create post.");}
-        ServiceResponse<Optional<FullPostData>> response = postService.editPost(post, images);
-        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    @PostMapping("/edit")
+    public ResponseEntity<?> editPost(@RequestBody EditPostData editPostData){
+        ServiceResponse<Boolean> response = postService.editPost(editPostData, editPostData.getPostId());
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/search/post")
-    public ResponseEntity<?> searchPostByTitle(@RequestParam("search") String search, @RequestHeader("Username") String username){
-        return ResponseEntity.ok().body("");
+    @GetMapping("/search/page/{page}/size/{size}/{searchString}")
+    public ResponseEntity<?> searchPost(@PathVariable int page, @PathVariable int size, @PathVariable String searchString){
+        ServiceResponse<Page<PostData>> response=postService.getSearchedPosts(page, size, searchString);
+        if(response.getObject().getTotalPages()==0)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

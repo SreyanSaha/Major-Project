@@ -6,4 +6,6 @@ import java.util.Optional;
 
 public interface CampaignReportLogRepository extends JpaRepository<CampaignReportLog, Integer> {
     Optional<CampaignReportLog> findByUserIdAndCampaignId(int userId, int campaignId);
+
+    void deleteByCampaignId(int campaignId);
 }

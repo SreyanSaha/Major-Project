@@ -1,39 +1,37 @@
-import React, { useState , useEffect} from "react";
-import { useNavigate } from "react-router-dom";
+import { useState , useEffect} from "react";
 import LoadingOverlay from "../../loadingComponents/Loading";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-export default function UpdatePostForm({onBack, postId}) {
+export default function EditCampaign({onBack, campaignId}) {
   const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
+  const [msg,updateMsg] = useState(null);
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
-  const [zip, setZip] = useState("");
-  const [msg, updateMsg] = useState(null);
+  const [zipCode, setZipCode] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [campaignType, setCampaignType] = useState(-1);
   const [processing, setProcessing] = useState(false);
-  const [location, setLocation] = useState("");
-  const [authenticated, setAuthenticated] = useState(false);
   const [id, setId] = useState(-1);
 
   useEffect(() => {
-      if (localStorage.getItem("user")!==null){
-        setAuthenticated(true);
-        fetchFullPostData();
-      } else{
-        setAuthenticated(false);
-        navigate("/user/login");
-      }
-    }, [navigate]);
+        if (localStorage.getItem("user")!==null){
+          setAuthenticated(true);
+          fetchFullCampaignData();
+        } else{
+          setAuthenticated(false);
+          navigate("/user/login");
+        }
+      }, [navigate]);
 
-  const fetchFullPostData = async()=>{
+  const fetchFullCampaignData = async()=>{
     try{
       const user = JSON.parse(localStorage.getItem("user"));
       setProcessing(true);
-      const response=await axios.get(`http://localhost:8080/posts/${postId}`,
+      const response=await axios.get(`http://localhost:8080/campaign/data-to-edit/${campaignId}`,
         {
           headers:{
             "Authorization": "Bearer "+user.token,
@@ -42,13 +40,14 @@ export default function UpdatePostForm({onBack, postId}) {
         }
       );
       if(response.status===200){
-        setTitle(response.data.object.postTitle);
-        setDescription(response.data.object.postDescription);
+        setTitle(response.data.object.campaignTitle);
+        setDescription(response.data.object.campaignDescription);
+        setCampaignType(response.data.object.campaignType);
         setAddress(response.data.object.street);
-        setCity(response.data.object.city);
         setState(response.data.object.state);
-        setZip(response.data.object.postalCode);
-        setId(response.data.object.postId);
+        setZipCode(response.data.object.postalCode);
+        setCity(response.data.object.city);
+        setId(response.data.object.campaignId);
         setProcessing(false);
       }else if(response.status===202){
         setProcessing(false);
@@ -62,51 +61,33 @@ export default function UpdatePostForm({onBack, postId}) {
     }
   };
 
-  const fetchLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation(`Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`);
-          setLatitude(position.coords.latitude);
-          setLongitude(position.coords.longitude);
-        },
-        (error) => {
-          console.error("Error fetching location:", error);
-          alert("Unable to fetch location. Please allow location access.");
-        }
-      );
-    } else {
-      alert("Geolocation is not supported by your browser.");
-    }
-  };
-
-  const handleUpdate = async() => {
+  const handleSubmit = async() => {
     setProcessing(true);
     try{
       const user=JSON.parse(localStorage.getItem("user"));
-      const editPostData={
-        "postId":id,
-        "postTitle":title,
-        "postDescription":description,
-        "latitude":latitude,
-        "longitude":longitude,
+      const editCampaignData={
+        "campaignId":id,
+        "campaignTitle":title,
+        "campaignDescription":description,
         "street":address,
         "city":city,
         "state":state,
-        "postalCode":zip
+        "postalCode":zipCode,
+        "campaignType":campaignType
       };
-      const response = await axios.post("http://localhost:8080/post/edit",editPostData,{
+      const response = await axios.post("http://localhost:8080/campaign/edit",editCampaignData,{
         headers:{
             "Authorization": "Bearer "+user.token,
             "Content-Type": "application/json"
           }
       });
-      if(response.status===200 && response.data.object){
+      if(response.status===200){
         setProcessing(false);
-        updateMsg("Post updated.");
-      }else if(response.status===202){
+        updateMsg("Campaing updated.");
+      }
+      else if(response.status===202){
         setProcessing(false);
-        updateMsg(response.data.msg);
+        updateMsg(response.data);
       }
     }catch(exception){
       setProcessing(false);
@@ -115,57 +96,54 @@ export default function UpdatePostForm({onBack, postId}) {
       if(exception.response && (exception.response.status===401 || exception.response.status===403))navigate("/user/login");
     }
   };
-
   if (!authenticated) return null;
-
   return (
     <div style={styles.container}>
+      {processing?<LoadingOverlay/>:""}
       <div onClick={() => {onBack();}} style={styles.backArrow}>
       ← Back
       </div>
-      {processing ? <div>Loading...</div> : ""}
-      <h2 style={styles.heading}>Update Your Post</h2>
-      {msg && (
-        <div style={styles.alertDiv}>
-          <h3 style={styles.alertText}>{msg}</h3>
-        </div>
-      )}
-      <form style={styles.form} onSubmit={(e) => { e.preventDefault(); handleUpdate(); }}>
+      <h2 style={styles.heading}>Upload Campaign</h2>
+      {msg!=null?(<div style={styles.alertDiv}>
+              <h3 style={styles.alertText}>{msg}</h3>
+            </div>):""}
+      <form style={styles.form} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
         <input
           type="text"
-          placeholder="Enter Post Title"
+          placeholder="Enter Campaign Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          style={styles.input}
+          style={styles.inputField}
           required
         />
+
+        <select
+          value={campaignType}
+          onChange={(e) => setCampaignType(e.target.value)}
+          style={styles.selectField}
+          required
+        >
+        <option value="">Select Campaign Type</option>
+        <option value="-1">Donation</option>
+        <option value="0">Awareness</option>
+        <option value="1">Volunteering</option>
+      </select>
+
         <textarea
-          placeholder="Enter Post Description"
+          placeholder="Enter Campaign Description (Include Payment Details)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={styles.textarea}
+          style={styles.textArea}
           required
         />
-        <div style={styles.locationSection}>
-          <button type="button" onClick={fetchLocation} style={styles.locationButton}>
-            Update Location
-          </button>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Current Location"
-            style={styles.input}
-            readOnly
-          />
-        </div>
+
         <div style={styles.addressSection}>
           <input
             type="text"
             placeholder="Address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            style={styles.input}
+            style={styles.inputField}
             required
           />
           <input
@@ -173,7 +151,7 @@ export default function UpdatePostForm({onBack, postId}) {
             placeholder="City"
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            style={styles.input}
+            style={styles.inputField}
             required
           />
           <input
@@ -181,20 +159,20 @@ export default function UpdatePostForm({onBack, postId}) {
             placeholder="State"
             value={state}
             onChange={(e) => setState(e.target.value)}
-            style={styles.input}
+            style={styles.inputField}
             required
           />
           <input
             type="text"
-            placeholder="ZIP Code"
-            value={zip}
-            onChange={(e) => setZip(e.target.value)}
-            style={styles.input}
+            placeholder="Zip Code"
+            value={zipCode}
+            onChange={(e) => setZipCode(e.target.value)}
+            style={styles.inputField}
             required
           />
         </div>
         <button type="submit" style={styles.submitButton}>
-          Update Post
+          Update Campaign
         </button>
       </form>
     </div>
@@ -202,7 +180,7 @@ export default function UpdatePostForm({onBack, postId}) {
 }
 
 const styles = {
-  backArrow: {
+    backArrow: {
     cursor: "pointer",
     fontSize: "1.5rem",
     color: "#004080",
@@ -218,21 +196,30 @@ const styles = {
     marginBottom:"1px",
     marginRight:"650px"
   },
-  alertDiv: { textAlign: "center" },
-  alertText: {
-    backgroundColor: "rgb(255, 64, 57)",
-    padding: "2px",
-    color: "white",
-    borderRadius: "8px",
-    width: "100%",
-    marginBottom: "15px",
-    margin: "auto",
-    marginTop: "-10px",
+  alertDiv:{
+        textAlign: "center",
+    },
+    alertText: {
+        backgroundColor: "rgb(255, 64, 57)",
+        padding: "2px",
+        color: "white",
+        borderRadius: "8px",
+        width: "80%",
+        margin: "auto",
+        marginBottom: "10px",
+    },
+  selectField: {
+  width: "100%",
+  padding: "0.8rem",
+  borderRadius: "8px",
+  border: "1px solid #007bff",
+  backgroundColor: "#ffffff",
+  color: "#333",
   },
   container: {
     backgroundColor: "#f0f8ff",
-    minHeight: "100vh",
-    padding: "2rem",
+    height: "100vh",
+    padding: "1rem",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -252,20 +239,19 @@ const styles = {
     flexDirection: "column",
     gap: "1.5rem",
   },
-  input: {
+  inputField: {
+    width: "95%",
     padding: "0.8rem",
     borderRadius: "8px",
+    marginRight: "100px",
     border: "1px solid #007bff",
-    outline: "none",
-    fontSize: "1rem",
   },
-  textarea: {
+  textArea: {
+    width: "95%",
     padding: "0.8rem",
     borderRadius: "8px",
     border: "1px solid #007bff",
-    outline: "none",
-    fontSize: "1rem",
-    minHeight: "100px",
+    minHeight: "120px",
     resize: "vertical",
   },
   imageSectionContainer: {
@@ -297,6 +283,7 @@ const styles = {
   },
   placeholderText: {
     textAlign: "center",
+    padding: "10px",
   },
   hiddenInput: {
     display: "none",
@@ -307,26 +294,30 @@ const styles = {
     objectFit: "cover",
     borderRadius: "8px",
   },
-  locationSection: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "0.5rem",
-  },
-  locationButton: {
-    backgroundColor: "#007bff",
-    color: "#ffffff",
-    padding: "0.7rem 1.5rem",
-    border: "none",
+  noteSection: {
+    backgroundColor: "#e0f0ff",
+    padding: "1rem",
     borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    transition: "background-color 0.3s",
+  },
+  noteText: {
+    color: "#007bff",
+    fontSize: "0.95rem",
   },
   addressSection: {
     display: "flex",
     flexDirection: "column",
     gap: "1rem",
+  },
+  paymentSection: {
+    backgroundColor: "#e6f0ff",
+    border: "2px dashed #28a745",
+    borderRadius: "10px",
+    height: "140px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    overflow: "hidden",
   },
   submitButton: {
     marginTop: "1rem",
@@ -341,5 +332,4 @@ const styles = {
     transition: "background-color 0.3s",
   },
 };
-
 

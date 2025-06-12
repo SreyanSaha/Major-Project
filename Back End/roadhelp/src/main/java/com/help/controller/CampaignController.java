@@ -1,12 +1,11 @@
 package com.help.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.help.dto.FullCampaignData;
-import com.help.dto.ServiceResponse;
-import com.help.dto.UserCampaign;
+import com.help.dto.*;
 import com.help.model.Campaign;
 import com.help.service.CampaignService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -57,6 +56,20 @@ public class CampaignController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PostMapping("/edit")
+    public ResponseEntity<?> editPost(@RequestBody EditCampaignData editCampaignData){
+        ServiceResponse<Boolean> response = campaignService.editCampaign(editCampaignData, editCampaignData.getCampaignId());
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/data-to-edit/{campaignId}")
+    public ResponseEntity<?> getCampaignDataToEdit(@PathVariable int campaignId){
+        ServiceResponse<Optional<FullCampaignData>> response = campaignService.getCampaignToEdit(campaignId);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @PostMapping("/report")
     public ResponseEntity<?> reportCampaign(@RequestBody int campaignId){
         ServiceResponse<Optional<FullCampaignData>> response = campaignService.reportCampaign(campaignId);
@@ -64,10 +77,17 @@ public class CampaignController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-//    @DeleteMapping("/delete/{campaignId}")
-//    public ResponseEntity<?> deletePost(@PathVariable int campaignId){
-//        ServiceResponse<Boolean> response=campaignService.deleteCampaign(campaignId);
-//        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
+    @DeleteMapping("/delete/{campaignId}")
+    public ResponseEntity<?> deletePost(@PathVariable int campaignId){
+        ServiceResponse<Boolean> response=campaignService.deleteCampaign(campaignId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/search/page/{page}/size/{size}/{searchString}")
+    public ResponseEntity<?> searchCampaign(@PathVariable int page, @PathVariable int size, @PathVariable String searchString){
+        ServiceResponse<Page<CampaignPostData>> response=campaignService.getSearchedCampaigns(page, size, searchString);
+        if(response.getObject().getTotalPages()==0)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

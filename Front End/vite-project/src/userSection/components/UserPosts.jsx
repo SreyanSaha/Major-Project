@@ -12,6 +12,7 @@ export default function UserUploadedPostsComponent() {
   const [processing, setProcessing] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [editing, setEditing] = useState(false);
+  const [postId, setPostId] = useState(-1);
 
   useEffect(() => {
     try {
@@ -281,7 +282,7 @@ export default function UserUploadedPostsComponent() {
                 : "Under Review"}
             </div>
             <div style={styles.actions}>
-              <button style={{ ...styles.button, ...styles.editBtn }} onClick={()=>setEditing(true)}>Edit</button>
+              <button style={{ ...styles.button, ...styles.editBtn }} onClick={()=>{setEditing(true); setPostId(post.postId);}}>Edit</button>
               <button
                 style={{ ...styles.button, ...styles.deleteBtn }}
                 onClick={() => setDeleteConfirmId(post.postId)}
@@ -293,6 +294,6 @@ export default function UserUploadedPostsComponent() {
         ))}
       </div>
     </div>
-    ):(<UpdatePostForm onBack={()=>{setEditing(false); refreshPosts();}}/>)
+    ):(<UpdatePostForm onBack={()=>{setEditing(false); refreshPosts();}} postId={postId}/>)
   );
 }

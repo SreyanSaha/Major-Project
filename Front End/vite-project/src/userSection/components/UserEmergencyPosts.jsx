@@ -9,7 +9,6 @@ export default function UserEmergencyPostsComponent() {
     const [authenticated, setAuthenticated] = useState(false);
     const [emergencyPosts, setEmergencyPosts] = useState([]);
     const [processing, setProcessing] = useState(false);
-    const [editing, setEditing] = useState(false);
     const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   useEffect(() => {

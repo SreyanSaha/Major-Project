@@ -1,5 +1,6 @@
 package com.help.validation;
 
+import com.help.dto.EditCampaignData;
 import com.help.model.Campaign;
 import org.springframework.stereotype.Component;
 import java.util.regex.Pattern;
@@ -20,6 +21,16 @@ public class CampaignValidation {
         if (!isValidName(campaign.getCity())) return "City is invalid.";
         if (!isValidName(campaign.getState())) return "State is invalid.";
         if (!isValidName(campaign.getCountry())) return "Country is invalid.";
+        if (!isValidZip(campaign.getPostalCode())) return "Postal code is invalid.";
+        return "Validated.";
+    }
+
+    public String isValidCampaign(EditCampaignData campaign) {
+        if (!isValidText(campaign.getCampaignTitle())) return "Campaign title is invalid.";
+        if (!isValidText(campaign.getCampaignDescription())) return "Campaign description is invalid.";
+        if (!isValidAddress(campaign.getStreet())) return "Street is invalid.";
+        if (!isValidName(campaign.getCity())) return "City is invalid.";
+        if (!isValidName(campaign.getState())) return "State is invalid.";
         if (!isValidZip(campaign.getPostalCode())) return "Postal code is invalid.";
         return "Validated.";
     }

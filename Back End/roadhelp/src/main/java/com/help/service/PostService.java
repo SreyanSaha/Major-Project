@@ -88,16 +88,6 @@ public class PostService {
         return null;
     }
 
-    public String getPostLocation(int postId) {
-        Post post = postRepository.findById(postId).orElseThrow();
-        return String.format("Street: %s, City: %s, State: %s, Country: %s",
-                post.getStreet(), post.getCity(), post.getState(), post.getCountry());
-    }
-
-    public List<Post> getNearbyPosts(double lat, double lon, double radius) {
-        return postRepository.findByLatitudeBetweenAndLongitudeBetween( - radius, lat + radius, lon - radius, lon + radius);
-    }
-
     @Transactional
     public ServiceResponse<FullPostData> upVotePost(int postId) {
         if(!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Failed to up vote the post.");
@@ -295,10 +285,7 @@ public class PostService {
         return true;
     }
 
-    public Post findPostByTitle(String search) {
-        return postRepository.findPostByPostTitle(search);
-    }
-
+    @Transactional
     public ServiceResponse<Optional<FullPostData>> reportPost(int postId){
         if(!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Failed to report the post.");
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
@@ -360,22 +347,28 @@ public class PostService {
     }
 
     @Transactional
-    public ServiceResponse<Optional<FullPostData>> editPost(Post post, List<MultipartFile> images) {
-        String msg=postValidation.isValidPostDetails(post);
-        if(!msg.equals("Validated"))return new ServiceResponse<>(msg);
+    public ServiceResponse<Boolean> editPost(EditPostData editPostData, int postId) {
+        String msg=postValidation.isValidPostDetails(editPostData);boolean msg2=postValidation.isValidNumeric(Integer.toString(postId));
+        if(!msg.equals("Validated") || !msg2)return new ServiceResponse<>(msg, false);
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<User> user=userRepository.findByUsername(username);
-        Optional<Post> existingPost=postRepository.findById(post.getPostId());
+        Optional<Post> existingPost=postRepository.findById(postId);
+
         if(existingPost.isEmpty() || existingPost.get().getUser().getUserId()!=user.get().getUserId())
-            return new ServiceResponse<>("Invalid user or post.");
-        existingPost.get().setCity(post.getCity());
-        existingPost.get().setState(post.getState());
-        existingPost.get().setStreet(post.getStreet());
-        existingPost.get().setCountry(post.getCountry());
-        existingPost.get().setPostTitle(post.getPostTitle());
-        existingPost.get().setPostDescription(post.getPostDescription());
+            return new ServiceResponse<>("Invalid user or post.", false);
+
+        existingPost.get().setCity(editPostData.getCity());
+        existingPost.get().setState(editPostData.getState());
+        existingPost.get().setStreet(editPostData.getStreet());
+        existingPost.get().setPostTitle(editPostData.getPostTitle());
+        existingPost.get().setPostDescription(editPostData.getPostDescription());
         postRepository.save(existingPost.get());
-        return new ServiceResponse<>("created.", postRepository.findFullPostById(existingPost.get().getPostId()));
+        return new ServiceResponse<>("updated.",true);
     }
 
+    public ServiceResponse<Page<PostData>> getSearchedPosts(int page, int size, String searchString){
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<PostData> list = postRepository.findAllBySearchString(searchString, pageRequest);
+        return new ServiceResponse<>(list.getTotalPages()==0?"No posts are found.":"", list);
+    }
 }

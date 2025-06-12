@@ -37,4 +37,16 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "p.latitude, p.longitude, p.street, p.city, p.state, p.country, p.postalCode, p.postReports, p.postStatus, u.userId, u.profileImagePath, u.civicTrustScore) FROM Post p JOIN p.user u WHERE p.id = :postId")
     Optional<FullPostData> findFullPostById(@Param("postId") int postId);
 
+    @Query("SELECT new com.help.dto.PostData(p.postId, u.civicTrustScore, CONCAT(u.userFirstName, ' ', u.userLastName), " +
+            "u.profileImagePath, p.postUploadDateTime, p.postTitle, p.postDescription, p.upVoteCount, " +
+            "p.downVoteCount, p.commentCount, p.postReports, p.imagePath1, p.postStatus) " +
+            "FROM Post p JOIN p.user u " +
+            "WHERE LOWER(p.postTitle) LIKE LOWER(CONCAT('%', :searchString, '%')) " +
+            "OR LOWER(p.postDescription) LIKE LOWER(CONCAT('%', :searchString, '%')) " +
+            "OR LOWER(p.street) LIKE LOWER(CONCAT('%', :searchString, '%')) " +
+            "OR LOWER(p.city) LIKE LOWER(CONCAT('%', :searchString, '%')) " +
+            "OR LOWER(p.state) LIKE LOWER(CONCAT('%', :searchString, '%')) " +
+            "OR LOWER(p.postalCode) LIKE LOWER(CONCAT('%', :searchString, '%'))")
+    Page<PostData> findAllBySearchString(@Param("searchString") String searchString, Pageable pageable);
+
 }

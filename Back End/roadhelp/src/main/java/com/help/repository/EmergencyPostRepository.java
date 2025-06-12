@@ -46,4 +46,17 @@ public interface EmergencyPostRepository extends JpaRepository<EmergencyPost, In
     """)
     Optional<FullEmergencyPostData> getFullEmergencyPostDataById(@Param("postId") int postId);
 
+    @Query("SELECT new com.help.dto.EmergencyPostData(e.emergencyPostId, e.imagePath1, e.emergencyPostTitle, e.emergencyPostDescription, " +
+            "CONCAT(u.userFirstName, ' ', u.userLastName), u.profileImagePath, e.emergencyPostUploadDateTime, e.emergencyPostStatus, " +
+            "u.civicTrustScore, e.street, e.city, e.state, e.country, e.zipCode) " +
+            "FROM EmergencyPost e JOIN e.user u " +
+            "WHERE LOWER(e.emergencyPostTitle) LIKE LOWER(CONCAT('%', :searchString, '%')) OR " +
+            "LOWER(e.emergencyPostDescription) LIKE LOWER(CONCAT('%', :searchString, '%')) OR " +
+            "LOWER(e.street) LIKE LOWER(CONCAT('%', :searchString, '%')) OR " +
+            "LOWER(e.city) LIKE LOWER(CONCAT('%', :searchString, '%')) OR " +
+            "LOWER(e.state) LIKE LOWER(CONCAT('%', :searchString, '%')) OR " +
+            "LOWER(e.country) LIKE LOWER(CONCAT('%', :searchString, '%')) OR " +
+            "LOWER(e.zipCode) LIKE LOWER(CONCAT('%', :searchString, '%'))")
+    Page<EmergencyPostData> findAllBySearchString(@Param("searchString") String searchString, Pageable pageable);
+
 }

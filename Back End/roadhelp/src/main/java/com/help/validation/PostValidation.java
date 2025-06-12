@@ -1,4 +1,5 @@
 package com.help.validation;
+import com.help.dto.EditPostData;
 import com.help.model.Post;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,16 @@ public class PostValidation {
     private static final Pattern DESCRIPTION_PATTERN = Pattern.compile("(?s)^(?!\\s*$).{1,500}$");
 
     public String isValidPostDetails(Post post){
+        if(!isValidAlphanumeric(post.getPostTitle()))return "Invalid post title.";
+        if(!isValidAlphanumeric(post.getPostDescription()))return "Invalid post description.";
+        if(!isValidAddress(post.getStreet()))return "Post address is invalid.";
+        if(!isValidName(post.getCity()))return "Post city is invalid.";
+        if(!isValidName(post.getState()))return "Post state is invalid.";
+        if(!isValidZipCode(post.getPostalCode())) return "Post zip code is invalid.";
+        return "Validated";
+    }
+
+    public String isValidPostDetails(EditPostData post){
         if(!isValidAlphanumeric(post.getPostTitle()))return "Invalid post title.";
         if(!isValidAlphanumeric(post.getPostDescription()))return "Invalid post description.";
         if(!isValidAddress(post.getStreet()))return "Post address is invalid.";
