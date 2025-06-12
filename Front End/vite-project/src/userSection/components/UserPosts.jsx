@@ -25,9 +25,32 @@ export default function UserUploadedPostsComponent() {
     }
   }, [navigate]);
 
-  const handleDelete = (id) => {
-    setPosts(posts.filter((post) => post.id !== id));
-    setDeleteConfirmId(null);
+  const handleDelete = async (id) => {
+    try{
+      setProcessing(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+        const response=await axios.delete(`http://localhost:8080/post/delete/${id}`,
+          {
+            headers:{
+                "Authorization": "Bearer "+user.token,
+                "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200 && response.data.object){
+        const newPosts = posts.filter(
+          (item) => item.postId !== Number(id));
+        setPosts([...newPosts]);
+        updateMsg(response.data.msg);
+        setProcessing(false);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      navigate("/user/login");
+    }
   };
 
   const fetchUserPosts=async()=>{
@@ -35,7 +58,6 @@ export default function UserUploadedPostsComponent() {
       setProcessing(true);
       const user = JSON.parse(localStorage.getItem("user"));
       if(posts.length===0){
-        setProcessing(true);
         const response=await axios.get("http://localhost:8080/post/user/all-posts",
           {
             headers:{
@@ -262,7 +284,7 @@ export default function UserUploadedPostsComponent() {
               <button style={{ ...styles.button, ...styles.editBtn }} onClick={()=>setEditing(true)}>Edit</button>
               <button
                 style={{ ...styles.button, ...styles.deleteBtn }}
-                onClick={() => setDeleteConfirmId(post.id)}
+                onClick={() => setDeleteConfirmId(post.postId)}
               >
                 Delete
               </button>

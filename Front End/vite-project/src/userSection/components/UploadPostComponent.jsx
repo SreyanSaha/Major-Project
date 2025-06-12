@@ -17,6 +17,8 @@ function UploadPost() {
   const [state, setState] = useState("");
   const [zip, setZip] = useState("");
   const [aiAvailable, setAi] = useState(false);
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
 
   const loadSubscriptionDetails = async()=>{
     try{
@@ -30,8 +32,8 @@ function UploadPost() {
             }
           }
         );
-        if(response.status===200){
-          setAi(response.data.log===1?true:false);
+        if(response.status===200 && response.data.object.log===1){
+          setAi(response.data.object.log===1?true:false);
           updateMsg(response.data.msg);
           setProcessing(false);
         }
@@ -44,6 +46,24 @@ function UploadPost() {
       console.log(exception);
       setProcessing(false);
       updateMsg("Connection with the server failed.");
+    }
+  };
+
+  const fetchLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation(`Latitude: ${position.coords.latitude}, Longitude: ${position.coords.longitude}`);
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude);
+        },
+        (error) => {
+          console.error("Error fetching location:", error);
+          alert("Unable to fetch location. Please allow location access.");
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
     }
   };
 
@@ -65,22 +85,6 @@ function UploadPost() {
     setImages(newImages);
   };
 
-  const handleGetLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLocation(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
-        },
-        (error) => {
-          alert("Error fetching location: " + error.message);
-        }
-      );
-    } else {
-      alert("Geolocation is not supported by your browser.");
-    }
-  };
-
   const handleSubmit = async() => {
     setProcessing(true);
     try{
@@ -89,6 +93,8 @@ function UploadPost() {
       const post={
         "postTitle":title,
         "postDescription":description,
+        "latitude":latitude,
+        "longitude":longitude,
         "street":address,
         "city":city,
         "state":state,
@@ -138,7 +144,7 @@ function UploadPost() {
         setProcessing(false);
       }else if(response.status===200){
         setProcessing(false);
-        updateMsg(response.data);
+        updateMsg(response.data.msg);
       }
     }catch(exception){
       setProcessing(false);
@@ -198,16 +204,20 @@ function UploadPost() {
           ))}
         </div>
 
-        <p style={styles.aiNote}>
-  To generate title and description from AI, please select 1st image above.
-</p>
-<button
-  type="button"
-  style={styles.aiGenerateButton}
-  onClick={()=>postDetailsCreationByAI()}
->
-  Generate Title & Description using AI
-</button>
+        {aiAvailable?(
+          <>
+          <p style={styles.aiNote}>
+          To generate title and description from AI, please select 1st image above.
+        </p>
+        <button
+          type="button"
+          style={styles.aiGenerateButton}
+          onClick={()=>postDetailsCreationByAI()}
+        >
+          Generate Title & Description using AI
+        </button>
+        </>
+        ):null}
 
         <div style={styles.locationSection}>
           <input
@@ -218,7 +228,7 @@ function UploadPost() {
             style={styles.input}
             readOnly
           />
-          <button type="button" onClick={handleGetLocation} style={styles.locationButton}>
+          <button type="button" onClick={fetchLocation} style={styles.locationButton}>
             Add Current Location
           </button>
         </div>
@@ -230,7 +240,7 @@ function UploadPost() {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             style={styles.input}
-            required
+            
           />
           <input
             type="text"
@@ -238,7 +248,7 @@ function UploadPost() {
             value={city}
             onChange={(e) => setCity(e.target.value)}
             style={styles.input}
-            required
+            
           />
           <input
             type="text"
@@ -246,7 +256,7 @@ function UploadPost() {
             value={state}
             onChange={(e) => setState(e.target.value)}
             style={styles.input}
-            required
+            
           />
           <input
             type="text"
@@ -254,7 +264,7 @@ function UploadPost() {
             value={zip}
             onChange={(e) => setZip(e.target.value)}
             style={styles.input}
-            required
+            
           />
         </div>
 

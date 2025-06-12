@@ -3,10 +3,12 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "user_subscription_log")
 public class UserSubscriptionLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userSubscriptionId;
+    @Column(name = "user_id") // must match DB column
     private int userId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;

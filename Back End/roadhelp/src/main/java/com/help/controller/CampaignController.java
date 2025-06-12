@@ -63,4 +63,11 @@ public class CampaignController {
         if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+//    @DeleteMapping("/delete/{campaignId}")
+//    public ResponseEntity<?> deletePost(@PathVariable int campaignId){
+//        ServiceResponse<Boolean> response=campaignService.deleteCampaign(campaignId);
+//        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+//        return ResponseEntity.status(HttpStatus.OK).body(response);
+//    }
 }

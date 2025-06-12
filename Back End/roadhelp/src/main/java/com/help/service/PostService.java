@@ -26,10 +26,11 @@ public class PostService {
     private final PostValidation postValidation;
     private final UserRepository userRepository;
     private final PostReportLogRepository postReportLogRepository;
+    private final GeoService geoService;
 
     @Autowired
     public PostService(PostRepository postRepository, PostLogRepository postLogRepository, PostCommentRepository postCommentRepository, PostReportLogRepository postReportLogRepository,
-                       PostCommentLogRepository postCommentLogRepository, PostValidation postValidation, UserRepository userRepository) {
+                       PostCommentLogRepository postCommentLogRepository, PostValidation postValidation, UserRepository userRepository, GeoService geoService) {
         this.postRepository = postRepository;
         this.postLogRepository = postLogRepository;
         this.postCommentRepository = postCommentRepository;
@@ -37,9 +38,20 @@ public class PostService {
         this.postValidation = postValidation;
         this.userRepository = userRepository;
         this.postReportLogRepository = postReportLogRepository;
+        this.geoService=geoService;
     }
 
+    @Transactional
     public String createPost(List<MultipartFile> images, Post post, String uname) {
+        if(post.getStreet()==null || post.getStreet().isEmpty() ||
+                post.getState()==null || post.getState().isEmpty() ||
+                post.getPostalCode()==null || post.getPostalCode().isEmpty()){
+            AddressDetails addressDetails=geoService.getAddressFromLatLng(post.getLatitude(), post.getLongitude());
+            post.setStreet(addressDetails.getStreet());
+            post.setState(addressDetails.getState());
+            post.setCity(addressDetails.getCity());
+            post.setPostalCode(addressDetails.getZip());
+        }
         String msg=postValidation.isValidPostDetails(post);
         if(!msg.equals("Validated"))return msg;
         String username=SecurityContextHolder.getContext().getAuthentication().getName();String root=Paths.get("").toAbsolutePath().toString();
@@ -86,6 +98,7 @@ public class PostService {
         return postRepository.findByLatitudeBetweenAndLongitudeBetween( - radius, lat + radius, lon - radius, lon + radius);
     }
 
+    @Transactional
     public ServiceResponse<FullPostData> upVotePost(int postId) {
         if(!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Failed to up vote the post.");
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
@@ -118,6 +131,7 @@ public class PostService {
         return new ServiceResponse<>("Post up voted.",postRepository.findFullPostById(postId).get());
     }
 
+    @Transactional
     public ServiceResponse<FullPostData> downVotePost(int postId) {
         if(!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Failed to down vote the post.");
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
@@ -151,7 +165,7 @@ public class PostService {
         return new ServiceResponse<>("Post down voted.",postRepository.findFullPostById(postId).get());
     }
 
-
+    @Transactional
     public ServiceResponse<Optional<CommentData>> addComment(CommentWrapper commentWrapper) {
         if(!postValidation.isValidComment(commentWrapper.getCommentDescription()))return new ServiceResponse<>("Failed to create comment.");
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
@@ -177,6 +191,7 @@ public class PostService {
         return new ServiceResponse<>(response.getTotalPages()==0?"No additional comments found.":"",response);
     }
 
+    @Transactional
     public ServiceResponse<Optional<CommentData>> upVoteComment(int commentId) {
         if(!postValidation.isValidNumeric(Integer.toString(commentId)))return new ServiceResponse<>("Failed to up vote the comment.");
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
@@ -185,7 +200,8 @@ public class PostService {
         Optional<PostCommentLog> existingLog = postCommentLogRepository.findByUserIdAndPostCommentId(userId, comment.getPostCommentId());
 
         if (existingLog.isEmpty()){
-            PostCommentLog postCommentLog=new PostCommentLog(userId, commentId,(short)1);
+            PostCommentLog postCommentLog=new PostCommentLog(userId,(short)1);
+            postCommentLog.setPostComment(comment);
             comment.setLikeCount(comment.getLikeCount()+1);
             postCommentLogRepository.save(postCommentLog);
             postCommentRepository.save(comment);
@@ -206,6 +222,7 @@ public class PostService {
         return new ServiceResponse<>("Comment up voted.",postCommentRepository.findCommentById(commentId, userId));
     }
 
+    @Transactional
     public ServiceResponse<Optional<CommentData>> downVoteComment(int commentId) {
         if(!postValidation.isValidNumeric(Integer.toString(commentId)))return new ServiceResponse<>("Failed to down vote the comment.");
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
@@ -214,7 +231,8 @@ public class PostService {
         Optional<PostCommentLog> existingLog = postCommentLogRepository.findByUserIdAndPostCommentId(userId, comment.getPostCommentId());
 
         if (existingLog.isEmpty()){
-            PostCommentLog postCommentLog=new PostCommentLog(userId, commentId,(short)0);
+            PostCommentLog postCommentLog=new PostCommentLog(userId,(short)0);
+            postCommentLog.setPostComment(comment);
             comment.setDisLikeCount(comment.getDisLikeCount()+1);
             postCommentLogRepository.save(postCommentLog);
             postCommentRepository.save(comment);
@@ -235,9 +253,45 @@ public class PostService {
         return new ServiceResponse<>("Comment down voted.", postCommentRepository.findCommentById(commentId, userId));
     }
 
-    public boolean deletePost(int postId, String username){
-        if(userRepository.findByUsername(username).get().getUserId()!=postRepository.findById(postId).get().getUser().getUserId())return false;
+    @Transactional
+    public ServiceResponse<Boolean> deletePost(int postId){
+        if (!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Invalid post id.", false);
+        Optional<Post> post=postRepository.findById(postId);
+        if(post.isEmpty())return new ServiceResponse<>("Post not found.", false);
+        else{
+            String []imagePaths={
+                    post.get().getImagePath1(),
+                    post.get().getImagePath2(),
+                    post.get().getImagePath3(),
+                    post.get().getImagePath4(),
+                    post.get().getImagePath5()
+            };
+            String []afterWorkImagePaths={
+                    post.get().getAfterWorkImagePath1(),
+                    post.get().getAfterWorkImagePath2(),
+                    post.get().getAfterWorkImagePath3(),
+                    post.get().getAfterWorkImagePath4(),
+                    post.get().getAfterWorkImagePath5()
+            };
+            if(!deletePostAllImages(imagePaths,  afterWorkImagePaths))return new ServiceResponse<>("Failed to delete the post.", false);
+        }
+        postLogRepository.deleteByPostId(postId);
+        postReportLogRepository.deleteByPostId(postId);
+        postCommentRepository.deleteAll(post.get().getPostCommentList());
         postRepository.deleteById(postId);
+        return new ServiceResponse<>("Post deleted.", true);
+    }
+
+    private boolean deletePostAllImages(String []imagePaths, String []afterWorkImagePaths){
+        String root=Paths.get("").toAbsolutePath().toString();
+        for(String path:imagePaths){
+            if(path==null || path.isEmpty())continue;
+            try{Files.delete(Paths.get(root+"/allMedia"+path));}catch (Exception e){e.printStackTrace();return false;}
+        }
+        for(String path:afterWorkImagePaths){
+            if(path==null || path.isEmpty())continue;
+            try{Files.delete(Paths.get(root+"/allMedia"+path));}catch (Exception e){e.printStackTrace();return false;}
+        }
         return true;
     }
 
@@ -304,4 +358,24 @@ public class PostService {
         Optional<FullPostData> response = postRepository.findFullPostById(postId);
         return new ServiceResponse<Optional<FullPostData>>(response.isPresent() ? "" : "No post found.", response);
     }
+
+    @Transactional
+    public ServiceResponse<Optional<FullPostData>> editPost(Post post, List<MultipartFile> images) {
+        String msg=postValidation.isValidPostDetails(post);
+        if(!msg.equals("Validated"))return new ServiceResponse<>(msg);
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> user=userRepository.findByUsername(username);
+        Optional<Post> existingPost=postRepository.findById(post.getPostId());
+        if(existingPost.isEmpty() || existingPost.get().getUser().getUserId()!=user.get().getUserId())
+            return new ServiceResponse<>("Invalid user or post.");
+        existingPost.get().setCity(post.getCity());
+        existingPost.get().setState(post.getState());
+        existingPost.get().setStreet(post.getStreet());
+        existingPost.get().setCountry(post.getCountry());
+        existingPost.get().setPostTitle(post.getPostTitle());
+        existingPost.get().setPostDescription(post.getPostDescription());
+        postRepository.save(existingPost.get());
+        return new ServiceResponse<>("created.", postRepository.findFullPostById(existingPost.get().getPostId()));
+    }
+
 }

@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,15 +53,6 @@ public class PostController {
         if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
-//    @GetMapping("/nearby")
-//    public ResponseEntity<?> getNearbyPosts(@RequestParam("lat") double lat, @RequestParam("lon") double lon, @RequestParam("rad") double radius,
-//                                            @RequestHeader("Authorization") String tokenHeader,
-//                                            @RequestHeader("Username") String username) {
-//        if(tokenHeader==null || !tokenHeader.startsWith("Bearer ") || !jwtService.validateToken(tokenHeader.substring(7),customUserDetailsService.loadUserByUsername(username)))
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired");
-//        return ResponseEntity.ok().body(postService.getNearbyPosts(lat, lon, radius));
-//    }
 
     @PostMapping("/upVote")
     public ResponseEntity<?> upVote(@RequestBody int postId) {
@@ -113,14 +105,26 @@ public class PostController {
 
     @DeleteMapping("/delete/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable int postId){
-
-        return ResponseEntity.ok().body("");
+        ServiceResponse<Boolean> response=postService.deletePost(postId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/delete/comment/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable int commentId){
         ServiceResponse<Boolean> response = postService.deleteComment(commentId);
         if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping(value = "/edit/{postId}",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> editPost(@RequestPart("post") String postJson,
+                                      @RequestPart("images") List<MultipartFile> images){
+        Post post=null;
+        try{post=new ObjectMapper().readValue(postJson, Post.class);}
+        catch(Exception e){e.fillInStackTrace();return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create post.");}
+        ServiceResponse<Optional<FullPostData>> response = postService.editPost(post, images);
+        if(response.getObject().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

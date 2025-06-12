@@ -195,4 +195,14 @@ public class CampaignService {
         }
         return new ServiceResponse<>("Campaign reported.",campaignRepository.findCampaignById(campaignId));
     }
+
+//    public ServiceResponse<Boolean> deleteCampaign(int campaignId) {
+//        if(!campaignValidation.isValidNumeric(Integer.toString(campaignId)))return new ServiceResponse<>("Invalid campaign id.", false);
+//        Optional<Campaign> campaign = campaignRepository.findById(campaignId);
+//        if(campaign.isEmpty())return new ServiceResponse<>("Campaign not found.");
+//    }
+//
+//    private boolean deleteCampaignImages(String []imagePaths){
+//
+//    }
 }

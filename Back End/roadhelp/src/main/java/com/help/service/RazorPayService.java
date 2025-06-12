@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -39,22 +40,26 @@ public class RazorPayService {
     }
 
     public boolean verifyPaymentSignature(String orderId, String paymentId, String signature) {
-        String secret= razorPayConfig.getKeySecret();
         try {
+            String secret = razorPayConfig.getKeySecret();
             String data = orderId + "|" + paymentId;
 
             Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             sha256_HMAC.init(secretKey);
 
-            byte[] hash = sha256_HMAC.doFinal(data.getBytes());
+            byte[] hash = sha256_HMAC.doFinal(data.getBytes(StandardCharsets.UTF_8));
             String generatedSignature = Hex.encodeHexString(hash);
 
-            return generatedSignature.equals(signature) && startSubscription(paymentId, orderId);
+            System.out.println("Generated: " + generatedSignature);
+            System.out.println("Provided:  " + signature);
+            System.out.println(generatedSignature.equals(signature.trim()));
+            return generatedSignature.equals(signature.trim()) && startSubscription(paymentId, orderId);
         } catch (Exception e) {
             e.printStackTrace();
             initiateRefund(paymentId);
         }
+        System.out.println("FALSE FALSE");
         return false;
     }
 

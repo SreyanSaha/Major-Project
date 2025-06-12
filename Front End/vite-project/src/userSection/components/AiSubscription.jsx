@@ -150,7 +150,7 @@ const getOrderId= async()=>{
       name: "Road Help",
       description: "AI Subscription",
       order_id: oId,
-      handler: function (response) {
+      handler: async function (response) {
         const PaymentVerificationData={
           razorpay_payment_id: response.razorpay_payment_id,
           razorpay_order_id: response.razorpay_order_id,
@@ -158,7 +158,7 @@ const getOrderId= async()=>{
         };
         try{
           const user = JSON.parse(localStorage.getItem("user"));
-          axios.post('http://localhost:8080/payment/verify-start-subscription', PaymentVerificationData, 
+          const response = await axios.post('http://localhost:8080/payment/verify-start-subscription', PaymentVerificationData, 
             {
               headers:{
               "Authorization": "Bearer "+user.token,
@@ -184,10 +184,10 @@ const getOrderId= async()=>{
   return (
   <>
   {processing?<LoadingOverlay/>:""}
-    <div style={cardStyle}>
-        {msg!=null?(<div style={alertDiv}>
+    {msg!=null?(<div style={alertDiv}>
             <h3 style={alertText}>{msg}</h3>
           </div>):""}
+    <div style={cardStyle}>
       <h2 style={headingStyle}>AI Subscription</h2>
       {userSubscriptionDetails!==null? (
         <>
