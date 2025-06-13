@@ -3,10 +3,7 @@ package com.help.service;
 import com.help.dto.*;
 import com.help.email.EmailService;
 import com.help.email.GetMailText;
-import com.help.model.OtpDetails;
-import com.help.model.User;
-import com.help.model.UserReportLog;
-import com.help.model.UserSubscriptionLog;
+import com.help.model.*;
 import com.help.repository.UserAuthDataRepository;
 import com.help.repository.UserReportLogRepository;
 import com.help.repository.UserRepository;
@@ -40,12 +37,16 @@ public class UserService {
     private final GeoService geoService;
     private final UserReportLogRepository userReportLogRepository;
     private final UserSubscriptionLogRepository userSubscriptionLogRepository;
+    private final PostService postService;
+    private final CampaignService campaignService;
+    private final EmergencyPostService emergencyPostService;
     private final ConcurrentHashMap<String, OtpDetails> otpStorage = new ConcurrentHashMap<String, OtpDetails>();
 
     @Autowired
     public UserService(UserRepository userRepository, UserAuthDataRepository userAuthDataRepository,
                        UserValidation userValidation, EmailService emailService, GeoService geoService,
-                       UserReportLogRepository userReportLogRepository, UserSubscriptionLogRepository userSubscriptionLogRepository){
+                       UserReportLogRepository userReportLogRepository, UserSubscriptionLogRepository userSubscriptionLogRepository,
+                       PostService postService, CampaignService campaignService, EmergencyPostService emergencyPostService){
         this.userRepository = userRepository;
         this.userAuthDataRepository = userAuthDataRepository;
         this.userValidation=userValidation;
@@ -53,6 +54,9 @@ public class UserService {
         this.geoService=geoService;
         this.userReportLogRepository=userReportLogRepository;
         this.userSubscriptionLogRepository=userSubscriptionLogRepository;
+        this.postService=postService;
+        this.campaignService=campaignService;
+        this.emergencyPostService=emergencyPostService;
     }
 
     public ServiceResponse<SubscriptionDetails> getUserSubscriptionDetails(){
@@ -80,11 +84,6 @@ public class UserService {
         return new ServiceResponse<>(details);
     }
 
-//    public ServiceResponse<UserSubscriptionLog> createSubscription(){
-//
-//    }
-
-
     public boolean sendRegistrationEmailOTP(String email){
         String updatedEmail=email.replace("\""," ").trim();
         if(!userValidation.isValidEmail(updatedEmail))return false;
@@ -99,14 +98,6 @@ public class UserService {
         if(this.otpStorage.get(otpForVerification.getEmail()).getOtp().compareTo(otpForVerification.getOtp()) != 0) return -2;
         this.otpStorage.remove(otpForVerification.getEmail());
         return 0;
-    }
-
-    public User getUserByAuthId(int authId){
-        return userRepository.getUserByAuthData_AuthId(authId);
-    }
-
-    public User getUserByUsername(String username) {
-        return userRepository.getUserByAuthData_AuthId(userAuthDataRepository.findByUsername(username).get().getAuthId());
     }
 
     public ServiceResponse<UserProfile> updateUser(String uname, User newUser, MultipartFile image) {
@@ -160,8 +151,30 @@ public class UserService {
         return null;
     }
 
-    public void deleteUser(String username) {
+    @Transactional
+    public ServiceResponse<Boolean> deleteUser() {
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional <User> user=userRepository.findByUsername(username);
+        if(user.isEmpty())return new ServiceResponse<>("User not found.", false);
+        ServiceResponse<UserPost> postList = postService.getAllPostsOfUser();
+        List<UserCampaign> campaignList = campaignService.getAllCampaignsOfUser();
+        ServiceResponse<EmergencyPostData> emergencyPostList = emergencyPostService.getAllPostsOfUser();
+        if(!postList.getObjects().isEmpty()) for(UserPost post:postList.getObjects()) postService.deletePost(post.getPostId());
+        if(!campaignList.isEmpty()) for(UserCampaign campaign:campaignList) campaignService.deleteCampaign(campaign.getCampaignId());
+        if(!emergencyPostList.getObjects().isEmpty()) for(EmergencyPostData emergencyPostData:emergencyPostList.getObjects())
+            emergencyPostService.deleteEmergencyPost(emergencyPostData.getEmergencyPostId());
+        deleteUserProfileImage(user.get().getProfileImagePath());
+        userAuthDataRepository.deleteByUsername(username);
+        userSubscriptionLogRepository.deleteByUserId(user.get().getUserId());
+        userRepository.deleteById(user.get().getUserId());
+        return new ServiceResponse<>("User deleted.", true);
+    }
 
+    private boolean deleteUserProfileImage(String profileImagePath){
+        String root=Paths.get("").toAbsolutePath().toString();
+        if(profileImagePath==null || profileImagePath.isEmpty())return true;
+        try{Files.delete(Paths.get(root+"/allMedia"+profileImagePath));}catch (Exception e){e.printStackTrace();return false;}
+        return true;
     }
 
     public ServiceResponse<UserProfile> getUserById(int userId, String uname) {
@@ -218,8 +231,4 @@ public class UserService {
         }
         return new ServiceResponse<>("User reported.", userRepository.findUserProfileForSearchById(userId));
     }
-
-//    public ServiceResponse<Boolean> takeSubscriptionForAi(){
-//
-//    }
 }

@@ -89,16 +89,10 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("/subscription/new")
-    public ResponseEntity<?> subscriptionForAi(){
-
-        return ResponseEntity.status(HttpStatus.OK).body("response");
-    }
-
-    @DeleteMapping("/delete-user")
-    public ResponseEntity<?> deleteUser(@RequestHeader("uname") String uname) {
-
-
-        return ResponseEntity.ok("User deleted successfully");
+    @DeleteMapping("/delete/profile")
+    public ResponseEntity<?> deleteUser() {
+        ServiceResponse<Boolean> response = userService.deleteUser();
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

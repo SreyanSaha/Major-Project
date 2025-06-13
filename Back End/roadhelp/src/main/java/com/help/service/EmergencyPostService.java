@@ -141,17 +141,6 @@ public class EmergencyPostService {
         return new ServiceResponse<>(list.getTotalPages()==0?"No additional emergency posts are found.":"", list);
     }
 
-//    public ServiceResponse<EmergencyPost> getEmergencyPostById(int id) {
-//        Optional<EmergencyPost> post = emergencyPostRepository.findById(id);
-//        return post.map(value -> new ServiceResponse<>("", List.of(value)))
-//                .orElseGet(() -> new ServiceResponse<>("Emergency post not found.", new ArrayList<>()));
-//    }
-
-//    public ServiceResponse<EmergencyPost> searchEmergencyPost(String search) {
-//        List<EmergencyPost> posts = emergencyPostRepository.searchAllEmergencyPost(search);
-//        return new ServiceResponse<>(posts.isEmpty() ? "No emergency posts found for search: " + search : "", posts);
-//    }
-
     public ServiceResponse<EmergencyPostData> getAllPostsOfUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         List<EmergencyPostData> list = emergencyPostRepository.findAllPostsOfUser(username);

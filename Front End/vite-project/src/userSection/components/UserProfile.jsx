@@ -138,9 +138,7 @@ export default function UserProfile() {
     try{
       setProcessing(true);
       const user = JSON.parse(localStorage.getItem("user"));
-      const formData=new FormData();
-      formData.append("uname",user.username);
-      const response = await axios.post("http://localhost:8080/user/delete-user",formData,
+      const response = await axios.delete("http://localhost:8080/user/delete/profile",
         {
           headers:{
               "Authorization": "Bearer "+user.token,
@@ -148,9 +146,20 @@ export default function UserProfile() {
           }
         }
       );
-            
+      if(response.status===200 && response.data.object){
+        localStorage.removeItem("user");
+        updateMsg("Your profile deleted.");
+        setProcessing(false);
+        navigate("/user/signup");
+      }
+      else if(response.status===202){
+        updateMsg(response.data.msg);
+        setProcessing(false);
+      }
     }catch(exception){
-
+      console.log(exception);
+      updateMsg("Failed to delete your profile.");
+      setProcessing(false);
     }
   };
 
@@ -508,7 +517,8 @@ export default function UserProfile() {
       {confirmDelete && (
         <div style={styles.confirmOverlay}>
           <div style={styles.confirmBox}>
-            <div style={styles.confirmText}>Are you sure you want to delete your profile?</div>
+            <div style={styles.confirmText}>
+              Deleting your profile is permanent and cannot be undone. Are you sure you want to continue?</div>
             <div style={styles.confirmBtns}>
               <button style={styles.confirmYesBtn} onClick={handleDelete}>
                 Yes
