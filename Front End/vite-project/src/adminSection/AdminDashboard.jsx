@@ -1,87 +1,82 @@
-import React, { useState , useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import EmergencyPanel from './components/AdminEmergencyComponent';
-import AssignVolunteers from './components/AssignVolunteersComponent';
 import ManageCampaigns from './components/AdminCampaignsComponent';
-const issues = [
-  {
-    id: 1,
-    name: 'John Doe',
-    personId: 'USR123',
-    location: 'Sector 21, Noida',
-    link: 'https://www.google.com/maps?q=Sector+21,+Noida',
-    description: 'Broken road near sector 21.',
-    images: [
-      'https://via.placeholder.com/300x120?text=Road+Image+1',
-      'https://via.placeholder.com/300x120?text=Road+Image+2',
-    ],
-  },
-  {
-    id: 3,
-    name: 'Jane Smith',
-    personId: 'USR125',
-    location: 'Andheri East, Mumbai',
-    link: 'https://www.google.com/maps?q=Andheri+East,+Mumbai',
-    description: 'Potholes causing frequent vehicle breakdowns.',
-    images: [
-      'https://via.placeholder.com/300x120?text=Pothole+1',
-      'https://via.placeholder.com/300x120?text=Pothole+2',
-      'https://via.placeholder.com/300x120?text=Pothole+3',
-    ],
-  },
-  {
-    id: 4,
-    name: 'Bob Lee',
-    personId: 'USR126',
-    location: 'Patia, Bhubaneswar',
-    link: 'https://www.google.com/maps?q=Patia,+Bhubaneswar',
-    description: 'Water logging near bus stop.',
-    images: [
-      'https://via.placeholder.com/300x120?text=Water+Log+1',
-      'https://via.placeholder.com/300x120?text=Water+Log+2',
-    ],
-  },
-];
+import AdminDefaultDetails from './components/AdminDefaultDetails';
+import axios from "axios";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [msg, updateMsg] = useState(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [activeMenu, setActiveMenu] = useState("Dashboard");
-  const [imageIndexes, setImageIndexes] = useState(
-    issues.reduce((acc, issue) => {
-      acc[issue.id] = 0;
-      return acc;
-    }, {})
-  );
+  const [component, setComponents] = useState(<AdminDefaultDetails/>);
+
 
   useEffect(() => {
-      try {
-        const admin = JSON.parse(localStorage.getItem("admin"));
-        console.log("Fetched amdin's username:", admin?.username);
-        if (admin?.username && admin?.token && admin?.role === 1) setAuthenticated(true);
-        else navigate("/admin/login");
-      } catch (err) {
-        console.error("Error parsing user from localStorage:", err);
-        updateMsg("Failed to fetch your data, please login again.");
-        navigate("/admin/login");
-      }
-    }, [navigate]);
+    try {
+      const admin = JSON.parse(localStorage.getItem("admin"));
+      if (admin?.username && admin?.token && admin?.role === 1) {
+        setAuthenticated(true);
+      } else navigate("/admin/login");
+    } catch (err) {
+      console.error("Error parsing user from localStorage:", err);
+      navigate("/admin/login");
+    }
+  }, [navigate]);
 
-  const handleImageChange = (id, direction) => {
-    setImageIndexes((prev) => {
-      const totalImages = issues.find((issue) => issue.id === id).images.length;
-      const newIndex = (prev[id] + direction + totalImages) % totalImages;
-      return { ...prev, [id]: newIndex };
-    });
+  const fetchAllPosts = async () => {
+    try {
+      setProcessing(true);
+      const admin = JSON.parse(localStorage.getItem("admin"));
+      const response = await axios.get("http://localhost:8080/admin/all-posts", {
+        headers: {
+          "Authorization": "Bearer " + admin.token,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200) {
+        setProcessing(false);
+        setIssues(response.data.objects);
+      } else if (response.status === 202) {
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    } catch (exception) {
+      console.log(exception);
+      navigate("/admin/login");
+    }
   };
 
-  const handleLogout=()=>{
+  const handleLogout = () => {
     localStorage.removeItem("admin");
     setAuthenticated(false);
     navigate("/admin/login");
   };
 
   const styles = {
+    searchInput: {
+      padding: "10px",
+      width: "85%",
+      borderRadius: "5px",
+      border: "1px solid #ccc",
+      marginRight: "10px",
+      marginBottom:"10px",
+    },
+    searchButton: {
+      padding: "10px 15px",
+      backgroundColor: "#1b3c74",
+      color: "#fff",
+      border: "none",
+      borderRadius: "5px",
+      cursor: "pointer",
+      marginBottom:"10px",
+    },
+    imageGroup: {
+    display: 'flex',
+    gap: '10px',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
     dashboardContainer: {
       display: 'flex',
       height: '100vh',
@@ -122,174 +117,203 @@ export default function AdminDashboard() {
     },
     cardsGrid: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+      gridTemplateColumns: 'repeat(1, minmax(400px, 1fr))',
       gap: '20px',
     },
     card: {
       backgroundColor: 'white',
       borderRadius: '12px',
-      padding: '15px',
+      padding: '20px',
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-      transition: 'transform 0.3s, box-shadow 0.3s',
+      border: '1px solid #e5e7eb',
     },
-    cardHover: {
-      transform: 'scale(1.02)',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+    cardHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '15px',
+      borderBottom: '2px solid #f3f4f6',
+      paddingBottom: '10px',
     },
     cardHeading: {
       color: '#1e3a8a',
       fontWeight: 'bold',
+      fontSize: '18px',
+      margin: 0,
+    },
+    statusBadge: (status) => ({
+      padding: '4px 12px',
+      borderRadius: '20px',
+      fontSize: '12px',
+      fontWeight: 'bold',
+      color: status.color,
+      backgroundColor: status.bg,
+    }),
+    imageSection: {
+      marginBottom: '15px',
+    },
+    imageContainer: {
+      position: 'relative',
       marginBottom: '10px',
     },
     image: {
-      width: '100%',
-      height: '120px',
+      width: '235px',
+      height: '250px',
       objectFit: 'cover',
-      borderRadius: '6px',
-      marginBottom: '10px',
+      borderRadius: '8px',
     },
     imageControls: {
       display: 'flex',
       justifyContent: 'space-between',
-      marginBottom: '10px',
+      alignItems: 'center',
+      marginTop: '8px',
     },
     arrowBtn: {
       backgroundColor: '#1e3a8a',
       color: 'white',
       border: 'none',
-      borderRadius: '4px',
-      padding: '4px 10px',
-      cursor: 'pointer',
-    },
-    paragraph: {
-      margin: '5px 0',
-    },
-    link: {
-      color: '#2563eb',
-      textDecoration: 'underline',
-    },
-    thumbs: {
-      fontSize: '20px',
-      margin: '10px 0',
-    },
-    dropdown: {
-      width: '100%',
-      padding: '6px',
-      border: '1px solid #ccc',
       borderRadius: '6px',
-      marginTop: '5px',
+      padding: '6px 12px',
+      cursor: 'pointer',
+      fontSize: '14px',
+    },
+    imageCounter: {
+      fontSize: '14px',
+      color: '#6b7280',
+      fontWeight: '500',
+    },
+    infoSection: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '10px',
+      marginBottom: '15px',
+    },
+    infoItem: {
+      marginBottom: '8px',
+    },
+    infoLabel: {
+      fontWeight: 'bold',
+      color: '#374151',
+      fontSize: '14px',
+    },
+    infoValue: {
+      color: '#6b7280',
+      fontSize: '14px',
+      marginTop: '2px',
+    },
+    locationSection: {
+      backgroundColor: '#f9fafb',
+      padding: '12px',
+      borderRadius: '8px',
+      marginBottom: '15px',
+    },
+    locationTitle: {
+      fontWeight: 'bold',
+      color: '#1e3a8a',
+      marginBottom: '8px',
+      fontSize: '14px',
+    },
+    engagementStats: {
+      display: 'flex',
+      justifyContent: 'space-around',
+      backgroundColor: '#f3f4f6',
+      padding: '10px',
+      borderRadius: '8px',
+      marginBottom: '15px',
+    },
+    stat: {
+      textAlign: 'center',
+    },
+    statValue: {
+      fontWeight: 'bold',
+      fontSize: '18px',
+      color: '#1e3a8a',
+    },
+    statLabel: {
+      fontSize: '12px',
+      color: '#6b7280',
+    },
+    actionButtons: {
+      display: 'flex',
+      gap: '10px',
+      marginTop: '15px',
+    },
+    actionBtn: (bgColor) => ({
+      flex: 1,
+      padding: '8px 12px',
+      border: 'none',
+      borderRadius: '6px',
+      color: 'white',
+      backgroundColor: bgColor,
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: '500',
+    }),
+    afterWorkSection: {
+      marginTop: '15px',
+      padding: '12px',
+      backgroundColor: '#ecfdf5',
+      borderRadius: '8px',
+      border: '1px solid #10b981',
+    },
+    alertDiv: {
+      backgroundColor: '#fef2f2',
+      border: '1px solid #fca5a5',
+      borderRadius: '8px',
+      padding: '12px',
+      marginBottom: '20px',
+    },
+    alertText: {
+      color: '#dc2626',
+      margin: 0,
     },
   };
 
-  const defaultDetails=(<div style={styles.mainContent}>
-    <h1 style={styles.mainHeading}>Road Management Dashboard</h1>
-    <div style={styles.cardsGrid}>
-      {issues.map((issue) => (
-        <div
-          key={issue.id}
-          style={styles.card}
-          onMouseOver={(e) => {
-            Object.assign(e.currentTarget.style, styles.cardHover);
-          }}
-          onMouseOut={(e) => {
-            Object.assign(e.currentTarget.style, styles.card);
-          }}
-        >
-          <h3 style={styles.cardHeading}>Issue #{issue.id}</h3>
-          <div style={styles.imageControls}>
-            <button
-              style={styles.arrowBtn}
-              onClick={() => handleImageChange(issue.id, -1)}
-            >
-              ◀
-            </button>
-            <button
-              style={styles.arrowBtn}
-              onClick={() => handleImageChange(issue.id, 1)}
-            >
-              ▶
-            </button>
-          </div>
-          <img
-            src={issue.images[imageIndexes[issue.id]]}
-            alt={`Issue ${issue.id}`}
-            style={styles.image}
-          />
-          <p style={styles.paragraph}>
-            <strong>Name:</strong> {issue.name}
-          </p>
-          <p style={styles.paragraph}>
-            <strong>Person ID:</strong> {issue.personId}
-          </p>
-          <p style={styles.paragraph}>
-            <strong>Location:</strong>{' '}
-            <a
-              href={issue.link}
-              target="_blank"
-              rel="noreferrer"
-              style={styles.link}
-            >
-              {issue.location}
-            </a>
-          </p>
-          <p style={styles.paragraph}>
-            <strong>Description:</strong> {issue.description}
-          </p>
-          <div style={styles.thumbs}>👍 👎</div>
-          <label>
-            <strong>Status:</strong>
-          </label>
-          <select style={styles.dropdown}>
-            <option>Pending</option>
-            <option>In Progress</option>
-            <option>Completed</option>
-          </select>
-        </div>
-      ))}
-    </div>
-    </div>);
-  const [component, setComponents] = useState(defaultDetails);
-  
-  const chnageComponents=(item)=>{
-    switch(item){
-      case "Dashboard":setComponents(defaultDetails);
-      break;
-      case "Assign Volunteers":setComponents(AssignVolunteers);
-      break;
-      case "Emergency Issues":setComponents(EmergencyPanel);
-      break;
-      case "Manage Campaigns":setComponents(ManageCampaigns);
-      break;
-      case "":
-      break;
+  const changeComponents = (item) => {
+    switch (item) {
+      case "Manage Posts":
+        setComponents(<AdminDefaultDetails/>);
+        break;
+      case "Emergency Issues":
+        setComponents(EmergencyPanel);
+        break;
+      case "Manage Campaigns":
+        setComponents(ManageCampaigns);
+        break;
     }
-  }
+  };
+
   const menuItems = [
-    'Dashboard',
-    'Assign Volunteers',
-    'Emergency Issues',
+    'Manage Posts',
     'Manage Campaigns',
     'User Access Control',
-    'Push Notification',
-    'Communication Panel',
-    'Emergency Panels',
+    'Admin Access Control',
+    'Profile',
     'Logout',
   ];
+
   if (!authenticated) return null;
+
   return (
     <div style={styles.dashboardContainer}>
       <div style={styles.sidebar}>
         <h2 style={styles.sidebarHeading}>Admin Dashboard</h2>
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {menuItems.map((item) => (
-              <li key={item} style={styles.listItem(activeMenu === item)}
+            <li
+              key={item}
+              style={styles.listItem(activeMenu === item)}
               onClick={() => {
-                if(item==="Logout")handleLogout();
-                else{setActiveMenu(item);chnageComponents(item);}}}
-              onMouseOver={(e) =>(e.currentTarget.style.backgroundColor = '#2563eb')}
-              onMouseOut={(e) =>(e.currentTarget.style.backgroundColor = activeMenu === item ? '#3b82f6' : 'transparent')}
+                if (item === "Logout") handleLogout();
+                else {
+                  setActiveMenu(item);
+                  changeComponents(item);
+                }
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = activeMenu === item ? '#3b82f6' : 'transparent')}
             >
-            {item}
+              {item}
             </li>
           ))}
         </ul>

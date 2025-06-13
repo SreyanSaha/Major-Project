@@ -371,4 +371,14 @@ public class PostService {
         Page<PostData> list = postRepository.findAllBySearchString(searchString, pageRequest);
         return new ServiceResponse<>(list.getTotalPages()==0?"No posts are found.":"", list);
     }
+
+    public ServiceResponse<FullPostData> getSearchedPosts(String searchString){
+        List<FullPostData> list = postRepository.searchPosts(searchString);
+        return new ServiceResponse<>(list.isEmpty()?"No posts are found.":"", list);
+    }
+
+    public ServiceResponse<FullPostData> getAllNonCompletedPosts() {
+        List<FullPostData> response = postRepository.findAllNonCompletedPosts();
+        return new ServiceResponse<>(response.isEmpty()?"No non-complete posts found.":"", response);
+    }
 }

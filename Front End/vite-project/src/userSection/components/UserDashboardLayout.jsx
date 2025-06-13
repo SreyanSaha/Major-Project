@@ -482,6 +482,7 @@ const getTrustScoreStyle = (score) => {
       <span style={styles.downvote}>⮟ {post.downVoteCount}</span>
       <span style={styles.comments}>✉ {post.commentCount}</span>
       <span style={styles.reports}>⚠️ {post.postReports}</span>
+      <div style={styles.title}>{post.postStatus===-1?"Under Review":post.postStatus===0?"Work In Progress":"Completed"}</div>
       </div>
 
       </div>

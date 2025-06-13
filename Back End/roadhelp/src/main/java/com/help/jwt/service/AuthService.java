@@ -120,7 +120,6 @@ public class AuthService {
 
     public boolean canAdminLogin(AuthRequest request){
         Admin admin=adminRepository.findByUsername(request.getUsername());
-        System.out.println(admin.getAdminRole() != -1 && admin.getAdminStatus() != 0);
         return admin.getAdminRole() != -1 && admin.getAdminStatus() != 0;
     }
 

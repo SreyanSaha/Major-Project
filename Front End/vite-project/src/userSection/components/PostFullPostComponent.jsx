@@ -714,6 +714,7 @@ addressLine: {
 
       <div style={styles.title}>{post.postTitle}</div>
       <div style={styles.description}>{post.postDescription}</div>
+      <div style={styles.title}>{post.postStatus===-1?"Under Review":post.postStatus===0?"Work In Progress":"Completed"}</div>
       <div style={styles.imagesGrid}>
 
       {postImages.map((path, index) => {
@@ -728,7 +729,7 @@ addressLine: {
         );
       })}
 
-      {imagesAfterWork[0] === null?(
+      {imagesAfterWork[0] == null?(
       <div style={styles.dividerSlide}>
         🔧After work images are not available yet.🔧
       </div>
@@ -738,12 +739,12 @@ addressLine: {
 
       {imagesAfterWork.map((path, index) => {
         const isLastOdd = imagesAfterWork.length % 2 !== 0 && index === imagesAfterWork.length - 1;
-        <img
+        return (<img
           key={`after-${index}`}
           src={path!==undefined && path!==null?`http://localhost:8080/media${path.replace("\\", "/")}`:"After work Images are not available yet."}
-          alt={`After work ${index + 1}`}
+          alt={`After work Images are not available yet. ${index + 1}`}
           style={isLastOdd ? { ...styles.postImage, ...styles.fullWidthImage } : styles.postImage}
-        />
+        />)
       })}
       </div>
 

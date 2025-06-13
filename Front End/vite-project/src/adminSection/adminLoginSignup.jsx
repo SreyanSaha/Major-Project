@@ -564,19 +564,7 @@ useEffect(() => {
         placeholder="Enter employee ID"
         required
       />
-
-            <button
-              type="button"
-              style={styles.button}
-              onClick={handleLiveLocation}
-              onMouseOver={(e) => Object.assign(e.target.style, styles.buttonHover)}
-              onMouseOut={(e) => Object.assign(e.target.style, styles.button)}
-            >
-              {useLiveLocation ? "Location Added ✅" : "Add Live Location"}
-            </button>
-
-            {!useLiveLocation && (
-              <>
+             
                 <input
                   type="text"
                   placeholder="Street Address"
@@ -607,8 +595,8 @@ useEffect(() => {
                   onChange={(e) => setZip(e.target.value )}
                   style={styles.input}
                 />
-              </>
-            )}
+ 
+          
             <button
               type="submit"
               style={styles.button}
