@@ -1,5 +1,6 @@
 package com.help.repository;
 
+import com.help.dto.ServiceResponse;
 import com.help.dto.UserProfile;
 import com.help.dto.UserSearchData;
 import com.help.model.User;
@@ -77,4 +78,42 @@ public interface UserRepository extends JpaRepository<User, Integer> {
              u.civicTrustScore, u.userStatus, u.signupDateTime
 """)
     Page<UserSearchData> searchUser(Pageable pageable, @Param("firstName") String firstName, @Param("lastName") String lastName);
+
+    @Query("SELECT new com.help.dto.UserProfile(u.userId, u.userFirstName, u.userLastName, u.userEmailId, u.userPhoneNumber, u.profileImagePath, u.civicTrustScore, u.userStatus, " +
+            "u.timeOutEndTime, u.street, u.city, u.state, u.zipCode, u.country, u.signupDateTime, u.userReports) FROM User u ORDER BY u.userReports DESC")
+    List<UserProfile> findUserProfiles();
+
+
+    @Query("""
+    SELECT new com.help.dto.UserProfile(
+        u.userId,
+        u.userFirstName,
+        u.userLastName,
+        u.userEmailId,
+        u.userPhoneNumber,
+        u.profileImagePath,
+        u.civicTrustScore,
+        u.userStatus,
+        u.timeOutEndTime,
+        u.street,
+        u.city,
+        u.state,
+        u.zipCode,
+        u.country,
+        u.signupDateTime,
+        u.userReports
+    )
+    FROM User u
+    WHERE LOWER(u.userFirstName) LIKE LOWER(CONCAT('%', :searchString, '%'))
+       OR LOWER(u.userLastName) LIKE LOWER(CONCAT('%', :searchString, '%'))
+       OR LOWER(u.userEmailId) LIKE LOWER(CONCAT('%', :searchString, '%'))
+       OR STR(u.userPhoneNumber) LIKE CONCAT('%', :searchString, '%')
+       OR LOWER(u.street) LIKE LOWER(CONCAT('%', :searchString, '%'))
+       OR LOWER(u.city) LIKE LOWER(CONCAT('%', :searchString, '%'))
+       OR LOWER(u.state) LIKE LOWER(CONCAT('%', :searchString, '%'))
+       OR LOWER(u.zipCode) LIKE LOWER(CONCAT('%', :searchString, '%'))
+       OR LOWER(u.country) LIKE LOWER(CONCAT('%', :searchString, '%'))
+""")
+    List<UserProfile> searchUserProfiles(@Param("searchString") String searchString);
+
 }

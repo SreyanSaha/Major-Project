@@ -1,16 +1,10 @@
 package com.help.controller;
 
-import com.help.dto.FullPostData;
-import com.help.dto.PostData;
-import com.help.dto.PostStatusWrapper;
-import com.help.dto.ServiceResponse;
+import com.help.dto.*;
 import com.help.jwt.service.CustomUserDetailsService;
 import com.help.jwt.service.JwtService;
 import com.help.jwt.service.UserAuthDataService;
-import com.help.service.AdminService;
-import com.help.service.EmergencyPostService;
-import com.help.service.PostService;
-import com.help.service.UserService;
+import com.help.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -19,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.PublicKey;
 import java.util.List;
 
 @RestController
@@ -28,14 +23,16 @@ public class AdminController {
     private final UserService userService;
     private final EmergencyPostService emergencyPostService;
     private final AdminService adminService;
+    private final CampaignService campaignService;
 
     @Autowired
     public AdminController(PostService postService, UserService userService,
-                           EmergencyPostService emergencyPostService, AdminService adminService) {
+                           EmergencyPostService emergencyPostService, AdminService adminService, CampaignService campaignService) {
         this.postService = postService;
         this.userService = userService;
         this.emergencyPostService = emergencyPostService;
         this.adminService = adminService;
+        this.campaignService=campaignService;
     }
 
     @GetMapping("/all-posts")
@@ -66,20 +63,109 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-//    @GetMapping("/profile")
-//    public ResponseEntity<?> getAdminProfile(){
-//
-//    }
-//
-//    @PostMapping("/update/post/status")
-//    public ResponseEntity<?> updatePostStatus(){
-//
-//    }
-//
-//    @PostMapping("/delete/post/{postId}")
-//    public ResponseEntity<?> deletePost(){
-//
-//    }
+    @GetMapping("/all/un-approved/campaigns")
+    public ResponseEntity<?> getAllUnApprovedCampaigns(){
+        ServiceResponse<FullCampaignData> response=campaignService.getAllUnApprovedCampaigns();
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
+    @PostMapping("/approve/campaign")
+    public ResponseEntity<?> approveCampaign(@RequestBody int campaignId){
+        ServiceResponse<Boolean> response=adminService.approveCampaign(campaignId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/delete/campaign")
+    public ResponseEntity<?> deleteCampaign(@RequestBody int campaignId){
+        ServiceResponse<Boolean> response=campaignService.deleteCampaign(campaignId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/reject/campaign")
+    public ResponseEntity<?> rejectCampaign(@RequestBody int campaignId){
+        ServiceResponse<Boolean> response=adminService.rejectCampaign(campaignId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/search/campaigns/{searchString}")
+    public ResponseEntity<?> searchCampaign(@PathVariable String searchString){
+        ServiceResponse<FullCampaignData> response=adminService.getSearchedCampaigns(searchString);
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getAdminProfile(){
+        ServiceResponse<AdminProfile> response=adminService.getProfile();
+        if(response.getObject()==null)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/all-users")
+    public ResponseEntity<?> getAllUsers(){
+        ServiceResponse<UserProfile> response = adminService.getAllUserProfiles();
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/time-out/user")
+    public ResponseEntity<?> timeOutUser(@RequestBody int userId){
+        ServiceResponse<Boolean> response = adminService.timeOutUser(userId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/remove/time-out/user")
+    public ResponseEntity<?> removeTimeOutUser(@RequestBody int userId){
+        ServiceResponse<Boolean> response = adminService.removeTimeOutUser(userId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @DeleteMapping("/delete/user/{userId}")
+    public ResponseEntity<?> deleteUser(@PathVariable int userId){
+        ServiceResponse<Boolean> response = userService.deleteUser(userId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/search/all-users/{searchString}")
+    public ResponseEntity<?> searchAllUsers(@PathVariable String searchString){
+        ServiceResponse<UserProfile> response = adminService.getSearchedUsers(searchString);
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/get/all-admins")
+    public ResponseEntity<?> getAllAdmins(){
+        ServiceResponse<AdminProfile> response = adminService.getAllAdmins();
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/approve/admin")
+    public ResponseEntity<?> approveAdmin(@RequestBody int adminId, @RequestBody int adminRole){
+        ServiceResponse<Boolean> response = adminService.approveAdmin(adminId, adminRole);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/reject/admin")
+    public ResponseEntity<?> getAllAdmins(@RequestBody int adminId){
+        ServiceResponse<Boolean> response = adminService.rejectAdmin(adminId);
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/search/admins/{searchString}")
+    public ResponseEntity<?> searchAllAdmins(@PathVariable String searchString){
+        ServiceResponse<AdminProfile> response = adminService.getSearchedAdmins(searchString);
+        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
 }

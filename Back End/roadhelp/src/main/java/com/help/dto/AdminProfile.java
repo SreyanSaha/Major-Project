@@ -1,64 +1,54 @@
-package com.help.model;
-import jakarta.persistence.*;
+package com.help.dto;
+
 import java.time.LocalDateTime;
 
-@Entity
-public class Admin {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class AdminProfile {
     private int adminId;
     private short adminRole;//1 -> admin, 2 -> super admin
-    private short adminStatus;//0 -> inactive or timeout, 1 -> active
+    private short adminStatus;//0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
     private LocalDateTime signupDateTime;
     private LocalDateTime timeOutEndTime;
-    @Column(nullable = false)
     private String adminFirstName;
-    @Column(nullable = false)
     private String adminLastName;
-    @Column(nullable = false)
     private String adminEmailId;
-    @Column(nullable = false)
     private long adminPhoneNumber;
-    @Column(nullable = false)
     private String profileImagePath;
     private Double latitude;
     private Double longitude;
-    @Column(nullable = false)
     private String street;
-    @Column(nullable = false)
     private String city;
-    @Column(nullable = false)
     private String state;
-    @Column(nullable = false)
     private String country;
-    @Column(nullable = false)
     private String zipCode;
-    @Column(nullable = false)
     private String adminDepartment;//Public Works, Electricity, Water Treatment, Road Maintenance, Waste Management
-    @Column(nullable = false)
     private String adminEmployeeId;//Company Name (Dropdown - Auto-fills based on Sector)
-    @Column(nullable = false)
     private String adminCompanyName;
-    @OneToOne(mappedBy = "admin", cascade = CascadeType.ALL)
-    private UserAuthData authData;
 
-    public Admin() {}
-
-    public UserAuthData getAuthData() {
-        return authData;
+    public AdminProfile(int adminId, short adminRole, short adminStatus, LocalDateTime signupDateTime, LocalDateTime timeOutEndTime, String adminFirstName,
+                        String adminLastName, String adminEmailId, long adminPhoneNumber, String profileImagePath, Double latitude, Double longitude, String street,
+                        String city, String state, String country, String zipCode, String adminDepartment, String adminEmployeeId, String adminCompanyName) {
+        this.adminId = adminId;
+        this.adminRole = adminRole;
+        this.adminStatus = adminStatus;
+        this.signupDateTime = signupDateTime;
+        this.timeOutEndTime = timeOutEndTime;
+        this.adminFirstName = adminFirstName;
+        this.adminLastName = adminLastName;
+        this.adminEmailId = adminEmailId;
+        this.adminPhoneNumber = adminPhoneNumber;
+        this.profileImagePath = profileImagePath;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.street = street;
+        this.city = city;
+        this.state = state;
+        this.country = country;
+        this.zipCode = zipCode;
+        this.adminDepartment = adminDepartment;
+        this.adminEmployeeId = adminEmployeeId;
+        this.adminCompanyName = adminCompanyName;
     }
 
-    public void setAuthData(UserAuthData authData) {
-        this.authData = authData;
-    }
-
-    @PrePersist
-    protected void onCreate(){
-        this.adminRole=-1;//0 -> local admin, 1 -> admin, 2 -> super admin
-        this.adminStatus=0;//0 -> inactive or timeout, 1 -> active, 2 -> delete
-        this.signupDateTime=LocalDateTime.now();
-        this.country="India";
-    }
     public int getAdminId() {
         return adminId;
     }

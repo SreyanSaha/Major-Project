@@ -7,8 +7,8 @@ public class UserProfile {
     private String userFirstName, userLastName, userEmailId;
     private Long userPhoneNumber;
     private String profileImagePath;
-    private int civicTrustScore;
-    private short userStatus;// 0 -> inactive or timeout, 1 -> active, 2 -> delete, 3 -> blacklisted
+    private int civicTrustScore, userReports;
+    private short userStatus;// 0 -> inactive or timeout, 1 -> active, 2 -> delete
     private LocalDateTime timeOutEndTime;
     private LocalDateTime signupDateTime;
     private String street,city,state,zipCode,country;
@@ -33,8 +33,30 @@ public class UserProfile {
         this.signupDateTime = signupDateTime;
     }
 
+    public UserProfile(int userId, String userFirstName, String userLastName, String userEmailId, Long userPhoneNumber,
+                       String profileImagePath, int civicTrustScore, short userStatus, LocalDateTime timeOutEndTime, String street,
+                       String city, String state, String zipCode, String country, LocalDateTime signupDateTime, int userReports) {
+        this.userId = userId;
+        this.userFirstName = userFirstName;
+        this.userLastName = userLastName;
+        this.userEmailId = userEmailId;
+        this.userPhoneNumber = userPhoneNumber;
+        this.profileImagePath = profileImagePath;
+        this.civicTrustScore = civicTrustScore;
+        this.userStatus = userStatus;
+        this.timeOutEndTime = timeOutEndTime;
+        this.street = street;
+        this.city = city;
+        this.state = state;
+        this.zipCode = zipCode;
+        this.country = country;
+        this.signupDateTime = signupDateTime;
+        this.userReports=userReports;
+    }
+
     public UserProfile(int userId, String userFirstName, String userLastName, String profileImagePath,
-                       int civicTrustScore, short userStatus, LocalDateTime timeOutEndTime, String city, String state, String country, LocalDateTime signupDateTime) {
+                       int civicTrustScore, short userStatus, LocalDateTime timeOutEndTime, String city, String state,
+                       String country, LocalDateTime signupDateTime) {
         this.userId = userId;
         this.userFirstName = userFirstName;
         this.userLastName = userLastName;
@@ -46,6 +68,14 @@ public class UserProfile {
         this.state = state;
         this.country = country;
         this.signupDateTime = signupDateTime;
+    }
+
+    public int getUserReports() {
+        return userReports;
+    }
+
+    public void setUserReports(int userReports) {
+        this.userReports = userReports;
     }
 
     public LocalDateTime getSignupDateTime() {

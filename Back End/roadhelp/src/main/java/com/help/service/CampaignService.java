@@ -257,4 +257,19 @@ public class CampaignService {
         Page<CampaignPostData> list = campaignRepository.findAllBySearchString(searchString, pageRequest);
         return new ServiceResponse<>(list.getTotalPages()==0?"No campaigns are found.":"", list);
     }
+
+    public ServiceResponse<FullCampaignData> getAllUnApprovedCampaigns() {
+        List<FullCampaignData> response = campaignRepository.findAllCampaigns();
+        return new ServiceResponse<>(response.isEmpty() ? "" : "No campaigns found.", response);
+    }
+
+    @Transactional
+    public ServiceResponse<Boolean> completeCampaigns(int campaignId) {
+        if(!campaignValidation.isValidNumeric(Integer.toString(campaignId)))return new ServiceResponse<>("Invalid campaign Id.", false);
+        Optional<Campaign> campaign = campaignRepository.findById(campaignId);
+        if(campaign.get().getStatus()!=0)return new ServiceResponse<>("Cannot change the status of the campaign.", false);
+        campaign.get().setStatus((short) 1);
+        campaignRepository.save(campaign.get());
+        return new ServiceResponse<>("Campaign completed.", true);
+    }
 }

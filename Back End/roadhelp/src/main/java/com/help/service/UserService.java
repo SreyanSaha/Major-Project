@@ -152,6 +152,25 @@ public class UserService {
     }
 
     @Transactional
+    public ServiceResponse<Boolean> deleteUser(int userId) {
+        if(!userValidation.isValidNumeric(Integer.toString(userId)))return new ServiceResponse<>("Invalid user id.", false);
+        Optional <User> user=userRepository.findById(userId);
+        if(user.isEmpty())return new ServiceResponse<>("User not found.", false);
+        ServiceResponse<UserPost> postList = postService.getAllPostsOfUser();
+        List<UserCampaign> campaignList = campaignService.getAllCampaignsOfUser();
+        ServiceResponse<EmergencyPostData> emergencyPostList = emergencyPostService.getAllPostsOfUser();
+        if(!postList.getObjects().isEmpty()) for(UserPost post:postList.getObjects()) postService.deletePost(post.getPostId());
+        if(!campaignList.isEmpty()) for(UserCampaign campaign:campaignList) campaignService.deleteCampaign(campaign.getCampaignId());
+        if(!emergencyPostList.getObjects().isEmpty()) for(EmergencyPostData emergencyPostData:emergencyPostList.getObjects())
+            emergencyPostService.deleteEmergencyPost(emergencyPostData.getEmergencyPostId());
+        deleteUserProfileImage(user.get().getProfileImagePath());
+        userAuthDataRepository.deleteByUsername(userAuthDataRepository.findByUser_UserId(userId).get().getUsername());
+        userSubscriptionLogRepository.deleteByUserId(user.get().getUserId());
+        userRepository.deleteById(user.get().getUserId());
+        return new ServiceResponse<>("User deleted.", true);
+    }
+
+    @Transactional
     public ServiceResponse<Boolean> deleteUser() {
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
         Optional <User> user=userRepository.findByUsername(username);

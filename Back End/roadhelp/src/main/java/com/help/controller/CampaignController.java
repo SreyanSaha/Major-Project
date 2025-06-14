@@ -90,4 +90,11 @@ public class CampaignController {
         if(response.getObject().getTotalPages()==0)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @PostMapping("/completed")
+    public ResponseEntity<?> completeCampaign(@RequestBody int campaignId){
+        ServiceResponse<Boolean> response=campaignService.completeCampaigns(campaignId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

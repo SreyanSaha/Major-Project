@@ -99,7 +99,7 @@ public class AuthService {
         String path=saveAdminProfileImage(profileImage);
         if(path==null)return "Failed to upload profile image.";
         userAuthData.setUser(null);
-        admin.setProfileImagePath(path);
+        admin.setProfileImagePath(path.replace(Paths.get("").toAbsolutePath().toString()+"\\allMedia",""));
         userAuthData.setAdmin(adminRepository.save(admin));
         userAuthDataService.saveUser(userAuthData);
         return response;
@@ -119,7 +119,7 @@ public class AuthService {
     }
 
     public boolean canAdminLogin(AuthRequest request){
-        Admin admin=adminRepository.findByUsername(request.getUsername());
+        Admin admin=adminRepository.findByUsername(request.getUsername()).get();
         return admin.getAdminRole() != -1 && admin.getAdminStatus() != 0;
     }
 

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import ManageCampaigns from './components/AdminCampaignsComponent';
 import AdminDefaultDetails from './components/AdminDefaultDetails';
+import AdminProfileCard from './components/AdminProfile';
+import UserDirectory from './components/AdminUserComponent';
+import AdminProfileList from './components/AdminManagementComponent';
 import axios from "axios";
 
 export default function AdminDashboard() {
@@ -271,15 +274,17 @@ export default function AdminDashboard() {
 
   const changeComponents = (item) => {
     switch (item) {
-      case "Manage Posts":
-        setComponents(<AdminDefaultDetails/>);
-        break;
-      case "Emergency Issues":
-        setComponents(EmergencyPanel);
-        break;
-      case "Manage Campaigns":
-        setComponents(ManageCampaigns);
-        break;
+      case "Manage Posts":setComponents(<AdminDefaultDetails/>);
+      break;
+      case "Manage Campaigns":setComponents(<ManageCampaigns/>);
+      break;
+      case "Profile":setComponents(<AdminProfileCard/>);
+      break;
+      case "User Access Control":setComponents(<UserDirectory/>);
+      break;
+      case "Admin Access Control":setComponents(<AdminProfileList/>);
+      break;
+        
     }
   };
 
