@@ -54,7 +54,7 @@ public class Admin {
 
     @PrePersist
     protected void onCreate(){
-        this.adminRole=-1;//0 -> local admin, 1 -> admin, 2 -> super admin
+        this.adminRole=-1;//1 -> admin, 2 -> super admin
         this.adminStatus=0;//0 -> inactive or timeout, 1 -> active, 2 -> delete
         this.signupDateTime=LocalDateTime.now();
         this.country="India";

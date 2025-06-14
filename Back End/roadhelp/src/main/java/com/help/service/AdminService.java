@@ -11,12 +11,9 @@ import com.help.validation.PostValidation;
 import com.help.validation.UserValidation;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,11 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class AdminService {
     private final AdminRepository adminRepository;
-    private final UserAuthDataRepository userAuthDataRepository;
     private final AdminValidation adminValidation;
     private final PostRepository postRepository;
     private final EmailService emailService;
-    private final GeoService geoService;
     private final PostValidation postValidation;
     private final CampaignValidation campaignValidation;
     private final CampaignRepository campaignRepository;
@@ -42,16 +37,13 @@ public class AdminService {
     private final ConcurrentHashMap<String, OtpDetails> otpStorage = new ConcurrentHashMap<>();
 
     @Autowired
-    public AdminService(AdminRepository adminRepository, UserAuthDataRepository userAuthDataRepository,
-                        AdminValidation adminValidation, PostRepository postRepository, EmailService emailService,
-                        GeoService geoService, PostValidation postValidation, CampaignValidation campaignValidation,
+    public AdminService(AdminRepository adminRepository, AdminValidation adminValidation, PostRepository postRepository, EmailService emailService,
+                        PostValidation postValidation, CampaignValidation campaignValidation,
                         CampaignRepository campaignRepository, UserRepository userRepository, UserValidation userValidation) {
         this.adminRepository = adminRepository;
-        this.userAuthDataRepository = userAuthDataRepository;
         this.adminValidation = adminValidation;
         this.postRepository = postRepository;
         this.emailService = emailService;
-        this.geoService = geoService;
         this.postValidation=postValidation;
         this.campaignValidation = campaignValidation;
         this.campaignRepository = campaignRepository;
@@ -75,26 +67,13 @@ public class AdminService {
         return 0;
     }
 
-    public Admin getAdminProfile(String username) {
-        return adminRepository.findByUsername(username).get();
-    }
-
-    @Transactional
-    public String deletePost(int postId) {
-        Post post=postRepository.findById(postId).get();
-        if(post.getPostReports()>post.getUpVoteCount()){
-            postRepository.deleteById(postId);
-            return "Post deleted.";
-        }
-        return "Post cannot be deleted.";
-    }
-
     @Transactional
     public ServiceResponse<Boolean> updateWorkInProgress(int postId) {
         if(!postValidation.isValidNumeric(Integer.toString(postId))) return new ServiceResponse<>("Invalid post id.", false);
         Optional<Post> post = postRepository.findById(postId);
         if(post.isEmpty())return new ServiceResponse<>("Post not found.", false);
         else if(post.get().getPostStatus()==(short)0) return new ServiceResponse<>("Already Work in progress.", false);
+        post.get().getUser().setCivicTrustScore((post.get().getUser().getCivicTrustScore()+25) <= 1000?post.get().getUser().getCivicTrustScore()+25: post.get().getUser().getCivicTrustScore());
         post.get().setPostStatus((short) 0);
         postRepository.save(post.get());
         return new ServiceResponse<>("Status updated.", true);
@@ -216,14 +195,14 @@ public class AdminService {
 
     public ServiceResponse<Boolean> approveAdmin(int adminId, int adminRole) {
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
-        if(!postValidation.isValidNumeric(Integer.toString(adminId)) || !postValidation.isValidNumeric(Integer.toString(adminRole)))
+        if(!adminValidation.isValidNumeric(Integer.toString(adminId)) || !adminValidation.isValidNumeric(Integer.toString(adminRole)))
             return new ServiceResponse<>("Invalid admin id or admin role.", false);
         Optional<Admin> admin= adminRepository.findById(adminId);
         Optional<Admin> superAdmin = adminRepository.findByUsername(username);
         if(admin.isEmpty())return new ServiceResponse<>("Admin not found.", false);
         if(superAdmin.get().getAdminRole()!=(short) 2)return new ServiceResponse<>("You are not authorized to change the status.", false);
         if(superAdmin.get().getAdminId()==adminId)return new ServiceResponse<>("Cannot change own status.", false);
-        if(admin.get().getAdminStatus() == 1 && (admin.get().getAdminRole() == (short) 1 || admin.get().getAdminRole() == (short) 2))return new ServiceResponse<>("Admin already active.", false);
+        if(admin.get().getAdminStatus() == 1 && admin.get().getAdminRole() == (short) 2)return new ServiceResponse<>("Admin already active.", false);
         admin.get().setAdminRole((short) adminRole);
         admin.get().setAdminStatus((short) 1);
         adminRepository.save(admin.get());
@@ -232,7 +211,7 @@ public class AdminService {
 
     public ServiceResponse<Boolean> rejectAdmin(int adminId) {
         String username=SecurityContextHolder.getContext().getAuthentication().getName();
-        if(!postValidation.isValidNumeric(Integer.toString(adminId))) return new ServiceResponse<>("Invalid admin id.", false);
+        if(!adminValidation.isValidNumeric(Integer.toString(adminId))) return new ServiceResponse<>("Invalid admin id.", false);
         Optional<Admin> admin= adminRepository.findById(adminId);
         Optional<Admin> superAdmin = adminRepository.findByUsername(username);
         if(admin.isEmpty())return new ServiceResponse<>("Admin not found.", false);
@@ -248,5 +227,23 @@ public class AdminService {
     public ServiceResponse<AdminProfile> getSearchedAdmins(String searchString) {
         List<AdminProfile> list = adminRepository.searchAdmins(searchString);
         return new ServiceResponse<>(list.isEmpty()?"No admins found.":"", list);
+    }
+
+    public ServiceResponse<Boolean> deleteAdmin(int adminId) {
+        String username=SecurityContextHolder.getContext().getAuthentication().getName();
+        if(!adminValidation.isValidNumeric(Integer.toString(adminId)))return new ServiceResponse<>("Invalid admin id.", false);
+        Optional<Admin> admin = adminRepository.findById(adminId);
+        if(admin.isEmpty())return new ServiceResponse<>("Admin not found.", false);
+        Optional<Admin> superAdmin = adminRepository.findByUsername(username);
+        if(superAdmin.get().getAdminRole()!=(short) 2)return new ServiceResponse<>("You are not authorised to delete the admin.", false);
+        if(superAdmin.get().getAdminId()==adminId)return new ServiceResponse<>("Cannot delete your account.", false);
+        deleteAdminProfileImage(admin.get().getProfileImagePath());
+        adminRepository.delete(admin.get());
+        return new ServiceResponse<>("Admin deleted.", true);
+    }
+
+    private void deleteAdminProfileImage(String image){
+        String root=Paths.get("").toAbsolutePath().toString();
+        try{Files.delete(Paths.get(root+"/allMedia/adminProfileImage"));}catch (Exception e){e.printStackTrace();}
     }
 }

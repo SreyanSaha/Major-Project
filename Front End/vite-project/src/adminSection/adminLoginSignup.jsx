@@ -33,22 +33,6 @@ const AdminSignup=(props)=>{
   const [timerActive, setTimerActive] = useState(false);
   const [login, setlogin] = useState(props.status);
 
-  const handleLiveLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLatitude(position.coords.latitude);
-          setLongtitude(position.coords.longitude);
-          //setLocation(`Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}`);
-          setUseLiveLocation(true);
-          updateMsg("Location fetched.");
-        },
-        (error) => updateMsg("Error fetching location")
-      );
-    } else {
-      updateMsg("Geolocation is not supported by this browser.");
-    }
-  };
 
   useEffect(() => {
     let interval = null;
@@ -137,22 +121,19 @@ const AdminSignup=(props)=>{
     }catch(exception){
       setProcessing(false);
       console.log(exception);
-      updateMsg("An error occurred during signup process."+exception);
+      updateMsg("An error occurred during signup process.");
     }
     }
   };
-// const user = JSON.parse(localStorage.getItem("admin"));
-// if (user?.authenticated) {
-//   console.log("Username:", user.username);
-//   console.log("Role:", user.role);
-// }
 
 useEffect(() => {
       try {
         const admin = JSON.parse(localStorage.getItem("admin"));
         console.log("Fetched amdin's username:", admin?.username);
         if (admin?.username && admin?.token && admin?.role === 1) navigate("/admin/dashboard");
+        else localStorage.removeItem("admin");
       } catch (err) {
+        localStorage.removeItem("admin");
         console.error("Error parsing user from localStorage:", err);
         updateMsg("Failed to fetch your data, please login again.");
       }
@@ -188,7 +169,7 @@ useEffect(() => {
       }
     }catch(exception){
       console.log(exception);
-      updateMsg("Invalid user details!"+exception);
+      updateMsg("Invalid user details!");
       setProcessing(false);
     }
   };
@@ -255,6 +236,7 @@ useEffect(() => {
       height: "100vh",
       background: "linear-gradient(135deg, #e6f0ff, #cce0ff)", // Light blue gradient
       color: "#001f3f", // Deep navy blue text
+      overflowY: 'auto',
     },
     card: {
       width: "700px",

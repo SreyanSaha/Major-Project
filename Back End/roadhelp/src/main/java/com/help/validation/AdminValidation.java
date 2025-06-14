@@ -14,6 +14,7 @@ public class AdminValidation {
     private static final Pattern EMPLOYEE_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9\\-_.#/]+$");
     private static final Pattern COMPANY_NAME = Pattern.compile("^[a-zA-Z0-9&.,'()\\- ]{2,100}$");
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s,'./#\\-()&@]+$");
+    private static final Pattern NUMERIC_PATTERN = Pattern.compile("^\\d+$");
 
     public String isValidAdminDetails(Admin admin) {
         if(!isValidName(admin.getAdminFirstName())) return "Admin first name is invalid.";
@@ -28,6 +29,11 @@ public class AdminValidation {
         if(!isValidEmpId(admin.getAdminEmployeeId())) return "Admin employee Id is invalid.";
         if(!isValidCompanyName(admin.getAdminCompanyName()))return "Admin organization name is invalid.";
         return "Validated.";
+    }
+
+    public boolean isValidNumeric(String numeric){
+        if(numeric==null || numeric.trim().isEmpty())return false;
+        return NUMERIC_PATTERN.matcher(numeric.trim()).matches();
     }
 
     public boolean isValidAddress(String address){

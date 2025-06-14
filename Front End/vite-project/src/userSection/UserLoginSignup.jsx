@@ -29,23 +29,6 @@ const UserSignup = (props) => {
   const [timer, setTimer] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
 
-  const handleLiveLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLatitude(position.coords.latitude);
-          setLongtitude(position.coords.longitude);
-          //setLocation(`Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}`);
-          setUseLiveLocation(true);
-          updateMsg("Location fetched.");
-        },
-        (error) => updateMsg("Error fetching location")
-      );
-    } else {
-      updateMsg("Geolocation is not supported by this browser.");
-    }
-  };
-
   useEffect(() => {
     let interval = null;
     if (timerActive && timer > 0) {
@@ -130,15 +113,10 @@ const UserSignup = (props) => {
       }
     }catch(exception){
       console.log(exception);
-      updateMsg("An error occurred during signup process."+exception);
+      updateMsg("An error occurred during signup process.");
     }
     }
   };
-// const user = JSON.parse(localStorage.getItem("user"));
-// if (user?.authenticated) {
-//   console.log("Username:", user.username);
-//   console.log("Role:", user.role);
-// }
   const handleLogin = async () => {
     setProcessing(true);
     try{
@@ -161,13 +139,12 @@ const UserSignup = (props) => {
             role: userTypeRole
           })
         );
-        console.log(JSON.parse(localStorage.getItem("user")).token);
         setProcessing(false);
         navigate("/");
       }
     }catch(exception){
       console.log(exception);
-      updateMsg("Invalid user details!"+exception);
+      updateMsg("Invalid user details!");
       setProcessing(false);
     }
   };
@@ -490,16 +467,6 @@ const UserSignup = (props) => {
                 style={styles.input}
               />
             </div>
-
-            <button
-              type="button"
-              style={styles.button}
-              onClick={handleLiveLocation}
-              onMouseOver={(e) => Object.assign(e.target.style, styles.buttonHover)}
-              onMouseOut={(e) => Object.assign(e.target.style, styles.button)}
-            >
-              {useLiveLocation ? "Location Added ✅" : "Add Live Location"}
-            </button>
 
             {!useLiveLocation && (
               <>

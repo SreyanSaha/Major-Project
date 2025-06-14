@@ -78,7 +78,7 @@ export default function UserCampaignPostsComponent() {
       }
     }, [navigate]);
 
-  const handleDelete = async (id) => {
+  const handleDelete= async (id) => {
     try{
       setProcessing(true);
       const user = JSON.parse(localStorage.getItem("user"));
@@ -106,7 +106,46 @@ export default function UserCampaignPostsComponent() {
     }
   };
 
+  const completeCampaign= async(id)=>{
+    try{
+      setProcessing(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+        const response=await axios.post("http://localhost:8080/campaign/complete",id,
+          {
+            headers:{
+                "Authorization": "Bearer "+user.token,
+                "Content-Type": "application/json"
+            }
+          }
+        );
+        if(response.status===200 && response.data.object){
+        updateMsg(response.data.msg);
+        refreshCampaigns();
+        setProcessing(false);
+      }else if(response.status===202){
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    }catch(exception){
+      console.log(exception);
+      navigate("/user/login");
+    }
+  };
+
   const styles = {
+    alertDiv:{
+        textAlign: "center",
+    },
+    alertText: {
+        backgroundColor: "rgb(255, 64, 57)",
+        padding: "2px",
+        color: "white",
+        borderRadius: "8px",
+        width: "50%",
+        maxWidth: "80%",
+        margin: "auto",
+        marginBottom: "15px",
+    },
     cardGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
@@ -274,6 +313,7 @@ export default function UserCampaignPostsComponent() {
 
             <div style={styles.actions}>
               <button style={{ ...styles.button, ...styles.editBtn }} onClick={()=>{setEditing(true); setCampaignId(item.campaignId);}}>Edit</button>
+              {item.status === 0?(<button style={{ ...styles.button, ...styles.editBtn }} onClick={()=>{completeCampaign(item.campaignId);}}>Complete</button>):null}
               <button
                 style={{ ...styles.button, ...styles.deleteBtn }}
                 onClick={() => setDeleteConfirmId(item.campaignId)}

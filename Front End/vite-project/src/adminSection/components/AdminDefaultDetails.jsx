@@ -30,7 +30,7 @@ export default function AdminDefaultDetails(){
       }
     }, []);
 
-    const updateWorkCompleated = async ()=>{
+  const updateWorkCompleated = async ()=>{
     try{
       const admin=JSON.parse(localStorage.getItem("admin"));
       const formData=new FormData();
@@ -84,6 +84,7 @@ export default function AdminDefaultDetails(){
       }
     } catch (exception) {
       console.log(exception);
+      setProcessing(false);
       navigate("/admin/login");
     }
   };
@@ -157,6 +158,30 @@ export default function AdminDefaultDetails(){
         setProcessing(false);
         updateMsg(response.data.msg);
         fetchAllPosts(); // Refresh data
+      } else if (response.status === 202) {
+        setProcessing(false);
+        updateMsg(response.data.msg);
+      }
+    } catch (exception) {
+      console.log(exception);
+      navigate("/admin/login");
+    }
+  };
+
+  const deletePost= async(id)=>{
+    try {
+      setProcessing(true);
+      const admin = JSON.parse(localStorage.getItem("admin"));
+      const response = await axios.delete(`http://localhost:8080/admin/delete/post/${id}`, {
+        headers: {
+          "Authorization": "Bearer " + admin.token,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200 && response.data.object) {
+        setProcessing(false);
+        updateMsg(response.data.msg);
+        fetchAllPosts(); 
       } else if (response.status === 202) {
         setProcessing(false);
         updateMsg(response.data.msg);
@@ -438,6 +463,10 @@ export default function AdminDefaultDetails(){
       fontSize: '14px',
       fontWeight: '500',
     }),
+    deleteButton: {
+      backgroundColor: "#f44336",
+      color: "#fff",
+    },
     afterWorkSection: {
       marginTop: '15px',
       padding: '12px',
@@ -588,6 +617,12 @@ export default function AdminDefaultDetails(){
                   disabled={issue.postStatus === 1}
                 >
                   Complete Work
+                </button>
+                <button
+                  style={styles.actionBtn("#f44336")}
+                  onClick={() => {deletePost(issue.postId);}}
+                >
+                  Delete Post
                 </button>
               </div>
             </div>

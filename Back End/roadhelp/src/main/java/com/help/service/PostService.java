@@ -244,6 +244,38 @@ public class PostService {
     }
 
     @Transactional
+    public ServiceResponse<Boolean> deletePostById(int postId){
+        if (!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Invalid post id.", false);
+        Optional<Post> post=postRepository.findById(postId);
+        if(post.isEmpty())return new ServiceResponse<>("Post not found.", false);
+        else{
+            String []imagePaths={
+                    post.get().getImagePath1(),
+                    post.get().getImagePath2(),
+                    post.get().getImagePath3(),
+                    post.get().getImagePath4(),
+                    post.get().getImagePath5()
+            };
+            String []afterWorkImagePaths={
+                    post.get().getAfterWorkImagePath1(),
+                    post.get().getAfterWorkImagePath2(),
+                    post.get().getAfterWorkImagePath3(),
+                    post.get().getAfterWorkImagePath4(),
+                    post.get().getAfterWorkImagePath5()
+            };
+            if(!deletePostAllImages(imagePaths,  afterWorkImagePaths))return new ServiceResponse<>("Failed to delete the post.", false);
+        }
+        User user=post.get().getUser();
+        user.setCivicTrustScore((user.getCivicTrustScore()-25>=0)?user.getCivicTrustScore()-25:user.getCivicTrustScore());
+        postLogRepository.deleteByPostId(postId);
+        postReportLogRepository.deleteByPostId(postId);
+        postCommentRepository.deleteAll(post.get().getPostCommentList());
+        postRepository.deleteById(postId);
+        userRepository.save(user);
+        return new ServiceResponse<>("Post deleted.", true);
+    }
+
+    @Transactional
     public ServiceResponse<Boolean> deletePost(int postId){
         if (!postValidation.isValidNumeric(Integer.toString(postId)))return new ServiceResponse<>("Invalid post id.", false);
         Optional<Post> post=postRepository.findById(postId);

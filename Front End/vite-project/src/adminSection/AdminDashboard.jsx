@@ -27,29 +27,6 @@ export default function AdminDashboard() {
     }
   }, [navigate]);
 
-  const fetchAllPosts = async () => {
-    try {
-      setProcessing(true);
-      const admin = JSON.parse(localStorage.getItem("admin"));
-      const response = await axios.get("http://localhost:8080/admin/all-posts", {
-        headers: {
-          "Authorization": "Bearer " + admin.token,
-          "Content-Type": "application/json"
-        }
-      });
-      if (response.status === 200) {
-        setProcessing(false);
-        setIssues(response.data.objects);
-      } else if (response.status === 202) {
-        setProcessing(false);
-        updateMsg(response.data.msg);
-      }
-    } catch (exception) {
-      console.log(exception);
-      navigate("/admin/login");
-    }
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("admin");
     setAuthenticated(false);

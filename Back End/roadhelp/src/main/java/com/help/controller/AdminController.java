@@ -147,25 +147,38 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/approve/admin")
-    public ResponseEntity<?> approveAdmin(@RequestBody int adminId, @RequestBody int adminRole){
-        ServiceResponse<Boolean> response = adminService.approveAdmin(adminId, adminRole);
+    @PostMapping("/approve")
+    public ResponseEntity<?> approveAdmin(@RequestBody AdminApproval adminApproval){
+        ServiceResponse<Boolean> response = adminService.approveAdmin(adminApproval.getAdminId(), adminApproval.getAdminRole());
         if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/reject/admin")
+    @PostMapping("/reject")
     public ResponseEntity<?> getAllAdmins(@RequestBody int adminId){
         ServiceResponse<Boolean> response = adminService.rejectAdmin(adminId);
-        if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/search/admins/{searchString}")
+    @PostMapping("/delete")
+    public ResponseEntity<?> deleteAdmin(@RequestBody int adminId){
+        ServiceResponse<Boolean> response = adminService.deleteAdmin(adminId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/search/{searchString}")
     public ResponseEntity<?> searchAllAdmins(@PathVariable String searchString){
         ServiceResponse<AdminProfile> response = adminService.getSearchedAdmins(searchString);
         if(response.getObjects().isEmpty())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @DeleteMapping("/delete/post/{postId}")
+    public ResponseEntity<?> deletePost(@PathVariable int postId){
+        ServiceResponse<Boolean> response = postService.deletePostById(postId);
+        if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

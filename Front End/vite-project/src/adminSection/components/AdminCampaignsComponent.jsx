@@ -4,7 +4,6 @@ import LoadingOverlay from '../../loadingComponents/Loading';
 import axios from "axios";
 
 const ManageCampaigns = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const [msg, updateMsg] = useState(null);
   const [campaigns, setCampaigns] = useState([]);

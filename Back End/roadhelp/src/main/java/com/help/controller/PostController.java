@@ -130,4 +130,5 @@ public class PostController {
         if(response.getObject().getTotalPages()==0)return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
 }

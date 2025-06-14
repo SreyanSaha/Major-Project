@@ -91,7 +91,7 @@ public class CampaignController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("/completed")
+    @PostMapping("/complete")
     public ResponseEntity<?> completeCampaign(@RequestBody int campaignId){
         ServiceResponse<Boolean> response=campaignService.completeCampaigns(campaignId);
         if(!response.getObject())return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

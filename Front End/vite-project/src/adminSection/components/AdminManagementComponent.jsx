@@ -7,7 +7,7 @@ const AdminProfileList = () => {
   const [msg, updateMsg] = useState(null);
   const [admins, setAdmins] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [adminRole, setRole] = useState(-1);
+  const [adminRole, setRole] = useState(1);
 
   useEffect(() => {
     try {
@@ -43,17 +43,92 @@ const AdminProfileList = () => {
   };
 
   const handleSearch= async() => {
-    
+    try {
+      const admin = JSON.parse(localStorage.getItem("admin"));
+      const response = await axios.get(`http://localhost:8080/admin/search/${searchText}`, {
+        headers: {
+          "Authorization": "Bearer " + admin.token,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200) {
+        setAdmins(response.data.objects);
+        updateMsg(null);
+      } else if (response.status === 202) {
+        updateMsg(response.data.msg);
+      }
+    } catch (exception) {
+      console.log(exception);
+      navigate("/admin/login");
+    }
   };
 
   const handleApprove= async(adminId) => {
-    
+    try {
+      const admin = JSON.parse(localStorage.getItem("admin"));
+      const response = await axios.post("http://localhost:8080/admin/approve",
+      {
+        adminId, 
+        adminRole
+      }, 
+      {
+        headers: {
+          "Authorization": "Bearer " + admin.token,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200) {
+        fetchAllAdmins();
+      } else if (response.status === 202) {
+        updateMsg(response.data.msg);
+      }
+    } catch (exception) {
+      console.log(exception);
+      navigate("/admin/login");
+    }
   };
   const handleReject= async(adminId) => {
-    
+    try {
+      const admin = JSON.parse(localStorage.getItem("admin"));
+      const response = await axios.post("http://localhost:8080/admin/reject",adminId, 
+      {
+        headers: {
+          "Authorization": "Bearer " + admin.token,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200) {
+        fetchAllAdmins();
+      } else if (response.status === 202) {
+        updateMsg(response.data.msg);
+      }
+    } catch (exception) {
+      console.log(exception);
+      navigate("/admin/login");
+    }
   };
   const handleDelete= async(adminId) => {
-    
+    try {
+      const admin = JSON.parse(localStorage.getItem("admin"));
+      const response = await axios.post("http://localhost:8080/admin/delete",adminId, 
+      {
+        headers: {
+          "Authorization": "Bearer " + admin.token,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200) {
+        fetchAllAdmins();
+        setAdmins(
+            admins.filter(admin=>admin.adminId!==adminId)
+        );
+      } else if (response.status === 202) {
+        updateMsg(response.data.msg);
+      }
+    } catch (exception) {
+      console.log(exception);
+      navigate("/admin/login");
+    }
   };
 
   const styles = {
@@ -74,7 +149,7 @@ const AdminProfileList = () => {
     width:"100%",
     backgroundColor: '#f4faff',
     padding: '20px',
-    height: '90vh',
+    height: '95vh',
     overflowY: 'auto',
     border: '1px solid #ccc',
     borderRadius: '10px',
@@ -199,15 +274,16 @@ const AdminProfileList = () => {
               0: 'Inactive',
               1: 'Active',
             }[admin.adminStatus]}</div>
+            <div style={styles.field}><span style={styles.label}>Role:</span>{admin.adminRole===1?"Admin":admin.adminRole===2?"Super Admin":"Inactive"}</div>
 
             <div>
               <label style={{ marginRight: '10px' }}>Role:</label>
               <select
                 style={styles.select}
-                value={admin.adminRole}
+                value={adminRole}
                 onChange={(e) => setRole(e.target.value)}
               >
-                <option value={1}>Admin</option>
+                <option value={1} defaultChecked>Admin</option>
                 <option value={2}>Super Admin</option>
               </select>
             </div>

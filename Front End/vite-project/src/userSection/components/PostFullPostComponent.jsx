@@ -411,7 +411,7 @@ useEffect(() => {
 //
 
   const styles = {
-    addressSection: {
+  addressSection: {
   backgroundColor: "#f1f5f9",
   borderRadius: "8px",
   padding: "1rem",
@@ -777,7 +777,7 @@ addressLine: {
   <div key={comment.postCommentId} style={styles.commentItem}>
     <div style={styles.commentHeader} onClick={()=>navigate(`/profile/${comment.userId}`)} >
       <img
-        src={comment.authorProfileImagePath!==undefined && comment.authorProfileImagePath!==null ?`{http://localhost:8080/media${path.replace("\\", "/")}`:"Profile image"}
+        src={comment.authorProfileImagePath!==undefined && comment.authorProfileImagePath!==null ?`http://localhost:8080/media${comment.authorProfileImagePath.replace("\\", "/")}`:"Profile image"}
         alt="Profile"
         style={styles.commentAuthorImage}
       />

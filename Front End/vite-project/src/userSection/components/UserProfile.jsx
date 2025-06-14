@@ -8,7 +8,6 @@ export default function UserProfile() {
   const [msg,updateMsg] = useState(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [civicTrustScore, setCivicTrustScore] = useState(0);
   const [profilePreview, setProfilePreview] = useState("");
   const [userProfile, setUserProfile] = useState({});
   const [firstName, setFirstName] = useState("");
@@ -31,7 +30,6 @@ export default function UserProfile() {
   if (userProfile.city) setCity(userProfile.city);
   if (userProfile.state) setState(userProfile.state);
   if (userProfile.country) setCountry(userProfile.country);
-  if (userProfile.civicTrustScore) setCivicTrustScore(userProfile.civicTrustScore);
   if (userProfile.zipCode) setZip(userProfile.zipCode);
   if (userProfile.userEmailId) setEmail(userProfile.userEmailId);
   if (userProfile.profileImagePath) setProfilePreview(userProfile.profileImagePath);
@@ -427,7 +425,7 @@ export default function UserProfile() {
           id="Civic Trust Score"
           name="civicTrustScore"
           type="text"
-          value={civicTrustScore}
+          defaultValue={userProfile.civicTrustScore}
           style={{...styles.input, ...styles.disabledInput, }}
           required
         />
