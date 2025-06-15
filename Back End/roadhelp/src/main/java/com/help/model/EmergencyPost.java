@@ -10,8 +10,10 @@ public class EmergencyPost {
     private int emergencyPostId;
     private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;
     private String audioFilePath;
-    @Column(nullable = false)
-    private String emergencyPostTitle, emergencyPostDescription;
+    @Column(length = 500)
+    private String emergencyPostTitle;
+    @Column(length = 1000)
+    private String emergencyPostDescription;
     @Column(nullable = false)
     private LocalDateTime emergencyPostUploadDateTime;
     @Column(nullable = false)

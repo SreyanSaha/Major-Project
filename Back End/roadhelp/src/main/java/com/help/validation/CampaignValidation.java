@@ -13,10 +13,11 @@ public class CampaignValidation {
     private static final Pattern ZIP_PATTERN = Pattern.compile("^\\d{5,6}$");
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s,'./#\\-()&@]+$");
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("^\\d+$");
+    private static final Pattern DESCRIPTION_PATTERN = Pattern.compile("(?s)(?=.*[a-zA-Z])(?!\\s*$).{1,1000}");
 
     public String isValidCampaign(Campaign campaign) {
         if (!isValidText(campaign.getCampaignTitle())) return "Campaign title is invalid.";
-        if (!isValidText(campaign.getCampaignDescription())) return "Campaign description is invalid.";
+        if (!isValidDescription(campaign.getCampaignDescription())) return "Campaign description is invalid.";
         if (!isValidAddress(campaign.getStreet())) return "Street is invalid.";
         if (!isValidName(campaign.getCity())) return "City is invalid.";
         if (!isValidName(campaign.getState())) return "State is invalid.";
@@ -27,12 +28,17 @@ public class CampaignValidation {
 
     public String isValidCampaign(EditCampaignData campaign) {
         if (!isValidText(campaign.getCampaignTitle())) return "Campaign title is invalid.";
-        if (!isValidText(campaign.getCampaignDescription())) return "Campaign description is invalid.";
+        if (!isValidDescription(campaign.getCampaignDescription())) return "Campaign description is invalid.";
         if (!isValidAddress(campaign.getStreet())) return "Street is invalid.";
         if (!isValidName(campaign.getCity())) return "City is invalid.";
         if (!isValidName(campaign.getState())) return "State is invalid.";
         if (!isValidZip(campaign.getPostalCode())) return "Postal code is invalid.";
         return "Validated.";
+    }
+
+    public boolean isValidDescription(String description){
+        if(description==null || description.trim().isEmpty())return false;
+        return DESCRIPTION_PATTERN.matcher(description.trim()).matches();
     }
 
     public boolean isValidNumeric(String numeric){

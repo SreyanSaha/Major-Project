@@ -144,7 +144,7 @@ export default function UserEmergencyPostsComponent() {
     },
     card: {
       position: "relative",
-      maxWidth:"400px",
+      width:"400px",
       height: "auto",
       backgroundColor: "#fff8f8",
       padding: "1rem",
@@ -173,6 +173,7 @@ export default function UserEmergencyPostsComponent() {
     desc: {
       fontSize: "0.9rem",
       color: "#555",
+      overflow: "hidden"
     },
     actions: {
       display: "flex",
@@ -282,7 +283,9 @@ export default function UserEmergencyPostsComponent() {
             flex: 1,
           }}/></div>
             <div style={styles.title} onClick={() => navigate(`/emergency/${item.emergencyPostId}`)}>{item.emergencyPostTitle}</div>
-            <div style={styles.desc} onClick={() => navigate(`/emergency/${item.emergencyPostId}`)}>{item.emergencyPostDescription}</div>
+            <div style={styles.desc} onClick={() => navigate(`/emergency/${item.emergencyPostId}`)}>{item.emergencyPostDescription.length>120?
+                                                                                                     item.emergencyPostDescription.substring(0, 120) + "...":
+                                                                                                     item.emergencyPostDescription}</div>
             <div
               style={{
                 fontWeight: "bold",

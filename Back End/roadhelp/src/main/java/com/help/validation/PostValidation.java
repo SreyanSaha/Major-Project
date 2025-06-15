@@ -12,11 +12,11 @@ public class PostValidation {
     private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s]*$");
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s,'./#\\-()&@]+$");
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("^\\d+$");
-    private static final Pattern DESCRIPTION_PATTERN = Pattern.compile("(?s)^(?!\\s*$).{1,500}$");
+    private static final Pattern DESCRIPTION_PATTERN = Pattern.compile("(?s)(?=.*[a-zA-Z])(?!\\s*$).{1,1000}");
 
     public String isValidPostDetails(Post post){
         if(!isValidAlphanumeric(post.getPostTitle()))return "Invalid post title.";
-        if(!isValidAlphanumeric(post.getPostDescription()))return "Invalid post description.";
+        if(!isValidDescription(post.getPostDescription()))return "Invalid post description.";
         if(!isValidAddress(post.getStreet()))return "Post address is invalid.";
         if(!isValidName(post.getCity()))return "Post city is invalid.";
         if(!isValidName(post.getState()))return "Post state is invalid.";
@@ -26,12 +26,17 @@ public class PostValidation {
 
     public String isValidPostDetails(EditPostData post){
         if(!isValidAlphanumeric(post.getPostTitle()))return "Invalid post title.";
-        if(!isValidAlphanumeric(post.getPostDescription()))return "Invalid post description.";
+        if(!isValidDescription(post.getPostDescription()))return "Invalid post description.";
         if(!isValidAddress(post.getStreet()))return "Post address is invalid.";
         if(!isValidName(post.getCity()))return "Post city is invalid.";
         if(!isValidName(post.getState()))return "Post state is invalid.";
         if(!isValidZipCode(post.getPostalCode())) return "Post zip code is invalid.";
         return "Validated";
+    }
+
+    public boolean isValidDescription(String description){
+        if(description==null || description.trim().isEmpty())return false;
+        return DESCRIPTION_PATTERN.matcher(description.trim()).matches();
     }
 
     public boolean isValidComment(String description){

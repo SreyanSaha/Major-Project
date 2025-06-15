@@ -12,11 +12,11 @@ public class EmergencyPostValidation {
     private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9\\s]*$");
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s,'./#\\-()&@]+$");
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("^\\d+$");
-    private static final Pattern DESCRIPTION_PATTERN = Pattern.compile("(?s)^(?!\\s*$).{1,500}$");
+    private static final Pattern DESCRIPTION_PATTERN = Pattern.compile("(?s)(?=.*[a-zA-Z])(?!\\s*$).{1,1000}");
 
     public String isValidEmergencyPostDetails(EmergencyPost post){
         if(!isValidAlphanumeric(post.getEmergencyPostTitle()))return "Invalid emergency post title.";
-        if(!isValidAlphanumeric(post.getEmergencyPostDescription()))return "Invalid emergency post description.";
+        if(!isValidDescription(post.getEmergencyPostDescription()))return "Invalid emergency post description.";
         if(!isValidAddress(post.getStreet()))return "Emergency post address is invalid.";
         if(!isValidName(post.getCity()))return "Emergency post city is invalid.";
         if(!isValidName(post.getState()))return "Emergency post state is invalid.";
@@ -24,7 +24,7 @@ public class EmergencyPostValidation {
         return "Validated";
     }
 
-    public boolean isValidComment(String description){
+    public boolean isValidDescription(String description){
         if(description==null || description.trim().isEmpty())return false;
         return DESCRIPTION_PATTERN.matcher(description.trim()).matches();
     }

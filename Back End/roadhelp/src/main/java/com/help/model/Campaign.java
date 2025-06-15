@@ -9,14 +9,18 @@ public class Campaign {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int campaignId;
+    @Column(nullable = false, length = 500)
+    private String campaignTitle;
+    @Column(nullable = false, length = 1000)
+    private String campaignDescription;
     @Column(nullable = false)
-    private String campaignTitle, campaignDescription,
-            campaignOrganizerEmail;
+    private String campaignOrganizerEmail;
     private short status; // -1 = Inactive, 0 = Active, 1 = Completed
     @Column(nullable = false)
     private long campaignOrganizerContact;
     @Column(nullable = false)
-    private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5, upiImage;
+    private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;
+    private String upiImage;
     @Column(nullable = false)
     private String street;
     private int upVoteCount, downVoteCount, campaignReports;

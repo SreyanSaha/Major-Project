@@ -26,7 +26,7 @@ public class CampaignController {
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createCampaign(@RequestPart("campaign") String campaignJson, @RequestPart("images")List<MultipartFile> images,
-                                            @RequestPart("upiQRImage")MultipartFile upiQRImage, @RequestPart("uname")String uname){
+                                            @RequestPart(value = "upiQRImage", required = false)MultipartFile upiQRImage, @RequestPart("uname")String uname){
         Campaign campaign=null;
         try{campaign=new ObjectMapper().readValue(campaignJson, Campaign.class);}
         catch (Exception e){e.printStackTrace();return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create campaign.");}

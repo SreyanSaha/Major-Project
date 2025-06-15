@@ -178,6 +178,7 @@ export default function UserCampaignPostsComponent() {
     desc: {
       fontSize: "0.9rem",
       color: "#555",
+      overflow: "hidden"
     },
     actions: {
       display: "flex",
@@ -281,7 +282,9 @@ export default function UserCampaignPostsComponent() {
             )}
             <div style={styles.imagePlaceholder} onClick={()=>navigate(`/campaign/${item.campaignId}`)}><img style={{ width: "100%", height: "180px", objectFit: "contain" }} src={`http://localhost:8080/media${item.imagePath1.replace("\\", "/")}`}/></div>
             <div style={styles.title} onClick={()=>navigate(`/campaign/${item.campaignId}`)}>{item.campaignTitle}</div>
-            <div style={styles.desc} onClick={()=>navigate(`/campaign/${item.campaignId}`)}>{item.campaignDescription}</div>
+            <div style={styles.desc} onClick={()=>navigate(`/campaign/${item.campaignId}`)}>{item.campaignDescription.length>120?
+                                                                                             item.campaignDescription.substring(0, 120) + "...":
+                                                                                             item.campaignDescription}</div>
 
             <div
               style={{

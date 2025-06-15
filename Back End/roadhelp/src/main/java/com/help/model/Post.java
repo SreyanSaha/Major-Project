@@ -11,8 +11,10 @@ public class Post {
     private int postId;
     @Column(nullable = false)
     private LocalDateTime postUploadDateTime;
-    @Column(nullable = false)
-    private String postTitle, postDescription;
+    @Column(nullable = false, length = 500)
+    private String postTitle;
+    @Column(nullable = false, length = 1000)
+    private String postDescription;
     private int upVoteCount, downVoteCount, commentCount;
     @Column(nullable = false)
     private String imagePath1, imagePath2, imagePath3, imagePath4, imagePath5;

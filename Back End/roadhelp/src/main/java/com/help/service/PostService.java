@@ -307,7 +307,6 @@ public class PostService {
     private boolean deletePostAllImages(String []imagePaths, String []afterWorkImagePaths){
         String root=Paths.get("").toAbsolutePath().toString();
         for(String path:imagePaths){
-            if(path==null || path.isEmpty())continue;
             try{Files.delete(Paths.get(root+"/allMedia"+path));}catch (Exception e){e.printStackTrace();return false;}
         }
         for(String path:afterWorkImagePaths){

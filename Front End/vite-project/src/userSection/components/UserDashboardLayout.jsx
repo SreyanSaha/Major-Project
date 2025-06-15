@@ -475,7 +475,9 @@ const getTrustScoreStyle = (score) => {
           flex: 1,
         }}/></div>
         <div style={styles.title}>{post.postTitle}</div>
-        <div style={styles.desc}>{post.postDescription}</div>
+        <div style={styles.desc}>{post.postDescription.length > 120?
+                                  post.postDescription.substring(0, 120) + "..."
+                                  :post.postDescription}</div>
 
       <div style={styles.postStats}>
       <span style={styles.upvote}>⮝ {post.upVoteCount}</span>
@@ -792,8 +794,8 @@ status: {
       gap: "1.5rem",
     },
     card: {
-      height: "250px",
-      maxWidth:"400px",
+      height: "350px",
+      width:"420px",
       backgroundColor: "#ffffff",
       padding: "1rem",
       borderRadius: "10px",
@@ -803,7 +805,7 @@ status: {
       gap: "0.75rem",
       boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
       transition: "transform 0.2s",
-      cursor: "pointer"
+      cursor: "pointer",
     },
     imagePlaceholder: {
     backgroundColor: "#cce0ff",
@@ -813,7 +815,6 @@ status: {
     justifyContent: "center",
     alignItems: "center",
     gap: "0.5rem",
-    overflow: "hidden",
     },
     title: {
       fontSize: "1rem",

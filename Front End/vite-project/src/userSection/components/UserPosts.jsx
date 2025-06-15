@@ -144,6 +144,7 @@ export default function UserUploadedPostsComponent() {
     desc: {
       fontSize: "0.9rem",
       color: "#555",
+      overflow: "hidden"
     },
     actions: {
       display: "flex",
@@ -253,7 +254,9 @@ export default function UserUploadedPostsComponent() {
             flex: 1,
           }}/></div>
             <div style={styles.title} onClick={()=>navigate(`/post/${post.postId}`)}>{post.postTitle}</div>
-            <div style={styles.desc} onClick={()=>navigate(`/post/${post.postId}`)}>{post.postDescription}</div>
+            <div style={styles.desc} onClick={()=>navigate(`/post/${post.postId}`)}>{post.postDescription.length > 120?
+                                  post.postDescription.substring(0, 120) + "..."
+                                  :post.postDescription}</div>
             <div
               style={{
                 fontWeight: "bold",
