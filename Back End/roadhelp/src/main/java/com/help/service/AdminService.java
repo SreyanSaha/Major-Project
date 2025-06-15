@@ -163,6 +163,7 @@ public class AdminService {
         if(user.isEmpty())return new ServiceResponse<>("User not found.", false);
         if(user.get().getTimeOutEndTime()!=null && user.get().getTimeOutEndTime().isAfter(LocalDateTime.now()))return new ServiceResponse<>("User is already in time out.", false);
         user.get().setTimeOutEndTime(LocalDateTime.now().plusWeeks(1));
+        user.get().setCivicTrustScore((user.get().getCivicTrustScore()-100>=0)?user.get().getCivicTrustScore()-100:user.get().getCivicTrustScore());
         user.get().setUserReports(0);
         userRepository.save(user.get());
         return new ServiceResponse<>("User in time out.", true);
@@ -175,6 +176,7 @@ public class AdminService {
         if(user.isEmpty())return new ServiceResponse<>("User not found.", false);
         if(user.get().getTimeOutEndTime()==null && user.get().getTimeOutEndTime().isBefore(LocalDateTime.now()))return new ServiceResponse<>("User is not in time out.", false);
         user.get().setTimeOutEndTime(null);
+        user.get().setCivicTrustScore((user.get().getCivicTrustScore()+100<=1000)?user.get().getCivicTrustScore()+100:user.get().getCivicTrustScore());
         userRepository.save(user.get());
         return new ServiceResponse<>("User is out from time out.", true);
     }
